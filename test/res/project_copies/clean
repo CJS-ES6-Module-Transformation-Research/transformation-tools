@@ -1,0 +1,17 @@
+#!/bin/bash
+
+rm -r test/*
+
+for file in `ls base`
+do
+rsync -rah base/$file test/
+done;
+
+cd test
+for file in `ls`
+do
+cd $file
+npm install 
+cd ..
+done
+cd ..

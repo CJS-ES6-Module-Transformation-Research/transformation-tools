@@ -1,0 +1,3 @@
+#!/bin/bash
+rm -r /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_dir_2
+cp -r /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_dir /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_dir_2

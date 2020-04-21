@@ -1,0 +1,17 @@
+
+Goal Src structure
+
+abstract_representation
+    escodegen_interactions
+    project_representation
+transformations
+    sanitizing
+        visitors
+        req str transformers (if it’s just one file it could just be chillin here)
+    import_tranforms
+        visitors
+        transform file
+    export_transforms
+        visitors
+        transform.js
+    global_transform (transformer.js)
