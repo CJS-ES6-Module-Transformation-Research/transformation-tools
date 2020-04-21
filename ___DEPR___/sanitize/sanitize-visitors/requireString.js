@@ -1,6 +1,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Types_1 = require("../../Types");
-var requireStringTransformer_1 = require("../../../src/tools/sanitize_tools/requireStringTransformer");
+var requireStringTransformer_1 = require("../../../src/transformations/sanitizing/requireStringTransformer");
 exports.requireStringSanitizer = function (astFile) {
     console.log('called');
     return {

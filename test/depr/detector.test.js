@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Dirs_1 = require("../../Utils/Dirs");
 var chai_1 = require("chai");
-var requireStringTransformer_1 = require("../../src/tools/sanitize_tools/requireStringTransformer");
+var requireStringTransformer_1 = require("../../src/transformations/sanitizing/requireStringTransformer");
 // let dir =
 var dtc = new requireStringTransformer_1.RequireStringTransformer(Dirs_1.test_dir);
 describe("'Dot' without slash.", function () {

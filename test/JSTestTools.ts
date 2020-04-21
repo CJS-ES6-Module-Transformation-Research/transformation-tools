@@ -1,6 +1,6 @@
-import {JSFile} from "../src/filesystem/JS";
-import {TransformableProject} from "../src/filesystem/FS";
-import {getAllRequireStringsAsList} from "../src/ast_tools/astTools";
+import {JSFile} from "../src/abstract_representation/project_representation/JS";
+import {TransformableProject} from "../src/abstract_representation/project_representation/FS";
+import {getAllRequireStringsAsList} from "../src/abstract_representation/es_tree_stuff/astTools";
 import {Program} from "esprima";
 import {traverse} from "estraverse";
 import {VariableDeclaration, Node} from 'estree';

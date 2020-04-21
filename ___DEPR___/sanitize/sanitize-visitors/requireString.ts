@@ -1,6 +1,6 @@
 import {AstFile, isCallExpr, isIdentifier, isLiteral, WrappedVisitor} from "../../Types";
 import {Identifier, Node} from "estree";
-import {RequireStringTransformer} from "../../../src/tools/sanitize_tools/requireStringTransformer";
+import {RequireStringTransformer} from "../../../src/transformations/sanitizing/requireStringTransformer";
 
 export let requireStringSanitizer: WrappedVisitor = function (astFile: AstFile) {
     console.log('called')

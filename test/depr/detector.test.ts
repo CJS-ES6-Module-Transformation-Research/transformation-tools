@@ -2,7 +2,7 @@
 
 import {test_dir as dir} from "../../Utils/Dirs";
 import {expect} from 'chai'
-import {RequireStringTransformer} from "../../src/tools/sanitize_tools/requireStringTransformer";
+import {RequireStringTransformer} from "../../src/transformations/sanitizing/requireStringTransformer";
 
 
 // let dir =

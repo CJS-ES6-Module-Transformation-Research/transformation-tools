@@ -12,8 +12,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var requireStringTransformer_1 = require("../src/tools/sanitize_tools/requireStringTransformer");
-var Walker_1 = require("../src/tools/transformation_tools/Walker");
+var requireStringTransformer_1 = require("../src/transformations/sanitizing/requireStringTransformer");
+var Walker_1 = require("./Walker");
 var RequireStringSanitizer = /** @class */ (function (_super) {
     __extends(RequireStringSanitizer, _super);
     function RequireStringSanitizer() {

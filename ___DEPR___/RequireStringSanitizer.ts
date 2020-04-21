@@ -1,6 +1,6 @@
-import {RequireStringTransformer} from "../src/tools/sanitize_tools/requireStringTransformer";
+import {RequireStringTransformer} from "../src/transformations/sanitizing/requireStringTransformer";
 import {CallExpression, Identifier, Node} from 'estree'
-import {Walker} from "../src/tools/transformation_tools/Walker";
+import {Walker} from "./Walker";
 
 
 export class RequireStringSanitizer extends Walker<null> {

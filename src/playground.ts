@@ -76,7 +76,7 @@ function b(x: Expression) {
     console.log(generate(x));
 }
 import * as estree from 'estree'
-import {instanceOfExpr, isExpr} from "./ast_tools/astTools";
+import {instanceOfExpr, isExpr} from "./abstract_representation/es_tree_stuff/astTools";
 let p = a()
 console.log()
 if (instanceOfExpr(p)  ) {

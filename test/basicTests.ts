@@ -1,19 +1,19 @@
-import {ProcessProject} from '../src/filesystem/FileProcessing';
-import {TransformableProject} from '../src/filesystem/FS'
-import {JSFile} from '../src/filesystem/JS'
+import {ProcessProject} from '../src/abstract_representation/project_representation/FileProcessing';
+import {TransformableProject} from '../src/abstract_representation/project_representation/FS'
+import {JSFile} from '../src/abstract_representation/project_representation/JS'
 import {it} from 'mocha'
 import {expect} from 'chai'
 import {EXPECTED, test_dir} from "../index";
 import {parseScript, Program} from "esprima";
 import {readFileSync} from "fs";
 import shebangRegex from "shebang-regex";
-import {Transformer} from "../src/tools/transformation_tools/Transformer";
-import {requireStringSanitizer} from "../src/visitors/sanitize/requireString";
+import {Transformer} from "../src/transformations/Transformer";
+import {requireStringSanitizer} from "../src/transformations/sanitizing/visitors/requireString";
 
 import {createReqStringToolFromName} from "./JSTestTools";
-import {flattenDecls} from "../src/visitors/sanitize/declFlattener";
-import {accessReplace} from "../src/visitors/sanitize/accessReplacer";
-import {transformImport} from "../src/visitors/import/import_replacement";
+import {flattenDecls} from "../src/transformations/sanitizing/visitors/declFlattener";
+import {accessReplace} from "../src/transformations/sanitizing/visitors/accessReplacer";
+import {transformImport} from "../src/transformations/import_transformations/visitors/import_replacement";
 
 let project: TransformableProject = ProcessProject(test_dir);
 
