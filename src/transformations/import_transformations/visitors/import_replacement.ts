@@ -1,7 +1,6 @@
 import {Identifier, Literal, Node, Pattern} from "estree";
 import {replace, Visitor, VisitorOption} from "estraverse";
 import {JSFile} from "../../../abstract_representation/project_representation/JS";
-import {Walker} from "../../../../../___DEPR___/Walker";
 import {createAnImportDeclaration} from "../../../abstract_representation/es_tree_stuff/createImportDeclaration";
 
 

@@ -1,29 +1,18 @@
-import {ProcessProject} from '../src/abstract_representation/project_representation/FileProcessing';
-import {TransformableProject} from '../src/abstract_representation/project_representation/FS'
-import {JSFile} from '../src/abstract_representation/project_representation/JS'
-import {it} from 'mocha'
+ import {it} from 'mocha'
 import {expect} from 'chai'
 import {EXPECTED, test_dir} from "../index";
 import {parseScript, Program} from "esprima";
 import {readFileSync} from "fs";
 import shebangRegex from "shebang-regex";
 import {Transformer} from "../src/transformations/Transformer";
-import {requireStringSanitizer} from "../src/transformations/sanitizing/visitors/requireString";
 
 import {createReqStringToolFromName} from "./JSTestTools";
-import {flattenDecls} from "../src/transformations/sanitizing/visitors/declFlattener";
-import {accessReplace} from "../src/transformations/sanitizing/visitors/accessReplacer";
 import {transformImport} from "../src/transformations/import_transformations/visitors/import_replacement";
+import {TransformableProject,ProcessProject,JSFile,requireStringSanitizer, flattenDecls,accessReplace} from "../src";
 
 let project: TransformableProject = ProcessProject(test_dir);
 
-let isJS = (pFile: any): pFile is JSFile => pFile
 
-// project.forEach((e) => {
-//     // if (e instanceof JSFile) {
-//     //     (e.makeString())
-//     // }
-// })
 describe('Testing OO version ', () => {
     it('Test AST read-in correctly', () => {
 

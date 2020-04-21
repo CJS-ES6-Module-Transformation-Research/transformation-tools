@@ -1,5 +1,4 @@
-import {isCallExpr, isIdentifier, isLiteral, WrappedVisitor} from "../../../../Types";
-import {Identifier, Node, CallExpression} from "estree";
+ import {Identifier, Node, CallExpression} from "estree";
 import {RequireStringTransformer} from "../requireStringTransformer";
 import {TransformFunction} from '../../Transformer'
 import {JSFile} from "../../../abstract_representation/project_representation/JS";

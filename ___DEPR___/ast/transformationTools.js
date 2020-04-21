@@ -1,48 +1,87 @@
-Object.defineProperty(exports, "__esModule", { value: true });
-var estraverse_1 = require("estraverse");
-var escodegen_1 = require("escodegen");
-;
-var ASTTransformer = /** @class */ (function () {
-    function ASTTransformer(astFiles) {
-        this.astFiles = astFiles;
-    }
-    ;
-    ASTTransformer.prototype.currentPrograms = function () {
-        var list = [];
-        this.astFiles.forEach(function (e) {
-            list.push({
-                program: escodegen_1.generate(e.ast),
-                name: e.filePath
-            });
-        });
-        return list;
-    };
-    ;
-    ASTTransformer.prototype.transformWithTypeReturn = function (lVisitor, mutator) {
-        this.astFiles.forEach(function (astFile) {
-            var data = mutator.supplier();
-            var theVisitor = lVisitor(data);
-            estraverse_1.traverse(astFile.ast, theVisitor);
-            mutator.mutator(data, astFile.ast.body);
-        });
-        // this.transformWithVisitors(lVisitor(data))
-    };
-    ASTTransformer.prototype.transformWithListReturn = function (lVisitor) {
-        var list = [];
-        this.transformWithVisitors(lVisitor(list));
-        return list;
-    };
-    ASTTransformer.prototype.transformWithVisitors = function (visitor) {
-        this.astFiles.forEach(function (astFile) {
-            estraverse_1.traverse(astFile.ast, visitor);
-        });
-    };
-    ASTTransformer.prototype.transformWrapped = function (visitor) {
-        this.astFiles.forEach(function (astFile) {
-            var theVisitor = visitor(astFile);
-            estraverse_1.traverse(astFile.ast, theVisitor);
-        });
-    };
-    return ASTTransformer;
-}());
-exports.ASTTransformer = ASTTransformer;
+// import {traverse, Visitor} from 'estraverse'
+// import {Directive, ModuleDeclaration, Statement} from "estree";
+// import {generate} from "escodegen";
+// import {WrappedVisitor} from "../../src/Types";
+//
+// export type genericSupplier<T> = () => T;
+//
+// export interface Mutator<T> {
+//     supplier: genericSupplier<T>,
+//     mutator: mutator<T>
+// }
+//
+// export type mutator<T> = (t: T, program: Array<Directive | Statement | ModuleDeclaration>) => void ;
+//
+// export type WrappedReturnVisitor<T> = (returnValue: T) => Visitor;
+// export type varLetConst = "var" | "let" | "const";
+//
+// export type ListWrappedVisitor<T> = (list: T[]) => Visitor;
+//
+// export interface AccessRequire {
+//     identifier: string
+//     importValue: string
+// }
+//
+// export interface ProgramString {
+//     program: string,
+//     name: string
+// };
+//
+// export class ASTTransformer {
+//     constructor(astFiles: AstFile[]) {
+//         this.astFiles = astFiles
+//     };
+//
+//
+//     private astFiles: AstFile[];
+//
+//
+//     public currentPrograms(): ProgramString[] {
+//         let list: ProgramString[] = [];
+//         this.astFiles.forEach((e) => {
+//             list.push({
+//                 program: generate(e.ast),
+//                 name: e.filePath
+//             })
+//         });
+//         return list;
+//     };
+//
+//     public transformWithTypeReturn<T>(lVisitor: WrappedReturnVisitor<T>, mutator: Mutator<T>): void {
+//
+//         this.astFiles.forEach(
+//             (astFile) => {
+//                 let data: T = mutator.supplier();
+//                 let theVisitor: Visitor = lVisitor(data)
+//                 traverse(astFile.ast, theVisitor)
+//                 mutator.mutator(data, astFile.ast.body)
+//             }
+//         );
+//         // this.transformWithVisitors(lVisitor(data))
+//     }
+//
+//     public transformWithListReturn<T>(lVisitor: ListWrappedVisitor<T>): T[] {
+//         let list: T[] = [];
+//         this.transformWithVisitors(lVisitor(list))
+//         return list;
+//     }
+//
+//     public transformWithVisitors(visitor: Visitor): void {
+//         this.astFiles.forEach(
+//             (astFile) => {
+//                 traverse(astFile.ast, visitor)
+//             }
+//         );
+//     }
+//
+//
+//     public transformWrapped(visitor: WrappedVisitor): void {
+//         this.astFiles.forEach(
+//             (astFile) => {
+//                 let theVisitor: Visitor = visitor(astFile)
+//                 traverse(astFile.ast, theVisitor)
+//             }
+//         );
+//     }
+// }
+//

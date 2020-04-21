@@ -41,10 +41,8 @@ import {
 import {replace, traverse, Visitor} from "estraverse";
 import {parseModule, parseScript, Program, Syntax} from "esprima";
 import {generate} from "escodegen";
-import exp from "constants";
-import {JSFile} from "../../../abstract_representation/project_representation/JS";
-import {JPP} from "../../../../../index";
-import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
+ import {JSFile} from "../../../abstract_representation/project_representation/JS";
+ import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
 import {createAnExport} from "../../../abstract_representation/es_tree_stuff/exportsTools";
 
 interface ModuleExport {

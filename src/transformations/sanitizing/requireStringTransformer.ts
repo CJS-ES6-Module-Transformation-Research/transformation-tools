@@ -1,7 +1,8 @@
 import {extname, resolve} from 'path'
 import {existsSync, lstatSync} from 'fs'
 import relative from "relative";
-import {_JS, _JSON} from "../../../../index";
+import {_JS, _JSON} from "../../../index";
+
 
 
 export class RequireStringTransformer {

@@ -1,10 +1,6 @@
-// import {test_root} from '../../Utils/Dirs'
 
-import {JSFile} from "../abstract_representation/project_representation/JS";
 import {ProcessProject} from '../abstract_representation/project_representation/FileProcessing'
 import {TransformableProject} from "../abstract_representation/project_representation/FS";
-
-
 import {requireStringSanitizer} from "./sanitizing/visitors/requireString";
 import {accessReplace} from "./sanitizing/visitors/accessReplacer";
 import {flattenDecls} from "./sanitizing/visitors/declFlattener";
@@ -23,11 +19,7 @@ console.log("finished reading in")
 let transformer = Transformer.ofProject(project);
 
 
-// project.forEachSource((js:JSFile)=> {new RequireStringSanitizer().walk(js)})
-// project.forEachSource((js:JSFile)=> {new  DeclarationFlattener().walk(js)})
-// project.forEachSource((js:JSFile)=> {new  AccessReplacer().walk(js)})
-// project.forEachSource((js:JSFile)=> {new  ImportTransformer().walk(js)})
-//
+
 // console.log('about to tf')
 transformer.transform(requireStringSanitizer)
 // console.log('about to tf1')

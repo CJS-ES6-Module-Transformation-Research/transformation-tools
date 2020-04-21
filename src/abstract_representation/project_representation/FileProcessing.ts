@@ -1,4 +1,4 @@
-import {lstatSync, readdirSync} from "src/abstract_representation/project_representation/FS";
+import {lstatSync, readdirSync} from "fs";
 import {basename,extname} from "path";
 import relative from 'relative';
 import {TransformableProject} from "./FS";

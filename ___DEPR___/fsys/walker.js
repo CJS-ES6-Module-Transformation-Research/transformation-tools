@@ -1,74 +1,71 @@
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var fs_1 = require("fs");
-var path_1 = __importStar(require("path"));
-var index_1 = require("../../index");
-var relative_1 = __importDefault(require("relative"));
-var illegalDirs = new Set();
-illegalDirs.add("node_modules");
-function traverseProject(proj_dir) {
-    var absDir = '/' + relative_1.default('/', proj_dir, null);
-    var files_tr = [];
-    var dirs_tr = [];
-    traverseRecurse(absDir);
-    function getFT(ext) {
-        switch (ext) {
-            case index_1.FILE_TYPE.JS:
-                return index_1.FILE_TYPE.JS;
-            case index_1.FILE_TYPE.JSON:
-                return index_1.FILE_TYPE.JSON;
-            default:
-                return index_1.FILE_TYPE.OTHER;
-        }
-    }
-    function traverseRecurse(dir) {
-        var ls = fs_1.readdirSync(dir);
-        ls.forEach(function (file) {
-            var absFile = dir + "/" + file;
-            if (fs_1.lstatSync(absFile).isFile()) {
-                var ext = path_1.extname(absFile);
-                files_tr.push({
-                    dir: dir,
-                    file: file,
-                    full: dir + '/' + file,
-                    ftype: getFT(ext),
-                    relative: relative_1.default(absDir, dir + "/" + file, null)
-                });
-            }
-            else if (fs_1.lstatSync(absFile).isDirectory()) {
-                var absRelative = path_1.default.basename(absFile);
-                if (illegalDirs.has(absRelative)) {
-                    console.log("ignoring " + absRelative + " aka " + absFile);
-                    return;
-                }
-                dirs_tr.push({ dir: absFile, relative: relative_1.default(absDir, absFile, null) });
-                traverseRecurse(absFile);
-            }
-            else if (fs_1.lstatSync(absFile).isSymbolicLink()) {
-                var ext = path_1.extname(absFile);
-                files_tr.push({
-                    dir: dir,
-                    file: file,
-                    full: dir + '/' + file,
-                    ftype: index_1.FILE_TYPE.SYMLINK,
-                    relative: relative_1.default(absDir, dir + "/" + file, null)
-                });
-            }
-            else {
-                console.log("NONE OF THE ABOVE: " + absFile + " is not a file, link or dir!");
-            }
-        });
-    }
-    var projectFS = { project: absDir, files: files_tr, dirs: dirs_tr };
-    return projectFS;
-}
-exports.traverseProject = traverseProject;
+// import {lstatSync, readdirSync} from 'fs'
+// import path, {extname} from 'path'
+// import {FILE_TYPE} from '../../index'
+// import {DirDescript, FileDescript, ProjectFS} from "../../src/Types";
+// import relative from 'relative'
+//
+// let illegalDirs:Set<string> = new Set<string>();
+// illegalDirs.add("node_modules")
+//
+// export function traverseProject(proj_dir: string): ProjectFS {
+//     let absDir = '/' + relative('/', proj_dir,null)
+//
+//     let files_tr: Array<FileDescript> = []
+//     let dirs_tr: Array<DirDescript> = []
+//     traverseRecurse(absDir);
+//
+//     function getFT(ext: string) {
+//         switch (ext) {
+//             case FILE_TYPE.JS:
+//                 return FILE_TYPE.JS
+//             case FILE_TYPE.JSON:
+//                 return FILE_TYPE.JSON
+//             default:
+//                 return FILE_TYPE.OTHER
+//         }
+//     }
+//
+//     function traverseRecurse(dir: string) {
+//         let ls: Array<string> = readdirSync(dir);
+//         ls.forEach((file) => {
+//             let absFile = `${dir}/${file}`
+//
+//             if (lstatSync(absFile).isFile()) {
+//                 let ext = extname(absFile)
+//                 files_tr.push({
+//                     dir: dir,
+//                     file: file,
+//                     full: dir + '/' + file,
+//                     ftype: getFT(ext),
+//                     relative: relative(absDir, `${dir}/${file}`,null)
+//                 });
+//             } else if (lstatSync(absFile).isDirectory()) {
+//                 let absRelative = path. basename(absFile)
+//                 if(illegalDirs.has(absRelative)){
+//                     console.log(`ignoring ${absRelative} aka ${absFile}`)
+//                     return;
+//                 }
+//                 dirs_tr.push({dir: absFile, relative: relative(absDir, absFile,null)})
+//                 traverseRecurse(absFile)
+//             } else if (lstatSync(absFile).isSymbolicLink()) {
+//                 let ext = extname(absFile)
+//                 files_tr.push({
+//                     dir: dir,
+//                     file: file,
+//                     full: dir + '/' + file,
+//                     ftype: FILE_TYPE.SYMLINK,
+//                     relative: relative(absDir, `${dir}/${file}`,null)
+//                 });
+//             } else {
+//                 console.log(`NONE OF THE ABOVE: ${absFile} is not a file, link or dir!`)
+//             }
+//         });
+//     }
+//
+//     let projectFS: ProjectFS = {project: absDir, files: files_tr, dirs: dirs_tr}
+//
+//     return projectFS;
+// }
+//
+//
+//

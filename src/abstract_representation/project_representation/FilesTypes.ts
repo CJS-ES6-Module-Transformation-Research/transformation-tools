@@ -1,5 +1,5 @@
 import {Program} from "esprima";
-import {readFileSync} from "src/abstract_representation/project_representation/FS";
+import {readFileSync} from "fs";
 
 interface Reportable {
     getPriority: () => number

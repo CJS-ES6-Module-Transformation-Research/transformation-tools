@@ -116,17 +116,6 @@ let internalVis: Visitor = {
     }
 }
 
-// let ast = parseScript(      `
-// module.exports = {hello:"world",jack:"sparrow",three:3}
-// exports= {a:"b",c:"d",four:4}
-// `);
-//
-// traverse(ast , internalVis)
-//
-//
-//
-//
-// console.log((generate(ast)))
 
 
 

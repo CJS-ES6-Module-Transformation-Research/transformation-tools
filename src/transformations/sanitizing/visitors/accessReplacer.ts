@@ -1,13 +1,11 @@
 #!/bin/env ts-node
-import {RequireAccessIDs} from "../../../../Types";
 import {Identifier, Literal, Node, VariableDeclaration, VariableDeclarator} from 'estree'
 import {traverse, Visitor} from 'estraverse'
-import {createRequireDecl} from "../../../../../___DEPR___/ast/AST_Factory";
 import _ from 'lodash'
-import {JSFile} from "../../../abstract_representation/project_representation/JS";
-import {isForLoopParent} from "../../../abstract_representation/es_tree_stuff/astTools";
-import {generate} from "escodegen";
-import {JPP} from "../../../../../index";
+import {JSFile} from "../../../index";
+import {RequireAccessIDs} from "../../../Types";
+import {createRequireDecl} from '../../../abstract_representation/es_tree_stuff/astTools';
+
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';
 const upper = 'QWERTYUIOPLKJHGFDSAZXCVBNM';

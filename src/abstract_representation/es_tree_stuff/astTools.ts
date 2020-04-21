@@ -17,14 +17,14 @@ import {
     TemplateLiteral,
     ThisExpression,
     UnaryExpression,
-    UpdateExpression,
+    UpdateExpression, VariableDeclaration,
     YieldExpression
 } from "estree";
 import {Program} from "esprima";
 import {traverse} from "estraverse";
+import {varLetConst} from "../../Types";
 
-export
-function isExpr(val:string): boolean {
+export function isExpr(val: string): boolean {
     switch (val) {
         case     "ThisExpression":
         case       "ArrayExpression":
@@ -62,40 +62,104 @@ function isExpr(val:string): boolean {
 }
 
 
+function instanceofThisExpression(object: any): object is ThisExpression {
+    return object;
+}
+
+function instanceofArrayExpression(object: any): object is ArrayExpression {
+    return object;
+}
+
+function instanceofObjectExpression(object: any): object is ObjectExpression {
+    return object;
+}
+
+function instanceofFunctionExpression(object: any): object is FunctionExpression {
+    return object;
+}
+
+function instanceofArrowFunctionExpression(object: any): object is ArrowFunctionExpression {
+    return object;
+}
+
+function instanceofYieldExpression(object: any): object is YieldExpression {
+    return object;
+}
+
+function instanceofLiteral(object: any): object is Literal {
+    return object;
+}
+
+function instanceofUnaryExpression(object: any): object is UnaryExpression {
+    return object;
+}
+
+function instanceofUpdateExpression(object: any): object is UpdateExpression {
+    return object;
+}
+
+function instanceofBinaryExpression(object: any): object is BinaryExpression {
+    return object;
+}
+
+function instanceofAssignmentExpression(object: any): object is AssignmentExpression {
+    return object;
+}
+
+function instanceofLogicalExpression(object: any): object is LogicalExpression {
+    return object;
+}
+
+function instanceofMemberExpression(object: any): object is MemberExpression {
+    return object;
+}
+
+function instanceofConditionalExpression(object: any): object is ConditionalExpression {
+    return object;
+}
+
+function instanceofCallExpression(object: any): object is CallExpression {
+    return object;
+}
+
+function instanceofNewExpression(object: any): object is NewExpression {
+    return object;
+}
+
+function instanceofSequenceExpression(object: any): object is SequenceExpression {
+    return object;
+}
+
+function instanceofTemplateLiteral(object: any): object is TemplateLiteral {
+    return object;
+}
+
+function instanceofTaggedTemplateExpression(object: any): object is TaggedTemplateExpression {
+    return object;
+}
+
+function instanceofClassExpression(object: any): object is ClassExpression {
+    return object;
+}
+
+function instanceofMetaProperty(object: any): object is MetaProperty {
+    return object;
+}
+
+function instanceofIdentifier(object: any): object is Identifier {
+    return object;
+}
+
+function instanceofAwaitExpression(object: any): object is AwaitExpression {
+    return object;
+}
+
+function instanceofImportExpression(object: any): object is ImportExpression {
+    return object;
+}
 
 
-function instanceofThisExpression(object : any): object is ThisExpression {return object;}
-function instanceofArrayExpression(object : any): object is ArrayExpression {return object;}
-function instanceofObjectExpression(object : any): object is ObjectExpression {return object;}
-function instanceofFunctionExpression(object : any): object is FunctionExpression {return object;}
-function instanceofArrowFunctionExpression(object : any): object is ArrowFunctionExpression {return object;}
-function instanceofYieldExpression(object : any): object is YieldExpression {return object;}
-function instanceofLiteral(object : any): object is Literal {return object;}
-function instanceofUnaryExpression(object : any): object is UnaryExpression {return object;}
-function instanceofUpdateExpression(object : any): object is UpdateExpression {return object;}
-function instanceofBinaryExpression(object : any): object is BinaryExpression {return object;}
-function instanceofAssignmentExpression(object : any): object is AssignmentExpression {return object;}
-function instanceofLogicalExpression(object : any): object is LogicalExpression {return object;}
-function instanceofMemberExpression(object : any): object is MemberExpression {return object;}
-function instanceofConditionalExpression(object : any): object is ConditionalExpression {return object;}
-function instanceofCallExpression(object : any): object is CallExpression {return object;}
-function instanceofNewExpression(object : any): object is NewExpression {return object;}
-function instanceofSequenceExpression(object : any): object is SequenceExpression {return object;}
-function instanceofTemplateLiteral(object : any): object is TemplateLiteral {return object;}
-function instanceofTaggedTemplateExpression(object : any): object is TaggedTemplateExpression {return object;}
-function instanceofClassExpression(object : any): object is ClassExpression {return object;}
-function instanceofMetaProperty(object : any): object is MetaProperty {return object;}
-function instanceofIdentifier(object : any): object is Identifier {return object;}
-function instanceofAwaitExpression(object : any): object is AwaitExpression {return object;}
-function instanceofImportExpression(object : any): object is ImportExpression {return object;}
-
-
-
-
-
-
-
-export function instanceOfExpr(x:Node) {
+export function instanceOfExpr(x: Node) {
     return (instanceofThisExpression(x) ||
         instanceofArrayExpression(x) ||
         instanceofObjectExpression(x) ||
@@ -119,7 +183,7 @@ export function instanceOfExpr(x:Node) {
         instanceofMetaProperty(x) ||
         instanceofIdentifier(x) ||
         instanceofAwaitExpression(x) ||
-        instanceofImportExpression(x) );
+        instanceofImportExpression(x));
 }
 
 export function getAllRequireStringsAsList(ast: Program): string[] {
@@ -131,7 +195,7 @@ export function getAllRequireStringsAsList(ast: Program): string[] {
                 && node.callee.type === "Identifier"
                 && node.callee.name === "require"
                 && node.arguments
-                && node.arguments.length> 0
+                && node.arguments.length > 0
                 && node.arguments[0].type === "Literal") {
                 list.push(node.arguments[0].value.toString());
             }
@@ -149,3 +213,39 @@ export function isForLoopParent(parent: Node) {
             return true;
     }
 }
+
+export function createRequireDecl(varStr: string, importStr: string, kindStr: varLetConst): VariableDeclaration {
+    let varDecl: VariableDeclaration;
+    varDecl = {
+        type: "VariableDeclaration",
+        declarations: [
+            {
+                type: "VariableDeclarator",
+                id: {
+                    type: "Identifier",
+                    name: varStr
+                }, init: {
+                    type: "CallExpression",
+                    callee: {
+                        type: "Identifier",
+                        name: "require"
+                    },
+                    arguments: [
+                        {
+                            type: "Literal",
+                            value: importStr,
+                            raw: `'${importStr}'`
+                        }
+                    ]
+                },
+            }
+        ],
+        kind: kindStr
+    };
+    return varDecl;
+}
+
+
+
+
+

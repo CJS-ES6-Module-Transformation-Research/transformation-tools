@@ -1,6 +1,6 @@
 import {JSFile} from "./JS";
 import {ProjectFile} from "./FilesTypes";
-import {renameSync, writeFileSync} from "src/abstract_representation/project_representation/FS";
+import {renameSync, writeFileSync} from "fs";
 
 class ProjectBuilder {
     files: ProjectFile[] = [];

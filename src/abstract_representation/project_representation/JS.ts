@@ -13,11 +13,8 @@ import {
     RestElement,
     Statement
 } from "estree";
-import {SideEffectImport} from "../../transformations/import_transformations/Import";
-import {DefaultImport} from "../../transformations/import_transformations/Import";
-import {NamedImport} from "../../transformations/import_transformations/Import";
+
 import {traverse, Visitor} from "estraverse";
-import {JPP} from "../../../../index";
 import {walkPatternToIdentifier} from "../es_tree_stuff/exportsTools";
 import {Export} from "../../transformations/export_transformations/Export";
 import {script_or_module} from "./FileProcessing";
