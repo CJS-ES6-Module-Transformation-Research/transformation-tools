@@ -1,9 +1,5 @@
-// import {TransformableProject} from "../filesystem/FS";
-// import {JSFile} from "../filesystem/JS";
 
-import {TransformableProject} from "../abstract_representation/project_representation/FS";
-import {JSFile} from "../abstract_representation/project_representation/JS";
-
+import {JSFile,TransformableProject} from '../index'
 export class Transformer {
     rebuildNamespace() {
          this.project.forEachSource( (js:JSFile)=>{
@@ -32,4 +28,4 @@ export class Transformer {
 
 }
 
-export type TransformFunction = (JSFile) => void
+export type TransformFunction = (JSFile) => void;

@@ -1,4 +1,4 @@
-module.exports = require("./package")
+module.exports = require("./package.json")
 console.log('#!/bin/bash')
 let a
 let b

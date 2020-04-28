@@ -9,7 +9,7 @@ import {
     VariableDeclarator
 } from "estree";
 import {TransformFunction} from "../../Transformer";
-import {JSFile} from "../../../abstract_representation/project_representation/JS";
+import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {traverse, Visitor} from "estraverse";
 
 

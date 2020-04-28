@@ -15,6 +15,7 @@
     "@types/escodegen": "0.0.6",
     "@types/esprima": "^4.0.2",
     "@types/estraverse": "0.0.6",
+    "@types/estree": "0.0.44",
     "@types/node": "^13.9.0",
     "chai": "^4.2.0",
     "escodegen": "^1.14.1",

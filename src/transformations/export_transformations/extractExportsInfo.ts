@@ -1,7 +1,8 @@
 import {traverse, Visitor, VisitorOption} from "estraverse";
-import {Node} from 'estree'
+import {Node, MemberExpression} from 'estree'
 import {parseScript} from "esprima";
 import {generate} from "escodegen";
+import {JSFile} from "../../abstract_representation/project_representation";
 
 export function getModuleExportsAccesses() {
 
@@ -10,7 +11,7 @@ export function getModuleExportsAccesses() {
 
 let count = 0;
 
-let exportAccessGetter: visitFunc = (node, parent) => {
+let exportAccessGetter: visitFunc = (node: Node, parent: Node) => {
     if (node.type === "MemberExpression") {//&& parent.type !=="AssignmentExpression"
         if (
             node.object.type === "Identifier"
@@ -19,11 +20,9 @@ let exportAccessGetter: visitFunc = (node, parent) => {
             || node.object.name === "exports")
         ) {
             count++
-            // console.log(`NODE, PARENT`)
-            // console.log(generate(node))
+
             console.log(generate(parent))
-            // console.log(``)
-        }
+         }
     }
 }
 const visitor: Visitor = {
@@ -33,12 +32,13 @@ const visitor: Visitor = {
 function hasIt(testNode: Node): boolean {
     let hasModEx = false;
     traverse(testNode, {
-        enter: (node, parent) => {
+        enter: (node: Node, parent: Node) => {
             if (node.type === "MemberExpression") {//&& parent.type !=="AssignmentExpression"
                 if (
                     node.object.type === "Identifier"
                     && node.property.type === "Identifier"
-                    && ((node.object.name === "module" && node.property.name === "exports")
+                    && ((node.object.name === "module"
+                    && node.property.name === "exports")
                     || node.object.name === "exports")
                 ) {
                     hasModEx = true;
@@ -50,29 +50,30 @@ function hasIt(testNode: Node): boolean {
 }
 
 const metaVisitor: Visitor = {
-    enter: (node, parent) => {
+    enter: (node: Node, parent: Node) => {
         if (node.type === "MemberExpression" && parent.type !== "MemberExpression") {
             if (hasIt(node)) {
 
                 if (parent.type !== "AssignmentExpression" || (parent.type === "AssignmentExpression" && parent.left !== node)) {
                     count++
-                    console.log(`Detected: 
-                    The Node: ${generate(node)}
-                    The Parent: ${generate(parent)}
-                             `)
+                    // console.log(`Detected:
+                    // The Node: ${generate(node)}
+                    // The Parent: ${generate(parent)}
+                    //          `)
 
                 }
 
             }
-        } else if (node.type === "Identifier" && node.name === "exports"&& parent.type !== "MemberExpression") {
+        } else if (node.type === "Identifier" && node.name === "exports" && parent.type !== "MemberExpression") {
             count++
-            console.log(`Detected: 
-                    The Node: ${generate(node)}
-                    The Parent: ${generate(parent)}
-                             `)
+            // console.log(`Detected:
+            //         The Node: ${generate(node)}
+            //         The Parent: ${generate(parent)}
+            //                  `)
         }
     }
 }
+
 
 type visitFunc = (node: Node, parentNode: Node | null) => VisitorOption | Node | void;
 
@@ -109,6 +110,99 @@ module.exports.fun(module.exports.arg);
 
 `
 let ast = parseScript(program)
-traverse(ast, metaVisitor);
 
-console.log(`count: ${count}`)
+function hasDefaultExport(js:JSFile){
+
+    let hasDefault:boolean = false;
+    // js.getAST()
+    traverse(ast,{
+        enter: (node: Node, parent: Node) => {
+            let child: MemberExpression
+
+            if (parent
+                && parent.type === "ExpressionStatement"
+                && node.type === "AssignmentExpression"
+                && node.left.type === "MemberExpression") {
+                child = node.left;
+
+                if (
+                    child.object.type === "Identifier"
+                    && child.property.type === "Identifier"
+                    && (child.object.name === "module"
+                    && child.property.name === "exports")
+                ) {
+
+                    hasDefault = true;
+
+                }
+
+            }
+
+        }
+    });
+    return hasDefault;
+}
+
+
+// traverse(ast, {
+//         enter: (node: Node, parent: Node) => {
+//             let child: MemberExpression
+//
+//             if (parent.type === "ExpressionStatement"
+//                 && node.type === "AssignmentExpression"
+//                 && node.left.type === "MemberExpression") {
+//                 child = node.left;
+//
+//                 if (
+//                     child.object.type === "Identifier"
+//                     && child.property.type === "Identifier"
+//                     && (child.object.name === "module"
+//                     && child.property.name === "exports")
+//                 ) {
+//
+//                     //true
+//
+//                 }
+//
+//             }
+//
+//         }
+//     }
+// );
+// console.log("  "+hasDefaultExport(null))
+ast = parseScript(`
+module.exports = 32
+`)
+
+
+console.log(" true: "+hasDefaultExport(null))
+
+ast = parseScript(`
+module.exports = {a:"",b:3}
+`)
+
+
+
+
+console.log(" true: "+hasDefaultExport(null))
+
+ast = parseScript(`
+module.exports.val = 32
+module.exports.d = "x"
+module.exports.v.x = {a:"",b:3}
+`)
+console.log(" false: "+hasDefaultExport(null))
+
+
+ast = parseScript(`
+let x = module.exports
+x = module.exports
+`)
+
+console.log(" false: "+hasDefaultExport(null))
+ast = parseScript(`
+let x = module.exports
+x = module.exports
+module.exports
+`)
+console.log(" false:  "+hasDefaultExport(null))

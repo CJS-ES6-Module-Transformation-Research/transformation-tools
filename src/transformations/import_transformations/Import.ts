@@ -1,8 +1,12 @@
 import {ImportType} from "./visitors/import_replacement";
-import {ImportDeclaration,ImportSpecifier} from 'estree'
+import {ImportDeclaration, ImportSpecifier} from 'estree'
 
-
-abstract class Import<T> {
+export interface Import {
+    isDefault: boolean
+    importsItem: (arg:string) => boolean
+}
+// implements importMap
+abstract class AbstractImport<T> {
 
     protected importString: string
     protected imports: T
@@ -20,8 +24,7 @@ abstract class Import<T> {
         return this.importType
     }
 
-
-    constructor(importString: string, imports: T, isDefault: boolean) {
+    protected constructor(importString: string, imports: T, isDefault: boolean) {
         this.importString = importString;
         if (!importString) {
             throw new Error('no import value')
@@ -43,23 +46,23 @@ abstract class Import<T> {
     public abstract build(): ImportDeclaration ;
 }
 
-export class NamedImport extends Import<string[]> {
+export class NamedImport extends AbstractImport<string[]> {
     constructor(importString: string, values: string[]) {
         super(importString, values, false);
-     if (!values || values.length === 0) {
+        if (!values || values.length === 0) {
             throw new Error('missing an import')
         }
     }
 
     public addAName(name: string): void {
-            this.imports.push(name)
+        this.imports.push(name)
 
     }
 
     build(): ImportDeclaration {
 
 
-        let specifiers:ImportSpecifier[] = this.imports.map((e)=>{
+        let specifiers: ImportSpecifier[] = this.imports.map((e) => {
             return {
                 type: "ImportSpecifier",
                 imported: {
@@ -85,10 +88,10 @@ export class NamedImport extends Import<string[]> {
     }
 }
 
-export class DefaultImport extends Import<string>{
+export class DefaultImport extends AbstractImport<string> {
     constructor(importString: string, value: string) {
         super(importString, value, true);
-        if(!value){
+        if (!value) {
             throw new Error('no default import!')
         }
     }
@@ -111,9 +114,10 @@ export class DefaultImport extends Import<string>{
         };
     }
 }
-export class SideEffectImport extends Import<null>{
-    constructor(importString:string){
-        super(importString,null,false)
+
+export class SideEffectImport extends AbstractImport<null> {
+    constructor(importString: string) {
+        super(importString, null, false)
     }
 
     build(): ImportDeclaration {

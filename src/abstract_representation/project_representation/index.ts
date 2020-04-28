@@ -1,5 +1,8 @@
-export * from './FileProcessing'
-export * from './FS'
-export * from './JS'
-export * from './FilesTypes'
+export * from './project/FileProcessing'
+export * from './project/TransformableProject'
+
+export * from './javascript/JSFile'
+export * from './javascript/JSONFile'
+
+export * from './project/FilesTypes'
 

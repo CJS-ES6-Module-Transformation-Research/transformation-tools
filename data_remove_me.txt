@@ -1,0 +1,112 @@
+
+
+  Testing OO version 
+    ✓ Test AST read-in correctly
+    ✓ Test Write-Out for shebangs
+
+  Testing various sanitize procedures
+    ✓ Require String Tests
+    ✓ VariableDeclaration Flattening
+/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/actual/accessReplace/index.js
+            #!/Users/sam/.nvm/versions/node/v12.16.0/bin/node
+
+const _moduleAccess___src_index = require('./src/index.js');
+const _moduleAccess_chai = require('chai');
+const _moduleAccess___lib = require('./lib.js');
+var src = require('./src/index.js');
+let {expect} = _moduleAccess_chai;
+var lib = require('./lib.js');
+console.log('#!/bin/bash');
+var x = 3;
+var y = 2;
+var r1 = require('chai');
+var r2 = require('./lib.js');
+var r3 = require('./lib.js');
+var beta = 2;
+var alpha = 1;
+var r4 = require('chai');
+var {expect1} = _moduleAccess_chai;
+var xx = 32;
+var yy = 64;
+var {expect2} = _moduleAccess_chai;
+
+    1) Access Replacement
+    ✓ Import Transformations
+
+
+  5 passing (81ms)
+  1 failing
+
+  1) Testing various sanitize procedures
+       Access Replacement:
+
+      in file index.js
+      + expected - actual
+
+       #!/Users/sam/.nvm/versions/node/v12.16.0/bin/node
+       
+      -const _moduleAccess___src_index = require('./src/index.js');
+      -const _moduleAccess_chai = require('chai');
+      -const _moduleAccess___lib = require('./lib.js');
+       var src = require('./src/index.js');
+      -let {expect} = _moduleAccess_chai;
+      +let {expect} = require('chai');
+       var lib = require('./lib.js');
+       console.log('#!/bin/bash');
+       var x = 3;
+       var y = 2;
+--
+       var r3 = require('./lib.js');
+       var beta = 2;
+       var alpha = 1;
+       var r4 = require('chai');
+      -var {expect1} = _moduleAccess_chai;
+      +var {expect1} = require('chai');
+       var xx = 32;
+       var yy = 64;
+      -var {expect2} = _moduleAccess_chai;
+      +var {expect2} = require('chai');
+      
+      at /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/baseSingleProject.test.ts:197:24
+      at Array.forEach (<anonymous>)
+      at Context.<anonymous> (test/baseSingleProject.test.ts:186:21)
+      at processImmediate (internal/timers.js:439:21)
+
+
+
+
+
+  testing for ImportManager
+    ✓ add one default
+    ✓ add one named
+    ✓ add one with two named same call
+    ✓ add one with two named different call
+    ✓ add one side effect
+    ✓ add default+named
+    ✓ add default+side effect
+    ✓ add named+side effect
+
+
+  8 passing (21ms)
+
+
+
+  basic namespace traversal tests
+    ✓ singleVDecl
+    ✓ singleDeconsDecl
+    ✓ multiDeconsDecl
+    ✓ moduleExports
+    ✓ funcDecl
+    ✓ classDecl
+
+  namespace variable renaming
+    ✓ singleVDecl
+    ✓ singleDeconsDecl
+    ✓ multiDeconsDecl
+    ✓ moduleExports
+    ✓ funcDecl
+    ✓ classDecl
+
+
+  12 passing (25ms)
+

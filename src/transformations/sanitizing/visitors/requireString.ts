@@ -1,7 +1,7 @@
  import {Identifier, Node, CallExpression} from "estree";
 import {RequireStringTransformer} from "../requireStringTransformer";
 import {TransformFunction} from '../../Transformer'
-import {JSFile} from "../../../abstract_representation/project_representation/JS";
+import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {Visitor,traverse} from "estraverse";
 
 export const requireStringSanitizer: TransformFunction = function (js: JSFile) {

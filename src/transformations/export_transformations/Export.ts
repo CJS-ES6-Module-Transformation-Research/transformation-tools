@@ -1,15 +1,15 @@
 import {
-    DEFAULT_EXPORT_STRING,
+
     DefaultExport,
     ExportAliases,
     ExportInfo,
     getName,
     NamedExports
 } from "./visitors/exportCollector";
-import {JSFile} from "../../abstract_representation/project_representation/JS";
-import {Program} from "esprima";
-import {traverse, Visitor} from "estraverse";
+ import {traverse, Visitor} from "estraverse";
 import {MemberExpression, Node,ModuleDeclaration} from "estree";
+import {JSFile} from "../../abstract_representation/project_representation";
+import {DEFAULT_EXPORT_STRING} from "./visitors/types";
 
 export class Export {
     private hasDefault: boolean;
@@ -26,14 +26,8 @@ export class Export {
 
     }
     buildAll():ModuleDeclaration[] {
-
-
         return null
     }
-
-
-
-
 }
 
 

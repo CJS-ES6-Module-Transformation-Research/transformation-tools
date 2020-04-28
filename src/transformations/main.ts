@@ -1,6 +1,6 @@
 
-import {ProcessProject} from '../abstract_representation/project_representation/FileProcessing'
-import {TransformableProject} from "../abstract_representation/project_representation/FS";
+import {projectReader} from '../abstract_representation/project_representation/project/FileProcessing'
+import {TransformableProject} from "../abstract_representation/project_representation/project/TransformableProject";
 import {requireStringSanitizer} from "./sanitizing/visitors/requireString";
 import {accessReplace} from "./sanitizing/visitors/accessReplacer";
 import {flattenDecls} from "./sanitizing/visitors/declFlattener";
@@ -13,7 +13,7 @@ import {exportTransform} from "./export_transformations/visitors/exportCollector
 
 const arg1: string = `${test_root}_2`
 console.log("script start")
-let project: TransformableProject = ProcessProject(arg1)
+let project: TransformableProject = projectReader(arg1)
 console.log("finished reading in")
 
 let transformer = Transformer.ofProject(project);
@@ -34,4 +34,4 @@ transformer.transform(collectDefaultObjectAssignments)
 // console.log('about to write out')
 transformer.transform(transformImport)
 transformer.transform(exportTransform)
-project.writeOut()
+project.writeOut('.old')

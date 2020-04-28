@@ -1,54 +1,23 @@
 import {
-    Pattern,
-    Literal,
-    CallExpression,
-    Node,
-    VariableDeclaration,
-    Expression,
-    Statement,
-    VariableDeclarator,
-    ExportAllDeclaration,
-    ExportDefaultDeclaration,
-    ExportNamedDeclaration,
-    ExportSpecifier,
-    Property,
-    RestElement,
-    SpreadElement,
-    ThisExpression,
-    ArrayExpression,
-    ObjectExpression,
-    FunctionExpression,
-    ArrowFunctionExpression,
-    YieldExpression,
-    UnaryExpression,
-    UpdateExpression,
-    BinaryExpression,
     AssignmentExpression,
-    LogicalExpression,
+    CallExpression,
+    Expression,
+    Literal,
     MemberExpression,
-    ConditionalExpression,
-    NewExpression,
-    SequenceExpression,
-    TemplateLiteral,
-    TaggedTemplateExpression,
-    ClassExpression,
-    MetaProperty,
-    Identifier,
-    AwaitExpression,
-    ImportExpression,
-    AssignmentOperator
+    Node,
+    ObjectExpression,
+    Pattern,
+    Property
 } from 'estree'
 import {replace, traverse, Visitor} from "estraverse";
-import {parseModule, parseScript, Program, Syntax} from "esprima";
+import {parseScript, Program, Syntax} from "esprima";
 import {generate} from "escodegen";
- import {JSFile} from "../../../abstract_representation/project_representation/JS";
- import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
+import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
+import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
 import {createAnExport} from "../../../abstract_representation/es_tree_stuff/exportsTools";
+import {DEFAULT_EXPORT_STRING, ExportData, ExportInstance} from "./types";
 
-interface ModuleExport {
-    identifier: string
-    value: Pattern | Literal | CallExpression
-}
+
 
 
 let program = `
@@ -59,22 +28,6 @@ x.exports = 32;
 module.hello = 33
 
 `
-
-export interface ExportInstance {
-    alias: string
-    identifier: string
-    expr: Expression
-    type: string
-    isDefault: boolean
-}
-
-export interface ExportData {
-    names: ExportInstance[]
-    hasDefault: boolean
-}
-
-
-export const DEFAULT_EXPORT_STRING: string = '__default_export';
 let ast = parseScript(program);
 
 export function exportTransform(js: JSFile) {
@@ -228,15 +181,6 @@ function createProp(ex: ExportInstance): Property {
 // `), null, 5));
 
 
-enum ExprType {
-    EXPR = "Expression",
-    IDENTIFIER = "Identifier",
-    OBJECT = "ObjectExpression",
-    SIMPLE_EXPR = "Expression",
-    DECL = "Declaration",
-    OTHER = "Other"
-}
-
 
 let exportKV: ExportData = {names: [], hasDefault: false};
 
@@ -336,10 +280,7 @@ let defaultVisitor: Visitor = {
 //         }
 //     }
 // }
-interface NamedExport {
-    name: string
-    value: Expression
-}
+
 
 const namedVisitor: Visitor = {
     enter: (node: Node, parent: Node) => {

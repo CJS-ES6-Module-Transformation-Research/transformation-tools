@@ -17,12 +17,45 @@ import {
     TemplateLiteral,
     ThisExpression,
     UnaryExpression,
-    UpdateExpression, VariableDeclaration,
-    YieldExpression
+    UpdateExpression,
+    VariableDeclaration,
+    YieldExpression,
+    VariableDeclarator
 } from "estree";
 import {Program} from "esprima";
 import {traverse} from "estraverse";
 import {varLetConst} from "../../Types";
+
+export function isARequireDeclartor(node: VariableDeclarator) {
+    return (node.init.type === "CallExpression"
+        && node.init.callee.type === "Identifier"
+        && node.init.callee.name === "require"
+        && node.init.arguments && node.init.arguments[0] !== null
+        && node.init.arguments[0].type === "Literal");
+}
+
+
+export function isARequire(node: (VariableDeclarator | CallExpression)) {
+    if (node.type === "VariableDeclarator") {
+        (node.init.type === "CallExpression"
+            && node.init.callee.type === "Identifier"
+            && node.init.callee.name === "require"
+            && node.init.arguments && node.init.arguments[0] !== null
+            && node.init.arguments[0].type === "Literal")
+        return true;
+    } else if
+    (node.type === "CallExpression"
+        && node.callee.type === "Identifier"
+        && node.callee.name === "require"
+        && node.arguments[0].type === "Literal") {
+        return true;
+    }
+
+
+    return false;
+
+}
+
 
 export function isExpr(val: string): boolean {
     switch (val) {
@@ -244,6 +277,36 @@ export function createRequireDecl(varStr: string, importStr: string, kindStr: va
     };
     return varDecl;
 }
+// export function createDecl(varStr: string, , kindStr: varLetConst): VariableDeclaration {
+//     let varDecl: VariableDeclaration;
+//     varDecl = {
+//         type: "VariableDeclaration",
+//         declarations: [
+//             {
+//                 type: "VariableDeclarator",
+//                 id: {
+//                     type: "Identifier",
+//                     name: varStr
+//                 }, init: {
+//                     type: "CallExpression",
+//                     callee: {
+//                         type: "Identifier",
+//                         name: "require"
+//                     },
+//                     arguments: [
+//                         {
+//                             type: "Literal",
+//                             value: importStr,
+//                             raw: `'${importStr}'`
+//                         }
+//                     ]
+//                 },
+//             }
+//         ],
+//         kind: kindStr
+//     };
+//     return varDecl;
+// }
 
 
 

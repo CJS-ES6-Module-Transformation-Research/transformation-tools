@@ -1,6 +1,6 @@
 import {Identifier, Literal, Node, Pattern} from "estree";
 import {replace, Visitor, VisitorOption} from "estraverse";
-import {JSFile} from "../../../abstract_representation/project_representation/JS";
+import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {createAnImportDeclaration} from "../../../abstract_representation/es_tree_stuff/createImportDeclaration";
 
 
@@ -99,7 +99,7 @@ export function transformImport(js: JSFile) {
     let nodes: Set<Node> = new Set<Node>()
     let data: ImportData[] = []
     let visitor: Visitor = {
-        enter: (node: Node ) => {
+        enter: (node: Node) => {
 
             if (node.type === "VariableDeclaration" && node.declarations.length > 0 && node.declarations[0].init) {
                 if (node.declarations[0].init.type === "CallExpression") {
@@ -107,33 +107,47 @@ export function transformImport(js: JSFile) {
                         let namePattern: Pattern = node.declarations[0].id
                         nodes.add(node)
 
-                        let PREV: ImportType = null;
-                        let is = (node.declarations[0].init.arguments[0] as Literal).value.toString()
+                         let is = (node.declarations[0].init.arguments[0] as Literal).value.toString()
                         let tmpData: ImportData;
                         switch (namePattern.type) {
                             case "Identifier":
                                 tmpData = {importString: is, importNames: [], iType: ImportType.defaultI}
                                 tmpData.importNames.push(namePattern.name);
                                 break;
+                            // case "ObjectPattern":
+                            //     tmpData = {importString: is, importNames: [], iType: ImportType.named}
+                            //     namePattern.properties.forEach((e) => {
+                            //         if (e.type === "Property") {
+                            //             let x
+                            //                 = e.value
+                            //             tmpData.importNames.push((e.value as Identifier).name)
+                            //         } else {
+                            //             tmpData.importNames.push((e.argument as Identifier).name)
+                            //         }
+                            //     })
+                            //     break;
                             case "ObjectPattern":
-                                tmpData = {importString: is, importNames: [], iType: ImportType.named}
-                                namePattern.properties.forEach((e) => {
-                                    if (e.type === "Property") {
-                                        let x
-                                            = e.value
-                                        tmpData.importNames.push((e.value as Identifier).name)
-                                    } else {
-                                        tmpData.importNames.push((e.argument as Identifier).name)
-                                    }
-                                })
-                                break;
+                                return
                             default:
                                 throw new Error("state error???")
                         }
+                        let stmt = (node.declarations[0].init.arguments[0] as Literal).value.toString()
+                        if (tmpData === undefined){
+                            console.log(stmt+`
+                            ${namePattern.type}`)
 
-                        let stmt = (node.declarations[0].init.arguments[0] as Literal).value
-                        tmpData.importString = stmt.toString();
-                        data.push(tmpData)
+                        }
+                        tmpData.importString = stmt;
+                        if (tmpData.iType === ImportType.defaultI) {
+                            js.getImports().createDefault(stmt, tmpData.importNames[0])
+                        }
+                        // if (tmpData.iType === ImportType.named) {
+                        //     tmpData.importNames.forEach(e => {
+                        //
+                        //     })
+                        // }
+
+                        // data.push(tmpData)
                         nodes.add(node)
 
                         return VisitorOption.Remove;
@@ -150,9 +164,11 @@ export function transformImport(js: JSFile) {
                                 importNames: [],
                                 importString: node.expression.arguments[0].value.toString()
                             }
-                            data.push(tmpData)
+                            // node.expression.arguments[0].value.toString()
+                            // data.push(tmpData)
+                            js.getImports().createSideEffect(node.expression.arguments[0].value.toString())
                             nodes.add(node)
-                             return VisitorOption.Remove;
+                            return VisitorOption.Remove;
                         }
 
                     }
@@ -162,8 +178,6 @@ export function transformImport(js: JSFile) {
     }
 
     replace(js.getAST(), visitor);
-    data.map(createAnImportDeclaration)
-        .reverse()
-        .forEach(e => js.addAnImport(e))
+
 }
 

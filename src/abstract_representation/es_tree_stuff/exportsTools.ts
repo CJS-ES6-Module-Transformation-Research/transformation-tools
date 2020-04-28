@@ -1,14 +1,13 @@
 import {
-    ArrayPattern,
-    AssignmentOperator, AssignmentPattern,
+    AssignmentOperator,
     ExportDefaultDeclaration,
     ExportNamedDeclaration,
     ExportSpecifier,
-    Expression, Identifier, MemberExpression, ObjectPattern, RestElement,
-    Statement, VariableDeclaration
+    Expression,
+    Statement,
+    VariableDeclaration
 } from "estree";
-import {ExportInstance} from "../../transformations/export_transformations/visitors/exportCollector";
-import {JPP} from "../../../../index";
+import {ExportInstance} from "../../transformations/export_transformations/visitors/types";
 
 export function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
     return {
@@ -86,36 +85,4 @@ export function createAnExport(exp: ExportInstance): ExportDefaultDeclaration | 
     }
 }
 
-export function walkPatternToIdentifier(node: (Identifier | ObjectPattern | ArrayPattern | RestElement |
-    AssignmentPattern | MemberExpression), ids: Set<string>) {
-    switch (node.type) {
-        case "ArrayPattern":
-            node.elements.forEach((e) => walkPatternToIdentifier(e, ids))
-            break;
-        case "AssignmentPattern":
-            walkPatternToIdentifier(node.left, ids)
-            break;
-        case "Identifier":
-            ids.add(node.name);
-            break;
-        case "ObjectPattern":
-            node.properties.forEach((e) => {
-                if (e.type === "Property") {
-                    walkPatternToIdentifier(e.value, ids)
-                } else {
-                    walkPatternToIdentifier(e, ids)
-                }
-            })
-            break;
-        case "RestElement":
-            walkPatternToIdentifier(node.argument, ids)
-            break;
-        case "MemberExpression":
-            if (node.object.type === "Identifier") {
-                ids.add(node.object.name)
-            } else if (node.object.type === "MemberExpression") {
-                walkPatternToIdentifier(node.object, ids)
-            }
-    }
-}
 
