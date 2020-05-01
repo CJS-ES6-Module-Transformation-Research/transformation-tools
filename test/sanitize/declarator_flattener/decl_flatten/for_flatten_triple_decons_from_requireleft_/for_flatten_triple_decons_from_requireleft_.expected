@@ -1,0 +1,1 @@
+ for (var  {val} = require('deconstructable') a = 32 obj = {x: "99"} ; istrue(); i++){console.log("hello world");} 

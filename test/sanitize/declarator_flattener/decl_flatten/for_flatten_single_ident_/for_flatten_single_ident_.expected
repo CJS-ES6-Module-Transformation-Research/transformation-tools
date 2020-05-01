@@ -1,0 +1,1 @@
+ for (var requirement = require('requirement'); ; istrue(); i++){console.log("hello world");} 

@@ -13,6 +13,6 @@ var r3 = require('./lib.js'), beta = 2;
 
 var alpha = 1 , r4 = require('chai');
 
-var {expect1} = require('chai'), xx = 32;
+var  {it, assert} = require('chai'), xx = 32;
 
 var   yy = 64 , {expect2} = require('chai');

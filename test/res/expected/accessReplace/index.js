@@ -19,7 +19,7 @@ var beta = 2;
 var alpha = 1
 var r4 = require('chai');
 
-var {expect1} = _moduleAccess_chai
+var {it, assert} = _moduleAccess_chai
 var  xx = 32;
 
 var yy = 64
