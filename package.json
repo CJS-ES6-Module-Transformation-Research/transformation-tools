@@ -17,6 +17,7 @@
     "@types/estraverse": "0.0.6",
     "@types/estree": "0.0.44",
     "@types/node": "^13.9.0",
+    "@types/path-parse": "^1.0.19",
     "chai": "^4.2.0",
     "escodegen": "^1.14.1",
     "fs": "0.0.1-security",

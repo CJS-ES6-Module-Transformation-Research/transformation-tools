@@ -1,0 +1,1 @@
+for (var imported = require('./lib.js'); true; imported.exec()) {console.log();}; 

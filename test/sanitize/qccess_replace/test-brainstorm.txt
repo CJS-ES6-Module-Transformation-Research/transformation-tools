@@ -1,0 +1,14 @@
+require().prop
+require()()//call
+require()(arg)//call
+var x = require().prop
+var {pattern} = require()
+var {pattern:withAlias} = require()
+var {pattern} = require().prop
+for loop/decl case
+//look at code for more
+
+
+negative testing
+var x = require()
+require() //side effect
