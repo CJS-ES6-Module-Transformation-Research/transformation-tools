@@ -3,6 +3,7 @@ var Transformer_1 = require("../Transformer");
 var visitors_1 = require("./visitors");
 var process_1 = require("process");
 var project_representation_1 = require("../../abstract_representation/project_representation");
+var fs_1 = require("fs");
 function santiize(transformer) {
     transformer.transform(visitors_1.requireStringSanitizer);
     transformer.transformWithProject(visitors_1.jsonRequire);
@@ -40,6 +41,9 @@ switch (process_1.argv.length) {
             inPlace = false;
             source = first;
             dest = second;
+        }
+        if (!fs_1.existsSync(dest)) {
+            console.log("Source directory " + source + " was not found. Please check input data.");
         }
         break;
     default: {

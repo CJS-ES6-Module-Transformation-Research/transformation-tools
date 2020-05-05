@@ -2,6 +2,7 @@ import {Transformer} from "../Transformer";
 import {accessReplace, collectDefaultObjectAssignments, flattenDecls, requireStringSanitizer,jsonRequire} from "./visitors";
 import {argv} from "process";
 import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+import {existsSync} from "fs";
 
 
 export function santiize(transformer: Transformer) {
@@ -45,6 +46,10 @@ switch (argv.length) {
       source = first;
       dest = second;
     }
+    if (!existsSync(dest)){
+      console.log(`Source directory ${source} was not found. Please check input data.`)
+    }
+
     break;
   default: {
     console.log('could not parse arguments--try again')
