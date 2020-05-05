@@ -16,9 +16,20 @@ export class Transformer {
         this.project = project;
     }
 
+    public transformWithProject(func:ProjectTransformFunction){
+        let tfFunc :TransformFunction = func(this.project);
+        this.transform(tfFunc);
+    }
+    
+   
     public transform(transformer: TransformFunction): void {
         this.project.forEachSource((js) => {
-            transformer(js)
+            try {
+                transformer(js)
+            }catch (e) {
+                console.log(`FILE: ${js.getRelative()}   err: ${e}`)
+                throw e;
+            }
         })
     }
 
@@ -28,4 +39,5 @@ export class Transformer {
 
 }
 
-export type TransformFunction = (JSFile) => void;
+export type TransformFunction = (js:JSFile) => void;
+export type ProjectTransformFunction = (proj:TransformableProject) => TransformFunction;

@@ -2,18 +2,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var JSFile_1 = require("../javascript/JSFile");
 var fs_1 = require("fs");
 var relative_1 = __importDefault(require("relative"));
+var path_1 = __importDefault(require("path"));
 var TransformableProject = /** @class */ (function () {
     function TransformableProject(builder) {
         var _this = this;
-        this.fileMap = {};
+        this.jsFileMap = {};
+        this.jsonFileMap = {};
         this.dirs = [];
         this.files = builder.files;
         this.jsFiles = builder.jsFiles;
-        this.jsonFiles = builder.jsonFiles;
         this.jsFiles.forEach(function (jsf) {
-            _this.fileMap[jsf.getRelative()] = jsf;
+            _this.jsFileMap[jsf.getRelative()] = jsf;
+        });
+        this.jsonFiles = builder.jsonFiles;
+        this.jsonFiles.forEach(function (jsf) {
+            _this.jsonFileMap[jsf.getRelative()] = jsf;
         });
         this.dirs = builder.dirs;
         this.projectDir = builder.projectDir;
@@ -34,23 +40,33 @@ var TransformableProject = /** @class */ (function () {
     TransformableProject.prototype.forEachSource = function (func) {
         this.jsFiles.forEach(func);
     };
+    TransformableProject.prototype.writeOutInPlace = function (suffix) {
+        this.writeOut(suffix, this.projectDir);
+    };
+    TransformableProject.prototype.writeOutNewDir = function (rootDir) {
+        this.writeOut('', rootDir);
+    };
     TransformableProject.prototype.writeOut = function (inPlaceSuffix, newProjDir) {
-        if (newProjDir === void 0) { newProjDir = this.projectDir; }
-        if (!fs_1.existsSync(newProjDir)) {
-            fs_1.mkdirSync(newProjDir, { recursive: true });
+        try {
+            if (!fs_1.existsSync(newProjDir)) {
+                fs_1.mkdirSync(newProjDir, { recursive: true });
+            }
+        }
+        catch (err) {
+            console.log("ERROR IN MK RootDir: " + err);
         }
         this.dirs.forEach(function (d) {
             try {
-                fs_1.mkdirSync(d.getAbsolute(), { recursive: true });
+                fs_1.mkdirSync(newProjDir + '/' + d.getRelative(), { recursive: true });
             }
             catch (e) {
-                console.log(e);
+                console.log("ERROR IN MKDIR: " + e);
             }
         });
         if (inPlaceSuffix) {
-            this.originalFiles.forEach(function (e) {
-                var prefix = newProjDir + "/" + e;
-                fs_1.renameSync(prefix, "" + prefix + inPlaceSuffix);
+            this.files.filter(function (e) { return !e.isData(); }).forEach(function (e) {
+                var prefix = newProjDir + "/" + e.getRelative();
+                fs_1.copyFileSync(prefix, "" + prefix + inPlaceSuffix);
             });
         }
         this.jsFiles.forEach(function (jsf) {
@@ -61,7 +77,32 @@ var TransformableProject = /** @class */ (function () {
         });
     };
     TransformableProject.prototype.getJS = function (name) {
-        return this.fileMap[name];
+        return this.jsFileMap[name];
+    };
+    TransformableProject.prototype.getJSON = function (json) {
+        return this.jsonFileMap[json];
+    };
+    TransformableProject.prototype.addJS = function (relative, data) {
+        var added = new JSFile_1.JSFile(this.projectDir, relative, path_1.default.basename(relative), 'script', data);
+        this.files.push(added);
+        this.jsFiles.push(added);
+        this.jsFileMap[added.getRelative()] = added;
+    };
+    TransformableProject.prototype.display = function () {
+        console.log("_____dir_____s");
+        this.dirs.forEach(function (e) {
+            console.log("DIR:" + e.getDir() + "\tREL:" + e.getRelative() + "\tABS:" + e.getAbsolute());
+        });
+        console.log("_____jsFiles_____");
+        this.jsFiles.forEach(function (e) {
+            console.log("DIR:" + e.getDir() + "\tREL:" + e.getRelative() + "\tABS:" + e.getAbsolute());
+        });
+        console.log("_____jsonFiles_____");
+        this.jsonFiles.forEach(function (e) {
+            console.log("DIR:" + e.getDir() + "\tREL:" + e.getRelative() + "\tABS:" + e.getAbsolute());
+        });
+        // console.log(`files`)
+        // this.files.forEach(e=>{   console.log(`DIR:${e.getDir()}\tREL:${e.getRelative()}\tABS:${e.getAbsolute()}`)})
     };
     return TransformableProject;
 }());
@@ -71,6 +112,7 @@ var ProjectBuilder = /** @class */ (function () {
         this.files = [];
         this.jsFiles = [];
         this.jsonFiles = [];
+        this.dirs = [];
     }
     ProjectBuilder.prototype.addFile = function (file) {
         this.files.push(file);

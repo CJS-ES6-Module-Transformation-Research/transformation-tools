@@ -1,29 +1,63 @@
-import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {Transformer} from "../Transformer";
-import {accessReplace, collectDefaultObjectAssignments, flattenDecls, requireStringSanitizer,} from "./visitors";
-import {test_root} from "../../../index";
-
-let  arg1: string = `${test_root}_2`
-console.log("script start")
-arg1 = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_proj`
-let project: TransformableProject = projectReader(arg1)
-console.log("finished reading in")
-
-let transformer = Transformer.ofProject(project);
+import {accessReplace, collectDefaultObjectAssignments, flattenDecls, requireStringSanitizer,jsonRequire} from "./visitors";
+import {argv} from "process";
+import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 
 
+export function santiize(transformer: Transformer) {
 
-console.log('about to tf0')
-transformer.transform(requireStringSanitizer);
-console.log('about to tf1')
-//
-transformer.transform(flattenDecls)
-console.log('about to tf2')
-transformer.transform(accessReplace);
-console.log('about to tf3')
+  transformer.transform(requireStringSanitizer)
+  transformer.transformWithProject(jsonRequire)
+  transformer.transform(flattenDecls)
+  transformer.transform(accessReplace)
+  transformer.rebuildNamespace()
+  transformer.transform(collectDefaultObjectAssignments)
 
-transformer.transform(collectDefaultObjectAssignments);
-console.log('about to write out')
+}
 
-project.writeOut('','/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/target')
-console.log('post-writeout')
+
+const pwd = argv.shift();
+argv.shift();
+
+let source: string, dest: string, inPlace: boolean
+
+switch (argv.length) {
+  case 0:
+    console.log("no arguments supplied");
+    process.exit(1);
+  case 1:
+    let arg = argv.shift();
+    if (arg === '-i') {
+      console.log('please provide a project to transform')
+    } else {
+      console.log('please confirm you want to do this in place with the -i flag prior to your directory.')
+    }
+    process.exit(1);
+  case 2:
+    let first = argv.shift()
+    let second = argv.shift()
+    if (first === '-i') {
+      inPlace = true;
+      source = second;
+      dest = source;
+    } else {
+      inPlace = false;
+      source = first;
+      dest = second;
+    }
+    break;
+  default: {
+    console.log('could not parse arguments--try again')
+    process.exit(1);
+  }
+}
+let project: TransformableProject = projectReader(source, 'script')
+let transformer:Transformer = Transformer.ofProject(project);
+santiize(transformer)
+if (inPlace) {
+  project.writeOutInPlace('.pre-transform')
+}else{
+  project.writeOutNewDir(dest)
+
+}
+console.log("finished.")

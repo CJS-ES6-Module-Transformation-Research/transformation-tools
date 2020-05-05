@@ -36,8 +36,8 @@ export class JSFile extends ReadableFile {
 
     private namespace: Namespace
 
-    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script') {
-        super(dir, rel, file, 0);
+    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script', text ='') {
+        super(dir, rel, file, 0,text);
         this.imports = new ImportManager();
         this.shebang = '';
         this.toAddToTop = [];

@@ -6,7 +6,7 @@ find /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/src -name '*.js' |
 find /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/Utils -name '*.js' | xargs rm -f
 rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/*.js
 rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/*.js
-
+rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/tests/*.js
 #find src -name '*.d.ts' | xargs rm
 #find Utils -name '*.d.ts' | xargs rm
 #find test -name '*.d.ts' | xargs rm

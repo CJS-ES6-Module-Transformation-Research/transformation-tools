@@ -12,14 +12,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/argparse": "^1.0.38",
     "@types/escodegen": "0.0.6",
     "@types/esprima": "^4.0.2",
     "@types/estraverse": "0.0.6",
     "@types/estree": "0.0.44",
     "@types/node": "^13.9.0",
     "@types/path-parse": "^1.0.19",
+    "@types/yargs": "^15.0.4",
+    "argparse": "^1.0.10",
     "chai": "^4.2.0",
     "escodegen": "^1.14.1",
+    "esprima": "^4.0.1",
     "fs": "0.0.1-security",
     "has-shebang": "^1.0.1",
     "isobject": "^4.0.0",
@@ -31,7 +35,8 @@
     "strip-shebang": "^1.0.2",
     "ts-es5-istanbul-coverage": "^1.0.6",
     "ts-mocha": "^7.0.0",
-    "typings": "^2.1.1"
+    "typings": "^2.1.1",
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -39,6 +44,7 @@
     "@types/mocha": "^7.0.2",
     "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",
+    "src": "^1.1.2",
     "ts-node-register": "^1.0.0",
     "typescript": "^3.8.3"
   }

@@ -1,0 +1,1 @@
+var imported = require('../'),  x = {a : 35};

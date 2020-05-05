@@ -18,7 +18,12 @@ export class Transformer {
 
     public transform(transformer: TransformFunction): void {
         this.project.forEachSource((js) => {
-            transformer(js)
+            try {
+                transformer(js)
+            }catch (e) {
+                console.log(`FILE: ${js.getRelative()}   err: ${e}`)
+                throw e;
+            }
         })
     }
 

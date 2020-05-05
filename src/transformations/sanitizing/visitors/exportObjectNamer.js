@@ -21,8 +21,17 @@ exports.collectDefaultObjectAssignments = function (js) {
                                 var body_1 = parent.body;
                                 var indexOf_1 = body_1.indexOf(node);
                                 child.right.properties.reverse().forEach(function (e) {
-                                    if (e.type === "Property" && e.key.type === "Identifier" && astTools_1.isExpr(e.value.type)) {
-                                        body_1.splice(indexOf_1, 0, exportsTools_1.createNamedAssignment(e.key.name, e.value));
+                                    if (e.type === "Property" && (e.key.type === "Identifier" || e.key.type === "Literal") && astTools_1.isExpr(e.value.type)) {
+                                        if (e.key.type === "Identifier") {
+                                            body_1.splice(indexOf_1, 0, exportsTools_1.createNamedAssignment(e.key.name, e.value));
+                                        }
+                                        else if (e.key.type === "Literal") {
+                                            body_1.splice(indexOf_1, 0, exportsTools_1.createNamedAssignment(e.key.value.toString(), e.value));
+                                        }
+                                        else {
+                                            //nothing, placeholder in case another type comes sup.
+                                            throw new Error("unreachable code. unexpected type of property key");
+                                        }
                                     }
                                 });
                                 indexOf_1 = body_1.indexOf(node);

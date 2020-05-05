@@ -1,0 +1,68 @@
+standard_flatten_single_ident_YYYYYYYvar requirement = require('requirement');YYYYYYYvar requirement = require('requirement');
+standard_flatten_single_decons_YYYYYYYvar {val} = deconstructableObject;YYYYYYYvar {val} = deconstructableObject;
+standard_flatten_single_decons_from_requireYYYYYYYvar {val} = require('deconstructable');YYYYYYYvar {val} = require('deconstructable');
+standard_flatten_double_ident_left_YYYYYYYvar requirement = require('requirement'), second = "2";YYYYYYYvar requirement = require('requirement');ZZZZZvar second = "2";
+standard_flatten_double_decons_left_YYYYYYYvar {val} = deconstructableObject,a = 32YYYYYYYvar {val} = deconstructableObjectZZZZZ var a = 32
+standard_flatten_double_decons_from_requireleft_YYYYYYYvar {val} = require('deconstructable'),a = 32YYYYYYYvar {val} = require('deconstructable');ZZZZZvar a = 32;
+standard_flatten_double_decons_right_YYYYYYYvar a = 32,{val} = deconstructableObjectYYYYYYYvar a = 32;ZZZZZvar {val} = deconstructableObject
+standard_flatten_double_decons_from_requireright_YYYYYYYvar a = 32,{val} = require('deconstructable')YYYYYYYvar a = 32;ZZZZZvar {val} = require('deconstructable');
+standard_flatten_double_ident_rightYYYYYYYvar  first = "1" , requirement = require('requirement') YYYYYYYvar  first = "1"  ZZZZZvar requirement = require('requirement')
+standard_flatten_triple_ident_mid_YYYYYYYvar  first = "1" ,requirement = require('requirement'),third = 3YYYYYYYvar  first = "1" ;ZZZZZvar requirement = require('requirement');ZZZZZvar third = 3;
+standard_flatten_triple_decons_left_YYYYYYYvar  {val} = deconstructableObject a = 32obj =  {x: "99"}YYYYYYYvar  {val} = deconstructableObject;ZZZZZvar   a = 32;ZZZZZvar  obj =  {x: "99"};
+standard_flatten_triple_decons_from_requireleft_YYYYYYYvar  {val} = require('deconstructable') a = 32 obj = {x: "99"}YYYYYYYvar  {val} = require('deconstructable');ZZZZZvar   a = 32;ZZZZZvar   obj = {x: "99"};
+standard_flatten_triple_decons_middle_YYYYYYYvar  a = 32{val} = deconstructableObject obj = {x: "99"}YYYYYYYvar  a = 32;ZZZZZvar  {val} = deconstructableObject;ZZZZZvar   obj = {x: "99"};
+standard_flatten_triple_decons_from_requiremiddle_YYYYYYYvar  a = 32{val} = require('deconstructable') obj = {x: "99"}YYYYYYYvar  a = 32;ZZZZZvar  {val} = require('deconstructable');ZZZZZvar   obj = {x: "99"};
+standard_flatten_triple_decons_from_require_multi_YYYYYYY var  assign = 99, {val} = require('deconstructable'), {another, one} = deconstruct2;YYYYYYY     var  assign = 99,  ZZZZZ var  {val} = require('deconstructable');  ZZZZZ var {another, one} = deconstruct2
+standard_flatten_triple_ident_left_YYYYYYYvar  requirement = require('requirement') ,second = '2',third = 3YYYYYYYvar  requirement = require('requirement') ;ZZZZZvar second = '2';ZZZZZvar third = 3;
+standard_flatten_triple_ident_multi_YYYYYYYvar  requirement = require('requirement') ,requirement2 = require('requirement2'),third = 3YYYYYYYvar  requirement = require('requirement') ;ZZZZZvar requirement2 = require('requirement2');ZZZZZvar third = 3;
+for_flatten_single_ident_YYYYYYY for (var requirement = require('requirement'); ; istrue(); i++){console.log("hello world");}YYYYYYY for (var requirement = require('requirement'); ; istrue(); i++){console.log("hello world");}
+for_flatten_single_decons_YYYYYYY for (var {val} = deconstructableObject; ; istrue(); i++){console.log("hello world");}YYYYYYY for (var {val} = deconstructableObject; ; istrue(); i++){console.log("hello world");}
+for_flatten_single_decons_from_requireYYYYYYY for (var {val} = require('deconstructable'); ; istrue(); i++){console.log("hello world");}YYYYYYY for (var {val} = require('deconstructable'); ; istrue(); i++){console.log("hello world");}
+for_flatten_double_ident_left_YYYYYYY for (var requirement = require('requirement'),second = "2" ; istrue(); i++){console.log("hello world");}YYYYYYY for (var requirement = require('requirement'),second = "2" ; istrue(); i++){console.log("hello world");}
+for_flatten_double_decons_left_YYYYYYY for (var {val} = deconstructableObject,a = 32 ; istrue(); i++){console.log("hello world");}YYYYYYY for (var {val} = deconstructableObject,a = 32 ; istrue(); i++){console.log("hello world");}
+for_flatten_double_decons_from_requireleft_YYYYYYY for (var {val} = require('deconstructable'),a = 32 ; istrue(); i++){console.log("hello world");}YYYYYYY for (var {val} = require('deconstructable'),a = 32 ; istrue(); i++){console.log("hello world");}
+for_flatten_double_decons_right_YYYYYYY for (var a = 32,{val} = deconstructableObject ; istrue(); i++){console.log("hello world");}YYYYYYY for (var a = 32,{val} = deconstructableObject ; istrue(); i++){console.log("hello world");}
+for_flatten_double_decons_from_requireright_YYYYYYY for (var a = 32,{val} = require('deconstructable') ; istrue(); i++){console.log("hello world");}YYYYYYY for (var a = 32,{val} = require('deconstructable') ; istrue(); i++){console.log("hello world");}
+for_flatten_double_ident_right_YYYYYYY for (var  first = "1" ,requirement = require('requirement') ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  first = "1" ,requirement = require('requirement') ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_ident_mid_YYYYYYY for (var  first = "1" ,requirement = require('requirement'),third = 3 ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  first = "1" ,requirement = require('requirement'),third = 3 ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_ident_left_YYYYYYY for (var  requirement = require('requirement') ,second = '2',third = 3 ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  requirement = require('requirement') ,second = '2',third = 3 ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_ident_multi_YYYYYYY for (var  requirement = require('requirement') ,requirement2 = require('requirement2'),third = 3 ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  requirement = require('requirement') ,requirement2 = require('requirement2'),third = 3 ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_decons_left_YYYYYYY for (var  {val} = deconstructableObject a = 32 obj = {x: "99"} ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  {val} = deconstructableObject a = 32 obj = {x: "99"} ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_decons_from_requireleft_YYYYYYY for (var  {val} = require('deconstructable') a = 32 obj = {x: "99"} ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  {val} = require('deconstructable') a = 32 obj = {x: "99"} ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_decons_middle_YYYYYYY for (var  a = 32{val} = deconstructableObject obj = {x: "99"} ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  a = 32{val} = deconstructableObject obj = {x: "99"} ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_decons_from_requiremiddle_YYYYYYY for (var  a = 32{val} = require('deconstructable') obj = {x: "99"} ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  a = 32{val} = require('deconstructable') obj = {x: "99"} ; istrue(); i++){console.log("hello world");}
+for_flatten_triple_decons_from_require_multi_YYYYYYY for (var  assign = 99, {val} = require('deconstructable'), {another, one} = deconstruct2; ; istrue(); i++){console.log("hello world");}YYYYYYY for (var  assign = 99, {val} = require('deconstructable'), {another, one} = deconstruct2; ; istrue(); i++){console.log("hello world");}
+if_flatten_single_ident_YYYYYYYvar requirement = require('requirement');YYYYYYYvar requirement = require('requirement');
+if_flatten_single_decons_YYYYYYYvar {val} = deconstructableObject;YYYYYYYvar {val} = deconstructableObject;
+if_flatten_single_decons_from_requireYYYYYYYvar {val} = require('deconstructable');YYYYYYYvar {val} = require('deconstructable');
+if_flatten_double_ident_left_YYYYYYYif(true){var requirement = require('requirement'),second = "2"}YYYYYYY if(true){var requirement = require('requirement');ZZZZZvar second = "2";}
+if_flatten_double_ident_right_YYYYYYYif(true){var  first = "1" ,requirement = require('requirement')}YYYYYYY if(true){var  first = "1" ;ZZZZZvar requirement = require('requirement');}
+if_flatten_double_decons_left_YYYYYYYif(true){var {val} = deconstructableObject,a = 32}YYYYYYY if(true){var {val} = deconstructableObject;ZZZZZvar a = 32;}
+if_flatten_double_decons_from_requireleft_YYYYYYYif(true){var {val} = require('deconstructable'),a = 32}YYYYYYY if(true){var {val} = require('deconstructable');ZZZZZvar a = 32;}
+if_flatten_double_decons_right_YYYYYYYif(true){var a = 32,{val} = deconstructableObject }YYYYYYY if(true){var a = 32;ZZZZZvar {val} = deconstructableObject;}
+if_flatten_double_decons_from_requireright_YYYYYYYif(true){var a = 32,{val} = require('deconstructable')}YYYYYYY if(true){var a = 32;ZZZZZvar {val} = require('deconstructable');}
+if_flatten_triple_ident_mid_YYYYYYYif(true){var  first = "1" ,requirement = require('requirement'),third = 3}YYYYYYY if(true){var  first = "1" ;ZZZZZvar requirement = require('requirement');ZZZZZvar third = 3;}
+if_flatten_triple_decons_left_YYYYYYYif(true){var  {val} = deconstructableObject a = 32obj =  {x: "99"}}YYYYYYY if(true){var  {val} = deconstructableObject;ZZZZZvar   a = 32;ZZZZZvar  obj =  {x: "99"};}
+if_flatten_triple_decons_from_requireleft_YYYYYYYif(true){var  {val} = require('deconstructable') a = 32obj =  {x: "99"}}YYYYYYY if(true){var  {val} = require('deconstructable');ZZZZZvar   a = 32;ZZZZZvar  obj =  {x: "99"};}
+if_flatten_triple_decons_middle_YYYYYYYif(true){var  a = 32{val} = deconstructableObject obj = {x: "99"}}YYYYYYY if(true){var  a = 32;ZZZZZvar  {val} = deconstructableObject;ZZZZZvar   obj = {x: "99"};}
+if_flatten_triple_decons_from_requiremiddle_YYYYYYYif(true){var  a = 32{val} = require('deconstructable') obj = {x: "99"}}YYYYYYY if(true){var  a = 32;ZZZZZvar  {val} = require('deconstructable');ZZZZZvar   obj = {x: "99"};}
+if_flatten_triple_decons_from_require_multi_YYYYYYYif(true){var  assign = 99, {val} = require('deconstructable'), {another, one} = deconstruct2;}YYYYYYY if(true){ var  assign = 99; ZZZZZvar  {val} = require('deconstructable');  ZZZZZvar {another, one} = deconstruct2;}
+if_flatten_triple_ident_left_YYYYYYYif(true){var  requirement = require('requirement') ,second = '2',third = 3}YYYYYYY if(true){var  requirement = require('requirement') ;ZZZZZvar second = '2';ZZZZZvar third = 3;}
+if_flatten_triple_ident_multi_YYYYYYYif(true){var fs= require('fs'), requirement = require('requirement'), z = 26;}YYYYYYY if(true){var  fs= require('fs') ZZZZZvar  requirement = require('requirement')ZZZZZ var z = 26;}
+ifFor_flatten_single_ident_YYYYYYYvar requirement = require('requirement');YYYYYYYvar requirement = require('requirement');
+ifFor_flatten_single_decons_YYYYYYYvar {val} = deconstructableObject;YYYYYYYvar {val} = deconstructableObject;
+ifFor_flatten_single_decons_from_requireYYYYYYYvar {val} = require('deconstructable');YYYYYYYvar {val} = require('deconstructable');
+ifFor_flatten_double_ident_left_YYYYYYYvar requirement = require('requirement'),second = "2"YYYYYYYvar requirement = require('requirement');ZZZZZvar second = "2";
+ifFor_flatten_double_ident_right_YYYYYYYvar  first = "1" ,requirement = require('requirement')YYYYYYYvar  first = "1" ;ZZZZZvar requirement = require('requirement');
+ifFor_flatten_double_decons_left_YYYYYYYvar {val} = deconstructableObject,a = 32YYYYYYYvar {val} = deconstructableObject;ZZZZZvar a = 32;
+ifFor_flatten_double_decons_from_requireleft_YYYYYYYvar {val} = require('deconstructable'),a = 32YYYYYYYvar {val} = require('deconstructable');ZZZZZvar a = 32;
+ifFor_flatten_double_decons_right_YYYYYYYvar a = 32, {val} = deconstructableObject;YYYYYYY var a = 32 ZZZZZvar {val} = deconstructableObject;
+ifFor_flatten_double_decons_from_requireright_YYYYYYYvar a = 32, {val} = require('deconstructable');YYYYYYYvar a = 32 ZZZZZvar {val} = require('deconstructable');
+ifFor_flatten_triple_ident_mid_YYYYYYYvar  first = "1" ,requirement = require('requirement'),third = 3YYYYYYYvar  first = "1" ;ZZZZZvar requirement = require('requirement');ZZZZZvar third = 3;
+ifFor_flatten_triple_ident_left_YYYYYYYvar  requirement = require('requirement') ,second = '2',third = 3YYYYYYYvar  requirement = require('requirement') ;ZZZZZvar second = '2';ZZZZZvar third = 3;
+ifFor_flatten_triple_decons_left_YYYYYYYvar  {val} = deconstructableObject a = 32 {x: "99"}YYYYYYYvar  {val} = deconstructableObject;ZZZZZvar   a = 32;ZZZZZvar   {x: "99"};
+ifFor_flatten_triple_decons_from_requireleft_YYYYYYYvar  {val} = require('deconstructable') a = 32obj =  {x: "99"}YYYYYYYvar  {val} = require('deconstructable');ZZZZZvar   a = 32;ZZZZZvar  obj =  {x: "99"};
+ifFor_flatten_triple_decons_middle_YYYYYYYvar  a = 32{val} = deconstructableObject obj = {x: "99"}YYYYYYYvar  a = 32;ZZZZZvar  {val} = deconstructableObject;ZZZZZvar   obj = {x: "99"};
+ifFor_flatten_triple_decons_from_requiremiddle_YYYYYYYvar  a = 32{val} = require('deconstructable') obj = {x: "99"}YYYYYYYvar  a = 32;ZZZZZvar  {val} = require('deconstructable');ZZZZZvar   obj = {x: "99"};
+ifFor_flatten_triple_decons_from_require_multi_YYYYYYYvar  assign = 99, {val} = require('deconstructable'), {another, one} = deconstruct2;YYYYYYYvar  assign = 99ZZZZZvar {val} = require('deconstructable')ZZZZZvar {another, one} = deconstruct2;
+ifFor_flatten_triple_ident_multi_YYYYYYYvar  requirement = require('requirement') ,second = '2',third = 3YYYYYYYvar  requirement = require('requirement') ;ZZZZZvar second = '2';ZZZZZvar third = 3;

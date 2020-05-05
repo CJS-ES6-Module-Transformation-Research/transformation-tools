@@ -24,8 +24,16 @@ export const collectDefaultObjectAssignments: TransformFunction = function (js: 
                                 let body = parent.body;
                                 let indexOf = body.indexOf(node)
                                 child.right.properties.reverse().forEach((e) => {
-                                    if (e.type === "Property" && e.key.type === "Identifier" && isExpr(e.value.type)) {
-                                        body.splice(indexOf, 0, createNamedAssignment(e.key.name, (e.value as Expression)))
+                                    if (e.type === "Property" && (e.key.type === "Identifier" || e.key.type === "Literal") && isExpr(e.value.type)) {
+                                        if (e.key.type ==="Identifier"){
+                                            body.splice(indexOf, 0, createNamedAssignment(e.key.name, (e.value as Expression)))
+                                        }else  if (e.key.type ==="Literal"){
+                                            body.splice(indexOf, 0, createNamedAssignment(e.key.value.toString(), (e.value as Expression)))
+                                        }else{
+                                            //nothing, placeholder in case another type comes sup.
+                                            throw new Error("unreachable code. unexpected type of property key")
+                                        }
+
                                     }
                                 })
                                 indexOf = body.indexOf(node)

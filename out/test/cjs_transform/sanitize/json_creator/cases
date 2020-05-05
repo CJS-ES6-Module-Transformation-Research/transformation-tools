@@ -1,0 +1,54 @@
+--require both top level
+
+dir struct
+./package.json
+./index.js
+./src/index.js
+./src/util/stringProcess.js
+./test/index.js
+./test/edge/edge_case_tests.js
+
+require json one below
+require js one below
+require each one below
+require each two below
+require js one below json two below
+require js two below json one below
+------------------------------------------------------------------------------------------------
+dir struct
+./package.json
+./index.js
+./src/index.js
+./src/util/stringProcess.js
+./test/index.js
+./test/edge/edge_case_tests.js
+
+--same thing with one UNTOUCHED .json file
+require both top level
+require json one below
+require js one below
+require each one below
+require each two below
+require js one below json two below
+require js two below json one below
+------------------------------------------------------------------------------------------------
+dir struct
+./package.json
+./index.js
+./src/index.js
+./src/util/stringProcess.js
+./test/index.js
+./test/edge/edge_case_tests.js
+
+--same thing with two .json files (one is always package.json, choose arbitrary place for it)
+require both top level
+require json one below
+require js one below
+require each one below
+require each two below
+require js one below json two below
+require js two below json one below
+------------------------------------------------------------------------------------------------
+
+
+

@@ -7,3 +7,5 @@ var declFlattener_1 = require("./declFlattener");
 exports.flattenDecls = declFlattener_1.flattenDecls;
 var accessReplacer_1 = require("./accessReplacer");
 exports.accessReplace = accessReplacer_1.accessReplace;
+var jsonRequire_1 = require("./jsonRequire");
+exports.jsonRequire = jsonRequire_1.jsonRequire;

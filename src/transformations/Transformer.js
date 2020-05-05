@@ -8,9 +8,19 @@ var Transformer = /** @class */ (function () {
             js.rebuildNamespace();
         });
     };
+    Transformer.prototype.transformWithProject = function (func) {
+        var tfFunc = func(this.project);
+        this.transform(tfFunc);
+    };
     Transformer.prototype.transform = function (transformer) {
         this.project.forEachSource(function (js) {
-            transformer(js);
+            try {
+                transformer(js);
+            }
+            catch (e) {
+                console.log("FILE: " + js.getRelative() + "   err: " + e);
+                throw e;
+            }
         });
     };
     Transformer.ofProject = function (project) {

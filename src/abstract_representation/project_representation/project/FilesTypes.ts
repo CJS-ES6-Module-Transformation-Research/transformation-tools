@@ -72,9 +72,13 @@ export abstract class ProjectFile extends FSObject {
  * representation of a file containing data within a project (.js or .json).
  */
 export abstract class ReadableFile extends ProjectFile {
-    protected constructor(dir: string, rel: string, file: string, priority: number) {
+    protected constructor(dir: string, rel: string, file: string, priority: number,text:string="") {
         super(dir, rel, file, priority);
-         this.text = readFileSync(this.abs).toString();
+        if (!text) {
+            this.text = readFileSync(this.abs).toString();
+        }else{
+            this.text = text;
+        }
     }
 
     public getText(): string {

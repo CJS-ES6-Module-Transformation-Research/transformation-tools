@@ -14,13 +14,19 @@ import {
     Pattern,
     Expression,
     Property,
-    AssignmentProperty, Statement
+    AssignmentProperty,
+    Statement,
+    FunctionDeclaration,
+    FunctionExpression,
+    ArrowFunctionExpression,
+    ForStatement,
+    BaseNode, CallExpression, SimpleCallExpression, Super, SpreadElement
 } from 'estree'
-import {traverse, Visitor} from 'estraverse'
+import {replace, traverse, Visitor} from 'estraverse'
 import _ from 'lodash'
 import {JSFile} from "../../../index";
 import {RequireAccessIDs} from "../../../Types";
-import {createRequireDecl, isARequire, isExpr} from '../../../abstract_representation/es_tree_stuff/astTools';
+import {createRequireDecl, isExpr} from '../../../abstract_representation/es_tree_stuff/astTools';
 import {Namespace} from "../../../abstract_representation/project_representation/javascript/Namespace";
 import {generate} from "escodegen";
 import {parseScript} from "esprima";
@@ -37,18 +43,19 @@ export function accessReplace(js: JSFile) {
     let runTraversal = function () {
         let imports: RequireAccessIDs = {};
         let visitor: Visitor = {
-            enter:
-                (node: Node, parent: Node) => {
-                    if (node.type === 'CallExpression'
-                        && node.callee.type === "Identifier"
-                        && node.callee.name === "require" && parent.type) {//!== "VariableDeclarator") {
-                        let requireString: string = (node.arguments[0] as Literal).value.toString();
+            leave :
+                (node: Node, parent: Node|null) => {
+                    if (isARequire(node) && parent.type) {
+                        //!== "VariableDeclarator") {
+                        let require: Require = node as Require
+                        let requireString: string = (require.arguments[0] as Literal).value.toString();
+                        let identifier = extract(requireString, js.getNamespace())
+
                         if ("CallExpression" === parent.type ||
                             "MemberExpression" === parent.type ||
                             "AssignmentExpression" === parent.type ||
                             ("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
-                            let identifier = extract(requireString, js.getNamespace())
-
+                            console.log(`PARENT: ${parent.type}\t THIS: ${node.type}\t ${identifier.name}`)
                             switch (parent.type) {
                                 case "CallExpression":
                                     parent.callee = identifier;
@@ -63,7 +70,7 @@ export function accessReplace(js: JSFile) {
                                     if (parent.id.type === "ObjectPattern") {
                                         parent.init = identifier
                                     } else {
-                                        return;
+                                        return node;
                                     }
                             }
                         } else if (parent.type === "ExpressionStatement"
@@ -71,6 +78,24 @@ export function accessReplace(js: JSFile) {
                                 && parent.id.type !== "ObjectPattern")) {
                             return;
                         } else {
+                            switch (parent.type) {
+                                case "NewExpression":
+                                case "IfStatement":
+                                case"WhileStatement":
+                                case"DoWhileStatement":
+                                case "ForStatement":
+                                case "LogicalExpression":
+                                case  "ConditionalExpression":
+                                case "SwitchCase":
+                                    return identifier;
+                                    break;
+                                case "FunctionDeclaration" :
+                                case "FunctionExpression" :
+                                case "ArrowFunctionExpression":
+
+                                    //not needed here because parent would be body
+                                    break;
+                            }
                             console.log(`unexpected type for  parent: ${parent.type}
                             Node type ${node.type} on require string: ${requireString} : ${imports[requireString]}`)
                         }
@@ -103,7 +128,7 @@ export function accessReplace(js: JSFile) {
         }
 
 
-        traverse(js.getAST(), visitor)
+        replace(js.getAST(), visitor)
 
         return imports;
     }
@@ -228,4 +253,15 @@ function makeAMembery(objID: Expression, propID: Expression): MemberExpression {
         object: objID,
         property: propID
     }
+}
+
+interface Require extends SimpleCallExpression {
+    callee: { type: "Identifier", name: "require" }
+    arguments: Array<Literal>
+}
+
+function isARequire(node: Node): boolean {
+    return node.type === "CallExpression"
+        && node.callee.type === "Identifier"
+        && node.callee.name === "require";
 }

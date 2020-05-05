@@ -1,9 +1,12 @@
 #!/Users/sam/.nvm/versions/node/v12.16.0/bin/node
 
-const _moduleAccess_chai = require('chai')
-var src = require('./src/index.js')
-let  {expect} = _moduleAccess_chai;
-var lib = require('./lib.js')
+const _moduleAccess___src_index = require('./src/index.js');
+const _moduleAccess_chai = require('chai');
+const _moduleAccess___lib = require('./lib.js');
+
+var src = require('./src/index.js');
+let {expect} = _moduleAccess_chai;
+var lib = require('./lib.js');
 
 console.log('#!/bin/bash')
 
