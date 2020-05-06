@@ -17,6 +17,7 @@ export class TransformableProject {
 
 
 
+
     private constructor(builder: ProjectBuilder) {
         this.files = builder.files;
 
@@ -112,7 +113,9 @@ export class TransformableProject {
 
         this.jsFileMap[added.getRelative()] = added;
     }
-
+    public getJSNames():string[]{
+        return this.jsFiles.map(e=>e.getRelative());
+    }
 
     public display(): void {
         console.log(`_____dir_____s`)

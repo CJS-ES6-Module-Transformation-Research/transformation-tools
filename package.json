@@ -32,7 +32,6 @@
     "mocha-typescript": "^1.1.17",
     "relative": "^3.0.2",
     "shebang-regex": "^3.0.0",
-    "strip-shebang": "^1.0.2",
     "ts-es5-istanbul-coverage": "^1.0.6",
     "ts-mocha": "^7.0.0",
     "typings": "^2.1.1",
@@ -44,7 +43,6 @@
     "@types/mocha": "^7.0.2",
     "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",
-    "src": "^1.1.2",
     "ts-node-register": "^1.0.0",
     "typescript": "^3.8.3"
   }

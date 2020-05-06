@@ -31,8 +31,7 @@ export const projectReader = function (proj_dir: string, processType: script_or_
      * @param dir the current directory being walked.
      */
     function walk(dir: string) {
-        let ls: Array<string> = readdirSync(dir);
-
+        let ls: string[]  = readdirSync(dir);
         //for file|dir in `ls`
         ls.forEach((file: string) => {
             //helps generate relative path
@@ -44,15 +43,16 @@ export const projectReader = function (proj_dir: string, processType: script_or_
             //case isFile
             if (lstatSync(absFile).isFile()) {
                 let ext = extname(absFile)
+
                 switch (ext) {
                     case ".js":
-                        builder.addFile(new JSFile(dir, rel, file, processType));
+                        builder.addFile(new JSFile(absDir, rel, file));
                         break;
                     case ".json":
-                        builder.addFile(new JSONFile(dir, rel, file));
+                        builder.addFile(new JSONFile(absDir, rel, file));
                         break;
                     default:
-                        builder.addFile(new OtherFile(dir, rel, file))
+                        builder.addFile(new OtherFile(absDir, rel, file))
                         break;
                 }
                 //case isDir

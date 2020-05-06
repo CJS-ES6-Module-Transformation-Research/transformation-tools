@@ -31,6 +31,7 @@ abstract class FSObject implements Reportable {
     protected constructor(dir, rel,file, priority) {
         this.dir = dir;
         this.relative =rel;
+
         this.abs = dir + '/' + rel
         this.reportPriority = priority;
     }
@@ -54,7 +55,7 @@ export abstract class ProjectFile extends FSObject {
     protected constructor(dir: string, rel: string, file: string, priority: number) {
         super(dir, rel,file, priority);
         this.file = file;
-        this.abs = dir + '/' + file
+        this.abs = dir + '/' + rel
     }
 
     public isSource(): boolean {
@@ -75,7 +76,13 @@ export abstract class ReadableFile extends ProjectFile {
     protected constructor(dir: string, rel: string, file: string, priority: number,text:string="") {
         super(dir, rel, file, priority);
         if (!text) {
-            this.text = readFileSync(this.abs).toString();
+          try {
+              this.text = readFileSync(this.abs).toString();
+          }catch (e) {
+              console.log(`CAUGHT!`)
+              console.log(`\tdir: ${dir}\n\trel: ${rel}\n\tfile: ${file}\n\tabs: ${this.abs}`)
+              throw e;
+          }
         }else{
             this.text = text;
         }
