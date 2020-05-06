@@ -1,9 +1,12 @@
+#!/usr/local/bin/ts-node
 import {Transformer} from "../Transformer";
 import {accessReplace, collectDefaultObjectAssignments, flattenDecls, requireStringSanitizer,jsonRequire} from "./visitors";
 import {argv} from "process";
 import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
-
+import {join,dirname} from 'path';
+console.log(argv)
+console.log()
 
 export function santiize(transformer: Transformer) {
 
@@ -17,8 +20,9 @@ export function santiize(transformer: Transformer) {
 }
 
 
-const pwd = argv.shift();
 argv.shift();
+argv.shift();
+const pwd =process.cwd();// dirname(argv.shift());
 
 let source: string, dest: string, inPlace: boolean
 
@@ -39,12 +43,12 @@ switch (argv.length) {
     let second = argv.shift()
     if (first === '-i') {
       inPlace = true;
-      source = second;
-      dest = source;
+      source = join (pwd ,second);
+      dest = join(pwd,source);
     } else {
       inPlace = false;
-      source = first;
-      dest = second;
+      source = join (pwd ,first);
+      dest = join (pwd ,second);
     }
     if (!existsSync(dest)){
       console.log(`Source directory ${source} was not found. Please check input data.`)
@@ -56,7 +60,14 @@ switch (argv.length) {
     process.exit(1);
   }
 }
-let project: TransformableProject = projectReader(source, 'script')
+
+console.log(pwd)
+console.log(`source ${source}`)
+console.log(`dest ${dest}`)
+console.log(`inmpl=ace ${inPlace}`)
+process.exit(1);
+
+let project: TransformableProject = projectReader(source );
 let transformer:Transformer = Transformer.ofProject(project);
 santiize(transformer)
 if (inPlace) {
