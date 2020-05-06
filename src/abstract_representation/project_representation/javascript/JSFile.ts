@@ -54,7 +54,8 @@ export class JSFile extends ReadableFile {
                 this.ast = parseModule(program)
             }
         } catch (e) {
-            console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
+            // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
+            throw e;
         }
         this.rebuildNamespace();
     }
@@ -138,6 +139,7 @@ export class JSFile extends ReadableFile {
 
         } catch (e) {
             console.log(`in file ${this.relative} with exception: ${e}`)
+
         }
     }
 

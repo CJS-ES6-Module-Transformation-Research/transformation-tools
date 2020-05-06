@@ -3,9 +3,10 @@ import {RequireStringTransformer} from "../requireStringTransformer";
 import {TransformFunction} from '../../Transformer'
 import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {Visitor,traverse} from "estraverse";
+import {dirname,join} from 'path'
 
 export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
-    let requireStringTF: RequireStringTransformer = new RequireStringTransformer(js.getDir())
+    let requireStringTF: RequireStringTransformer = new RequireStringTransformer(dirname(join(js.getDir(),js.getRelative())))
     let visitor: Visitor = {
         enter: function (node: Node): void {
 
@@ -17,10 +18,9 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 
 
                 let literal = node.arguments[0]
-                let requireString: string = requireStringTF.getTransformed(literal.value.toString())
-                literal.value = requireString
+                 let requireString: string = requireStringTF.getTransformed(literal.value.toString())
+                 literal.value = requireString
                 literal.raw = `'${requireString}'`
-
 
             }
         }

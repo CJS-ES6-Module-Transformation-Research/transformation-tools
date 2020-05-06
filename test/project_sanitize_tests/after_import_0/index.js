@@ -1,6 +1,5 @@
 #!/Users/sam/.nvm/versions/node/v12.16.0/bin/node
 
-
 import _moduleAccess___lib from './lib.js';
 import lib from './lib.js';
 import r2 from './lib.js';

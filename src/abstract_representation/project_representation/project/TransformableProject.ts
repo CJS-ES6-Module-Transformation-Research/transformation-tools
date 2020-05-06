@@ -4,6 +4,7 @@ import {copyFile, copyFileSync, existsSync, mkdirSync, renameSync, writeFileSync
 import {JSONFile} from "../javascript/JSONFile";
 import relative from "relative";
 import path from "path";
+import {script_or_module} from "./FileProcessing";
 
 export class TransformableProject {
     private files: ProjectFile[];
@@ -14,14 +15,13 @@ export class TransformableProject {
     private jsFileMap: FileMap<JSFile> = {};
     private jsonFileMap: FileMap<JSONFile> = {};
     private dirs: Dir[] = []
-
-
+    private projType: script_or_module;
 
 
     private constructor(builder: ProjectBuilder) {
         this.files = builder.files;
 
-
+        this.projType = builder.projType;
         this.jsFiles = builder.jsFiles;
         this.jsFiles.forEach((jsf) => {
             this.jsFileMap[jsf.getRelative()] = jsf;
@@ -74,13 +74,14 @@ export class TransformableProject {
             }
         } catch (err) {
             console.log(`ERROR IN MK RootDir: ${err}`)
-
+            throw err
         }
         this.dirs.forEach((d) => {
             try {
                 mkdirSync(newProjDir + '/' + d.getRelative(), {recursive: true});
             } catch (e) {
                 console.log(`ERROR IN MKDIR: ${e}`)
+                throw e
             }
         });
         if (inPlaceSuffix) {
@@ -105,16 +106,17 @@ export class TransformableProject {
         return this.jsonFileMap[json];
     }
 
-    public addJS(relative: string, data: string):void{
-        let added = new JSFile(this.projectDir, relative, path.basename(relative),'script',data);
+    public addJS(relative: string, data: string): void {
+        let added = new JSFile(this.projectDir, relative, path.basename(relative), this.projType, data);
         this.files.push(added);
         this.jsFiles.push(added);
 
 
         this.jsFileMap[added.getRelative()] = added;
     }
-    public getJSNames():string[]{
-        return this.jsFiles.map(e=>e.getRelative());
+
+    public getJSNames(): string[] {
+        return this.jsFiles.map(e => e.getRelative());
     }
 
     public display(): void {
@@ -144,6 +146,7 @@ class ProjectBuilder {
     projectDir: string;
     jsonFiles: JSONFile[] = [];
     dirs: Dir[] = [];
+    projType: script_or_module;
 
     public addFile(file: ProjectFile): ProjectBuilder {
         this.files.push(file);
@@ -166,6 +169,12 @@ class ProjectBuilder {
 
     addDir(dir: Dir) {
         this.dirs.push(dir);
+        return this;
+    }
+
+    setProjType(projType: script_or_module) {
+        this.projType = projType
+        return this;
     }
 }
 

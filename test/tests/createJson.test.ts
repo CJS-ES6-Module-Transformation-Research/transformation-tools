@@ -33,6 +33,9 @@ describe(`JSON Require Creation Testing`, () => {
                     transformer.transformWithProject(jsonRequire);
                     let actFiles:string[] = actualProj.getJSNames().sort();
                     let expFiles:string[] = expectedProj.getJSNames().sort();
+                    console.log(fName)
+                   console.log("a" + actFiles.length)
+                   console.log("e" + expFiles.length)
                     expect(actFiles).to.be.deep.equal(expFiles, actFiles.length+' '+expFiles.length +" file: " +fName)
                     console.log(actualProj.getJSNames().sort())
                     console.log(expectedProj.getJSNames().sort())

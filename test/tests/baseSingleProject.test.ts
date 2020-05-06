@@ -34,7 +34,7 @@ function wipeShebang(text: string): string {
 }
 
 //
-describe('Testing various sanitize procedures', () => {
+describe('Testing various sanitize procedures within a project', () => {
 //
     it('Require String Tests', () => {
         let actual: TransformableProject = projectReader(directories['untouched'])
@@ -50,7 +50,7 @@ describe('Testing various sanitize procedures', () => {
         listOfFiles.forEach((file: string) => {
             let actualFile: JSFile = actual.getJS(file);
             let expectedFile: JSFile = expected.getJS(file)
-            expect(expectedFile.makeString()).to.be.equal(actualFile.makeString());
+            expect(actualFile.makeString()).to.be.equal(expectedFile.makeString());
         });
 
 
@@ -139,8 +139,7 @@ describe('Testing various sanitize procedures', () => {
 
 
     it('exports flatten', () => {
-        //AccessReplace${
-        let actualProj: TransformableProject = projectReader(directories['accessReplace'])
+         let actualProj: TransformableProject = projectReader(directories['accessReplace'])
         let expectedProj: TransformableProject = projectReader(directories['module_exports_flatten']);
         let listOfFiles: string[] = ['index.js',
             'lib/index.js',
@@ -162,9 +161,6 @@ describe('Testing various sanitize procedures', () => {
             let expectedFile: JSFile = expectedProj.getJS(file);
 
 
-            if (expectedFile === undefined) {
-                console.log(file)
-            }
             expected = expectedFile.makeString();
             actual = actualFile.makeString();
 
@@ -177,7 +173,6 @@ describe('Testing various sanitize procedures', () => {
 
 //
     it('Import Transformations', () => {
-        //AccessReplace
 
         let actualProj: TransformableProject = projectReader(directories['module_exports_flatten'])
 
@@ -204,8 +199,8 @@ describe('Testing various sanitize procedures', () => {
             try {
                 expected = expectedFile.makeString();
             } catch (e) {
-                console.log(e)
-                console.log(file)
+                // console.log(e)
+                // console.log(file)
                 throw e;
             }
             actual = actualFile.makeString();

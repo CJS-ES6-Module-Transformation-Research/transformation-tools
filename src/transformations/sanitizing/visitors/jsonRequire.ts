@@ -38,6 +38,7 @@ export const jsonRequire: ProjectTransformFunction = function (project: Transfor
 
                         console.log(`getJson threw ex : ${json}`)
                         console.log(`error was ${err}`)
+                        throw err
                     }
 
                     let fileData = "module.exports = "

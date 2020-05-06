@@ -79,8 +79,8 @@ export abstract class ReadableFile extends ProjectFile {
           try {
               this.text = readFileSync(this.abs).toString();
           }catch (e) {
-              console.log(`CAUGHT!`)
-              console.log(`\tdir: ${dir}\n\trel: ${rel}\n\tfile: ${file}\n\tabs: ${this.abs}`)
+              // console.log(`CAUGHT!`)
+              // console.log(`\tdir: ${dir}\n\trel: ${rel}\n\tfile: ${file}\n\tabs: ${this.abs}`)
               throw e;
           }
         }else{

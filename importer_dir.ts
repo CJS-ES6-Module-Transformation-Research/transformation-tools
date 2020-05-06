@@ -2,10 +2,10 @@ import {parseModule} from 'esprima'
 import {generate,GenerateOptions} from 'escodegen'
 import {readFileSync, writeFileSync} from 'fs'
 import * as fs from 'fs'
-let jj = (j) => {
-   JSON.stringify(j, null, 3)
-}
-let cl = (j) => console.log(jj(j))
+// let jj = (j) => {
+//    JSON.stringify(j, null, 3)
+// }
+// let cl = (j) => console.log(jj(j))
 let drname =
     `import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -13,7 +13,7 @@ const __filename  = fileURLToPath(import_meta_url)
 const __dirname = dirname(__filename)`
 let module;
 
-console.log( JSON.stringify( parseModule(drname) ,null,3))
+// console.log( JSON.stringify( parseModule(drname) ,null,3))
 // generate() TODO call it
 // try {
 //    // let bod =

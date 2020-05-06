@@ -27,7 +27,6 @@ export class Transformer {
             try {
                 transformer(js)
             }catch (e) {
-                console.log(`FILE: ${js.getRelative()}   err: ${e}`)
                 throw e;
             }
         })
