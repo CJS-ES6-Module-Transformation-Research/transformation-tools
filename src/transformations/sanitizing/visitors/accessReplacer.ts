@@ -104,10 +104,17 @@ export function accessReplace(js: JSFile) {
                     if (isForLoopAccess(node, parent)
                         && node.type === "VariableDeclaration"
                     ) {
-                        node.declarations.forEach((e: VariableDeclarator) => {
-                            extractRequireDataForAccess(e, extract, js);
+                         node.declarations.forEach((e: VariableDeclarator) => {
+                             extractRequireDataForAccess(e, extract, js);
                         });
                     }
+                    // else if(parent&& node.type === "BlockStatement" && parent.type === "ForStatement"
+                    // && node.body.forEach(e:=>{
+                    //
+                    //     }
+                    // )){
+                    //
+                    // }
 
                 }
         }
@@ -128,7 +135,17 @@ export function accessReplace(js: JSFile) {
 
 
         replace(js.getAST(), visitor)
-
+        js.getAST().body.forEach(e =>{
+            traverse(e, {
+                enter:(node, parent) => {
+                    if (parent !==  null  &&  node.type === "VariableDeclaration"){
+                        node.declarations.forEach(e=> {
+                            extractRequireDataForAccess(e, extract, js);
+                        })
+                    }
+                }
+            })
+        });
         return imports;
     }
 
@@ -204,13 +221,13 @@ function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPatter
 }
 
 function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr: string, ns: Namespace) => Identifier, js: JSFile) {
-    if ((e.init.type === "CallExpression"
+     if ((e.init.type === "CallExpression"
         && e.init.callee.type === "Identifier"
         && e.init.callee.name === "require"
         && e.init.arguments && e.init.arguments[0] !== null
         && e.init.arguments[0].type === "Literal")) {
         let id = extract(getRequireStringFromDecl(e), js.getNamespace());
-        e.init = id;
+         e.init = id;
     }
 }
 

@@ -17,20 +17,20 @@ const read =
 let project: TransformableProject;
 describe('Require String Tests', () => {
     it(`Require Tests From ${requireString}/tests.txt`, () => {
-        let expected: string, expectedFileString: string, expoectedProgString: string, expectedAST: Program,
-            jsf: JSFile;
-        read.forEach((e) => {
+        let expected: string, expectedFileString: string, expectedProgString: string, expectedAST: Program,
+            jsf: JSFile,loadedJSFile,actual;
+        read.forEach( (e) => {
             project = projectReader(`${requireString}/must_sanitize/${e}`);
-            expectedFileString = `${requireString}/expected/${e}.expected.js`;
-            expoectedProgString = readFileSync(expectedFileString).toString();
-            expectedAST = parseScript(expoectedProgString);
-            expected = generate(expectedAST);
-            let loadedJSFile = `${e}.js`;
+              expectedFileString = `${requireString}/expected/${e}.expected.js`;
+              expectedProgString = readFileSync(expectedFileString).toString();
+              expectedAST = parseScript(expectedProgString);
+              expected = generate(expectedAST);
+              loadedJSFile = `${e}.js`;
 
 
-            jsf = project.getJS(loadedJSFile)
+              jsf = project.getJS(loadedJSFile)
             requireStringSanitizer(jsf)
-            let actual = generate(jsf.getAST())
+              actual = generate(jsf.getAST())
             expect(expected).to.equal(actual, `${PROJ_DIR}/test/sanitize/require_string/expected/${e}.expected.js`);
 
         });

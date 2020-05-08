@@ -12,8 +12,6 @@ import {projectReader, TransformableProject} from "../../abstract_representation
 import {existsSync} from "fs";
 import {join, dirname} from 'path';
 
-console.log(argv)
-console.log()
 
 export function santiize(transformer: Transformer) {
 
@@ -60,9 +58,14 @@ switch (argv.length) {
         if (!existsSync(dest)) {
             console.log(`Source directory ${source} was not found. Please check input data.`)
         }
-
+        argv[2] = source;
+        argv[3] = dest;
+        console.log(argv)
+        console.log()
         break;
     default: {
+        console.log('Args: ')
+        console.log(argv)
         console.log('could not parse arguments--try again')
         process.exit(1);
     }
@@ -102,3 +105,10 @@ if (inPlace) {
 
 }
 console.log("finished.")
+// /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform
+//
+// for file in `ls  ./test/sanitize/qccess_replace/js_files`; do echo  "./src/transformations/sanitizing/sanitize_project.ts  "
+//     ;echo ./test/sanitize/qccess_replace/js_files/$file;
+//     echo ./test/sanitize/qccess_replace/exected/$file;
+//     done;
+//     ./src/transformations/sanitizing/sanitize_project.ts ./test/sanitize/qccess_replace/js_files ./test/sanitize/qccess_replace/exected
