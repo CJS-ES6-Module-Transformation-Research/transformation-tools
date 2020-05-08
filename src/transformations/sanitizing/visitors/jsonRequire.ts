@@ -4,6 +4,7 @@ import {dirname, join} from "path";
 import relative from "relative";
 import {ProjectTransformFunction} from "../../Transformer";
 import {normalize, resolve} from 'path'
+import {existsSync} from "fs";
 
 export const jsonRequire: ProjectTransformFunction = function (project: TransformableProject) {
     return function (js: JSFile): void {
@@ -18,47 +19,34 @@ export const jsonRequire: ProjectTransformFunction = function (project: Transfor
                     && node.arguments[0].type === "Literal"
                     && re.test(node.arguments[0].value.toString())) {
                     const requireString = node.arguments[0].value.toString();
-                    // const file = join(js.getDir(), js.getRelative());
-                    // const dir = ;
+
+
+
                     const joinedJson = join(dirname(js.getAbsolute()), requireString);
                     const suffix: string = ".export.js";
-                    // console.log(joinedJson)
-                    // console.log(`getdir\t`+js.getDir())
-                    // console.log(`getdir\t`+js.getRelative())
-                    // console.log(joinedJson.replace(js.getDir(),''))
-                    // console.log(relative(js.getDir(), joinedJson, null))
 
-
-                    const json = joinedJson.replace(js.getDir(), '')
+                    let regex: RegExp
+                    regex = new RegExp('.+\.json[0-9]+');
+                    let json = joinedJson.replace(js.getDir(), '')
                         .substr(1)//relative(js.getDir(), joinedJson, null)
-                    let jsonFile: JSONFile
-                    try {
-                        jsonFile = project.getJSON(json);
-                    } catch (err) {
-
-                        console.log(`getJson threw ex : ${json}`)
-                        console.log(`error was ${err}`)
-                        throw err
+                   let i = -1;
+                    while (existsSync(`${js.getDir()}/${json}${i}${suffix}`)) {
+                        i++
                     }
 
-                    let fileData = "module.exports = "
-                    try {
-                        fileData += jsonFile.getText();
-                        // let outfile = joinedJson + suffix;
-                    } catch (e4) {
-                        console.log(`JSON : ${json}`)
-                        console.log('caught getText exception.')
-                        console.log("has file data:  "+(fileData!=='') +'\n'+e4);
-                        throw e4;
+                    let infix = i > -1 ? `${i}`: '';
+
+                    if (project.getJS(json+infix + suffix) === undefined) {
+                        const fileData = "module.exports = "
+                            + project
+                                .getJSON(json)
+                                .getText();
+
+                        project.addJS(json +infix+ suffix, fileData)
                     }
-                    try {
-                        project.addJS(json + suffix, fileData)
-                        node.arguments[0].value = requireString + suffix
-                    } catch (err) {
-                        console.log(`addJS of ${json + suffix} threw exception...`)
-                        console.log(` ^ tried to create file but failed\nwith error ${err}\n\n`);
-                        throw err;
-                    }
+                    node.arguments[0].value = requireString+infix + suffix
+
+
                 }
             }
         }

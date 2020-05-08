@@ -13,7 +13,6 @@ describe(`JSON Require Creation Testing`, () => {
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 2; j++) {
                 let fName = `js-${i}_json-${j}`;
-                // const ex = `${data_dir}${fName}_expected`;
                 try {
                     // console.log((`${data_dir}${fName}`))
                     let transformer: Transformer
@@ -36,12 +35,18 @@ describe(`JSON Require Creation Testing`, () => {
                     console.log(fName)
                    console.log("a" + actFiles.length)
                    console.log("e" + expFiles.length)
-                    expect(actFiles).to.be.deep.equal(expFiles, actFiles.length+' '+expFiles.length +" file: " +fName)
+
                     console.log(actualProj.getJSNames().sort())
                     console.log(expectedProj.getJSNames().sort())
-                    actualProj.forEachSource(js => {
-                        let expected = expectedProj.getJS(js.getRelative());
-                        expect(js.makeString()).to.be.equal(expected.makeString())
+                    console.log('expecting sizes')
+                    expect(actFiles).to.be.deep.equal(expFiles, actFiles.length+' '+expFiles.length +" file: " +fName)
+
+                    expectedProj.forEachSource(e=> console.log(e.getRelative()))
+                    actualProj.forEachSource(e=> console.log(e.getRelative()))
+                    actFiles.forEach(f => {
+                        let expected = expectedProj.getJS(f).makeString();
+                        let actual = actualProj.getJS(f).makeString();
+                        expect(actual).to.be.equal(expected)
                     });
                     // if (existsSync(out)) {
                     //     rmdirSync(out, {recursive: true});
@@ -60,6 +65,7 @@ describe(`JSON Require Creation Testing`, () => {
                     throw err
                 }
 
+console.log(`\n\tend of ${fName}\n\n\n\n\n--------------------------------------------------------------------------------\n\n\n\n\n`)
 
             }
         }
