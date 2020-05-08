@@ -22,7 +22,7 @@ export function santiize(transformer: Transformer) {
     transformer.transform(flattenDecls)
     transformer.transform(accessReplace)
     transformer.rebuildNamespace()
-    transformer.transform(collectDefaultObjectAssignments)
+    // transformer.transform(collectDefaultObjectAssignments)
 
 }
 
@@ -73,17 +73,32 @@ switch (argv.length) {
 // console.log(`dest ${dest}`)
 // console.log(`inmpl=ace ${inPlace}`)
 // process.exit(1);
-const cjs = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
-const srcDrawer = `${cjs}/real_projects`
-const projStr = `${srcDrawer}/get-repository-url`
-const OUT_DIR = `${cjs}/real_san/get-repository-url`
-let project: TransformableProject = projectReader(projStr);
+
+
+// const cjs = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
+// const srcDrawer = `${cjs}/real_projects`
+// const projStr = `${srcDrawer}/get-repository-url`
+// const OUT_DIR = `${cjs}/real_san/get-repository-url`
+// let project: TransformableProject = projectReader(projStr);
+// let transformer: Transformer = Transformer.ofProject(project);
+
+// const cjs = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
+// const srcDrawer = `${cjs}/real_projects`
+// const projStr = `${srcDrawer}/get-repository-url`
+// const OUT_DIR = `${cjs}/real_san/get-repository-url`
+
+let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
+
+
+
+
+
 santiize(transformer)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {
-    project.writeOutNewDir(OUT_DIR)
+    project.writeOutNewDir(dest)
 
 }
 console.log("finished.")
