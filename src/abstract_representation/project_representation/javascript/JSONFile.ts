@@ -1,5 +1,7 @@
 import {Program} from "esprima";
 import {ReadableFile} from "../project/FilesTypes";
+import {readFileSync} from "fs";
+import {script_or_module} from '../project/FileProcessing';
 
 
 /**
@@ -7,9 +9,9 @@ import {ReadableFile} from "../project/FilesTypes";
  * contains text as data string.
  */
 export class JSONFile extends ReadableFile {
-     constructor(dir: string, rel: string, file: string) {
+    constructor(dir: string, rel: string, file: string) {
         super(dir, rel, file, 1);
-          }
+    }
 
     /**
      * is true, but is NOT source.
@@ -26,4 +28,34 @@ export class JSONFile extends ReadableFile {
         throw new Error();
     }
 
+    public asJSON(): object {
+        return JSON.parse(this.getText());
+    }
+
+
 }
+
+/**
+ * represents package.json. extends JSONFile to include setting default module type.
+ */
+export class PackageJSON extends JSONFile {
+    constructor(dir: string) {
+        super(dir, `package.json`, `package.json`);
+        try {
+            this.json = JSON.parse(this.text);
+        }catch (jsonParseError) {
+            console.log(`json parse error semicolon: ${jsonParseError}\n in dir: ${dir}`)
+        }
+    }
+
+    private readonly json: object;
+
+    setModuleType( modType: script_or_module) {
+        const setType = modType === 'module' ? 'module' : 'commonjs'
+        console.log(`Setting module type of project: ${setType}`)
+        this.json['type'] = setType;
+    }
+}
+
+
+// export const setModuleType = function

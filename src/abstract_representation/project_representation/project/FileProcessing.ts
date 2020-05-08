@@ -4,7 +4,7 @@ import relative from 'relative';
 
 import {TransformableProject} from "./TransformableProject";
 import {JSFile} from "../javascript/JSFile";
-import {JSONFile} from "../javascript/JSONFile";
+import {JSONFile, PackageJSON} from "../javascript/JSONFile";
 import {OtherFile, SymLink, Dir} from './FilesTypes'
 
 
@@ -49,7 +49,14 @@ export const projectReader = function (proj_dir: string, processType: script_or_
                         builder.addFile(new JSFile(absDir, rel, file, readType));
                         break;
                     case ".json":
-                        builder.addFile(new JSONFile(absDir, rel, file));
+                        let json :JSONFile;
+                        if(file === "package.json" && rel === "package.json"){
+                            json = new PackageJSON(absDir);
+                            builder.addPackageJson(json as PackageJSON);
+                        }else{
+                            json = new JSONFile(absDir, rel, file);
+                        }
+                        builder.addFile(json);
                         break;
                     default:
                         builder.addFile(new OtherFile(absDir, rel, file))

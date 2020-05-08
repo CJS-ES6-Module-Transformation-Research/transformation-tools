@@ -1,7 +1,7 @@
 import {JSFile} from "../javascript/JSFile";
 import {ProjectFile, Dir} from "./FilesTypes";
 import {copyFile, copyFileSync, existsSync, mkdirSync, renameSync, writeFileSync} from "fs";
-import {JSONFile} from "../javascript/JSONFile";
+import {JSONFile, PackageJSON} from "../javascript/JSONFile";
 import relative from "relative";
 import path from "path";
 import {script_or_module} from "./FileProcessing";
@@ -16,11 +16,12 @@ export class TransformableProject {
     private jsonFileMap: FileMap<JSONFile> = {};
     private dirs: Dir[] = []
     private projType: script_or_module;
+    private packageJSON: PackageJSON;
 
 
     private constructor(builder: ProjectBuilder) {
         this.files = builder.files;
-
+        this.packageJSON = builder.packageJSON
         this.projType = builder.projType;
         this.jsFiles = builder.jsFiles;
         this.jsFiles.forEach((jsf) => {
@@ -68,6 +69,10 @@ export class TransformableProject {
     }
 
     private writeOut(inPlaceSuffix: string, newProjDir: string) {
+        if(this.projType === "module"){
+            this.packageJSON.setModuleType(this.projType)
+        }
+
         try {
             if (!existsSync(newProjDir)) {
                 mkdirSync(newProjDir, {recursive: true});
@@ -147,6 +152,7 @@ class ProjectBuilder {
     jsonFiles: JSONFile[] = [];
     dirs: Dir[] = [];
     projType: script_or_module;
+     packageJSON: PackageJSON;
 
     public addFile(file: ProjectFile): ProjectBuilder {
         this.files.push(file);
@@ -175,6 +181,10 @@ class ProjectBuilder {
     setProjType(projType: script_or_module) {
         this.projType = projType
         return this;
+    }
+
+    addPackageJson(packageJSON: PackageJSON) {
+        this.packageJSON = packageJSON;
     }
 }
 
