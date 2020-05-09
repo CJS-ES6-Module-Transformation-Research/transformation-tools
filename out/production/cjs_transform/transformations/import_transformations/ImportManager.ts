@@ -224,11 +224,19 @@ export class ImportManager implements ImportManagerI {
         if (importsMap === undefined) {
             return false;
         }
-        if (value === 'default') {
+        if (importsMap.hasDefault) {
             return importsMap.defaultIdentifiers[value] !== undefined
         }
         return importsMap.named[value] !== undefined
 
+    }
+    importsDefaultFromModule(importString: string): boolean {
+        let importsMap = this.importMap[importString]
+        if (importsMap === undefined) {
+            return false;
+        }else{
+            return importsMap.hasDefault
+        }
     }
 
 }

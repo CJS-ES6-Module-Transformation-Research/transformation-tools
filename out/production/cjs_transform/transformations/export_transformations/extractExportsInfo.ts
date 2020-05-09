@@ -21,7 +21,7 @@ let exportAccessGetter: visitFunc = (node: Node, parent: Node) => {
         ) {
             count++
 
-            console.log(generate(parent))
+            // console.log(generate(parent))
          }
     }
 }

@@ -10,16 +10,17 @@ function accessReplace(js) {
     var runTraversal = function () {
         var imports = {};
         var visitor = {
-            enter: function (node, parent) {
-                if (node.type === 'CallExpression'
-                    && node.callee.type === "Identifier"
-                    && node.callee.name === "require" && parent.type) { //!== "VariableDeclarator") {
-                    var requireString = node.arguments[0].value.toString();
+            leave: function (node, parent) {
+                if (isARequire(node) && parent.type) {
+                    //!== "VariableDeclarator") {
+                    var require_1 = node;
+                    var requireString = require_1.arguments[0].value.toString();
+                    var identifier = extract(requireString, js.getNamespace());
                     if ("CallExpression" === parent.type ||
                         "MemberExpression" === parent.type ||
                         "AssignmentExpression" === parent.type ||
                         ("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
-                        var identifier = extract(requireString, js.getNamespace());
+                        console.log("PARENT: " + parent.type + "\t THIS: " + node.type + "\t " + identifier.name);
                         switch (parent.type) {
                             case "CallExpression":
                                 parent.callee = identifier;
@@ -35,7 +36,7 @@ function accessReplace(js) {
                                     parent.init = identifier;
                                 }
                                 else {
-                                    return;
+                                    return node;
                                 }
                         }
                     }
@@ -45,6 +46,23 @@ function accessReplace(js) {
                         return;
                     }
                     else {
+                        switch (parent.type) {
+                            case "NewExpression":
+                            case "IfStatement":
+                            case "WhileStatement":
+                            case "DoWhileStatement":
+                            case "ForStatement":
+                            case "LogicalExpression":
+                            case "ConditionalExpression":
+                            case "SwitchCase":
+                                return identifier;
+                                break;
+                            case "FunctionDeclaration":
+                            case "FunctionExpression":
+                            case "ArrowFunctionExpression":
+                                //not needed here because parent would be body
+                                break;
+                        }
                         console.log("unexpected type for  parent: " + parent.type + "\n                            Node type " + node.type + " on require string: " + requireString + " : " + imports[requireString]);
                     }
                 }
@@ -73,7 +91,7 @@ function accessReplace(js) {
             }
             return identifier;
         }
-        estraverse_1.traverse(js.getAST(), visitor);
+        estraverse_1.replace(js.getAST(), visitor);
         return imports;
     };
     var imports = runTraversal();
@@ -176,4 +194,9 @@ function makeAMembery(objID, propID) {
         object: objID,
         property: propID
     };
+}
+function isARequire(node) {
+    return node.type === "CallExpression"
+        && node.callee.type === "Identifier"
+        && node.callee.name === "require";
 }

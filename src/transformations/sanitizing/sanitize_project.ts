@@ -4,13 +4,15 @@ import {
     accessReplace,
     collectDefaultObjectAssignments,
     flattenDecls,
-    requireStringSanitizer,
-    jsonRequire
+    jsonRequire,
+    requireStringSanitizer
 } from "./visitors";
 import {argv} from "process";
 import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
-import {join, dirname} from 'path';
+import {join} from 'path';
+// sanitize(transformer)
+import {transformImport} from '../import_transformations/visitors/import_replacement'
 
 
 export function sanitize(transformer: Transformer) {
@@ -75,10 +77,7 @@ let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
 
 
-sanitize(transformer)
-import {transformImport}from '../import_transformations/visitors/import_replacement'
-// import {importTransforms} from "src/transformations/import_transformations/exec_transform";
-// transformer.transform(transformImport)
+transformer.transform(transformImport)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {

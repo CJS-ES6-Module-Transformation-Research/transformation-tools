@@ -1,7 +1,7 @@
 import {it} from "mocha";
 import {expect} from "chai";
 import {readFileSync} from 'fs'
-import {test_root} from "../../index";
+import {test_root} from "../index";
 import {parseScript, Program} from "esprima";
 import {Namespace} from "../../src/abstract_representation/project_representation/javascript/Namespace";
 

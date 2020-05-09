@@ -1,38 +1,88 @@
-import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+#!/usr/local/bin/ts-node
 import {Transformer} from "../Transformer";
-import {accessReplace, collectDefaultObjectAssignments, flattenDecls, requireStringSanitizer,} from "./visitors";
-import {test_root} from "../../../index";
-import {rmdirSync, unlinkSync} from "fs";
-import {jsonRequire} from "../../../src/transformations/sanitizing/visitors/jsonRequire";
-
-let  arg1: string = `${test_root}_2`
-console.log("script start")
-arg1 = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_proj`
-// arg1 = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/fixtures/test_proj_inPLace`
-// arg1 = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/sanitize/qccess_replace/accessFiles`
-
-let project: TransformableProject = projectReader(arg1)
-console.log("finished reading in")
-
-let transformer = Transformer.ofProject(project);
+import {
+    accessReplace,
+    collectDefaultObjectAssignments,
+    flattenDecls,
+    requireStringSanitizer,
+    jsonRequire
+} from "./visitors";
+import {argv} from "process";
+import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+import {existsSync} from "fs";
+import {join, dirname} from 'path';
 
 
+export function sanitize(transformer: Transformer) {
 
-console.log('about to tf0')
-transformer.transform(requireStringSanitizer);
-transformer.transform( jsonRequire(project));
-console.log('about to tf1')
-//
-// transformer.transform(flattenDecls)
-// console.log('about to tf2')
-// transformer.transform(accessReplace);
-// console.log('about to tf3')
-//
-// transformer.transform(collectDefaultObjectAssignments);
-// console.log('about to write out')
-// // project.display()
-const writeTarget:string = '/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/fixtures/json'
-// rmdirSync(writeTarget,{recursive:true});
-project.writeOutNewDir(writeTarget)
-// project.writeOutInPlace('.X')
-console.log('post-writeout')
+    transformer.transform(requireStringSanitizer)
+    transformer.transformWithProject(jsonRequire)
+    transformer.transform(flattenDecls)
+    transformer.transform(accessReplace)
+    transformer.rebuildNamespace()
+    transformer.transform(collectDefaultObjectAssignments)
+
+}
+
+
+argv.shift();
+argv.shift();
+const pwd = process.cwd();// dirname(argv.shift());
+
+let source: string, dest: string, inPlace: boolean
+
+switch (argv.length) {
+    case 0:
+        console.log("no arguments supplied");
+        process.exit(1);
+    case 1:
+        let arg = argv.shift();
+        if (arg === '-i') {
+            console.log('please provide a project to transform')
+        } else {
+            console.log('please confirm you want to do this in place with the -i flag prior to your directory.')
+        }
+        process.exit(1);
+    case 2:
+        let first = argv.shift()
+        let second = argv.shift()
+        if (first === '-i') {
+            inPlace = true;
+            source = join(pwd, second);
+            dest = join(pwd, source);
+        } else {
+            inPlace = false;
+            source = join(pwd, first);
+            dest = join(pwd, second);
+        }
+        if (!existsSync(dest)) {
+            console.log(`Source directory ${source} was not found. Please check input data.`)
+        }
+        argv[2] = source;
+        argv[3] = dest;
+        console.log(argv)
+        console.log()
+        break;
+    default: {
+        console.log('Args: ')
+        console.log(argv)
+        console.log('could not parse arguments--try again')
+        process.exit(1);
+    }
+}
+
+let project: TransformableProject = projectReader(source);
+let transformer: Transformer = Transformer.ofProject(project);
+
+
+sanitize(transformer)
+import {transformImport}from '../import_transformations/visitors/import_replacement'
+// import {importTransforms} from "src/transformations/import_transformations/exec_transform";
+// transformer.transform(transformImport)
+if (inPlace) {
+    project.writeOutInPlace('.pre-transform')
+} else {
+    project.writeOutNewDir(dest)
+
+}
+console.log("finished.")

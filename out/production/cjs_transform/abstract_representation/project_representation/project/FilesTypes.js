@@ -69,9 +69,15 @@ exports.ProjectFile = ProjectFile;
  */
 var ReadableFile = /** @class */ (function (_super) {
     __extends(ReadableFile, _super);
-    function ReadableFile(dir, rel, file, priority) {
+    function ReadableFile(dir, rel, file, priority, text) {
+        if (text === void 0) { text = ""; }
         var _this = _super.call(this, dir, rel, file, priority) || this;
-        _this.text = fs_1.readFileSync(_this.abs).toString();
+        if (!text) {
+            _this.text = fs_1.readFileSync(_this.abs).toString();
+        }
+        else {
+            _this.text = text;
+        }
         return _this;
     }
     ReadableFile.prototype.getText = function () {

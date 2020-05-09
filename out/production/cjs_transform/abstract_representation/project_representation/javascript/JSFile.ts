@@ -21,7 +21,7 @@ type JSFileVisitor<R> = (prog: Program) => R
 export class JSFile extends ReadableFile {
     private shebang: string;
     private ast: Program
-
+    private  isStrict:boolean = false;
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
     private built: boolean = false;
@@ -54,8 +54,13 @@ export class JSFile extends ReadableFile {
                 this.ast = parseModule(program)
             }
         } catch (e) {
-            console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
+            // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
+            throw e;
         }
+        // if (this.ast.body[0].type ==="ExpressionStatement"&&this.ast.body[0].directive){
+        //     Directive d
+        // }
+
         this.rebuildNamespace();
     }
 
@@ -138,6 +143,7 @@ export class JSFile extends ReadableFile {
 
         } catch (e) {
             console.log(`in file ${this.relative} with exception: ${e}`)
+
         }
     }
 
@@ -176,4 +182,13 @@ export class JSFile extends ReadableFile {
     }
 
 
+}
+const useStrict:Directive = {
+    "type": "ExpressionStatement",
+    "expression": {
+        "type": "Literal",
+        "value": "use strict",
+        "raw": "\"use strict\""
+    },
+    "directive": "use strict"
 }

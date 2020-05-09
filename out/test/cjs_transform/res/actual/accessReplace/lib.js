@@ -1,6 +1,11 @@
 const _moduleAccess___package = require('./package.json')
+
 const _moduleAccess_lodash =require('lodash')
 const _moduleAccess_mocha =require('mocha')
+
+
+
+
 module.exports = _moduleAccess___package
 console.log('#!/bin/bash')
 let a;

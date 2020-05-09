@@ -43,10 +43,9 @@ export function accessReplace(js: JSFile) {
     let runTraversal = function () {
         let imports: RequireAccessIDs = {};
         let visitor: Visitor = {
-            leave :
-                (node: Node, parent: Node|null) => {
+            leave:
+                (node: Node, parent: Node | null) => {
                     if (isARequire(node) && parent.type) {
-                        //!== "VariableDeclarator") {
                         let require: Require = node as Require
                         let requireString: string = (require.arguments[0] as Literal).value.toString();
                         let identifier = extract(requireString, js.getNamespace())
@@ -55,7 +54,7 @@ export function accessReplace(js: JSFile) {
                             "MemberExpression" === parent.type ||
                             "AssignmentExpression" === parent.type ||
                             ("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
-                            console.log(`PARENT: ${parent.type}\t THIS: ${node.type}\t ${identifier.name}`)
+
                             switch (parent.type) {
                                 case "CallExpression":
                                     parent.callee = identifier;
@@ -73,10 +72,6 @@ export function accessReplace(js: JSFile) {
                                         return node;
                                     }
                             }
-                        } else if (parent.type === "ExpressionStatement"
-                            || (parent.type === "VariableDeclarator"
-                                && parent.id.type !== "ObjectPattern")) {
-                            return;
                         } else {
                             switch (parent.type) {
                                 case "NewExpression":
@@ -95,9 +90,13 @@ export function accessReplace(js: JSFile) {
 
                                     //not needed here because parent would be body
                                     break;
+                                case"VariableDeclarator":
+                                    return;
+                                default://TODO run thru types again
+                                    return;
                             }
-                            console.log(`unexpected type for  parent: ${parent.type}
-                            Node type ${node.type} on require string: ${requireString} : ${imports[requireString]}`)
+                            // console.log(`unexpected type for  parent: ${parent.type}
+                            // Node type ${node.type} on require string: ${requireString} : ${imports[requireString]}`)
                         }
                     } else if (parent === null) {
                         return;
@@ -105,10 +104,17 @@ export function accessReplace(js: JSFile) {
                     if (isForLoopAccess(node, parent)
                         && node.type === "VariableDeclaration"
                     ) {
-                        node.declarations.forEach((e: VariableDeclarator) => {
-                            extractRequireDataForAccess(e, extract, js);
+                         node.declarations.forEach((e: VariableDeclarator) => {
+                             extractRequireDataForAccess(e, extract, js);
                         });
                     }
+                    // else if(parent&& node.type === "BlockStatement" && parent.type === "ForStatement"
+                    // && node.body.forEach(e:=>{
+                    //
+                    //     }
+                    // )){
+                    //
+                    // }
 
                 }
         }
@@ -129,7 +135,17 @@ export function accessReplace(js: JSFile) {
 
 
         replace(js.getAST(), visitor)
-
+        js.getAST().body.forEach(e =>{
+            traverse(e, {
+                enter:(node, parent) => {
+                    if (parent !==  null  &&  node.type === "VariableDeclaration"){
+                        node.declarations.forEach(e=> {
+                            extractRequireDataForAccess(e, extract, js);
+                        })
+                    }
+                }
+            })
+        });
         return imports;
     }
 
@@ -175,8 +191,8 @@ function getRequireStringFromDecl(node: VariableDeclarator) {
 
 function isForLoopAccess(node: Node, parent: Node) {
     return ((
-        parent && (parent.type === "ForStatement" && parent.init.type === "VariableDeclaration"
-        || parent.type === "ForInStatement" && parent.left.type === "VariableDeclaration")
+        parent && (parent.type === "ForStatement" && parent.init && parent.init.type === "VariableDeclaration"
+        || parent.type === "ForInStatement" && parent.left&&parent.left.type === "VariableDeclaration")
         && node.type === "VariableDeclaration"
         && node.declarations.length > 0
         && ((parent.type === "ForStatement" && node === parent.init)
@@ -205,13 +221,13 @@ function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPatter
 }
 
 function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr: string, ns: Namespace) => Identifier, js: JSFile) {
-    if ((e.init.type === "CallExpression"
+     if (( e.init && e.init.type === "CallExpression"
         && e.init.callee.type === "Identifier"
         && e.init.callee.name === "require"
         && e.init.arguments && e.init.arguments[0] !== null
         && e.init.arguments[0].type === "Literal")) {
         let id = extract(getRequireStringFromDecl(e), js.getNamespace());
-        e.init = id;
+         e.init = id;
     }
 }
 

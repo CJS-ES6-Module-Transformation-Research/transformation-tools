@@ -27,9 +27,10 @@ var ImportManager_1 = require("../../../transformations/import_transformations/I
  */
 var JSFile = /** @class */ (function (_super) {
     __extends(JSFile, _super);
-    function JSFile(dir, rel, file, readType) {
+    function JSFile(dir, rel, file, readType, text) {
         if (readType === void 0) { readType = 'script'; }
-        var _this = _super.call(this, dir, rel, file, 0) || this;
+        if (text === void 0) { text = ''; }
+        var _this = _super.call(this, dir, rel, file, 0, text) || this;
         _this.built = false;
         _this.stringReplace = new Map();
         _this.replacer = function (s) { return s; };

@@ -21,7 +21,7 @@ type JSFileVisitor<R> = (prog: Program) => R
 export class JSFile extends ReadableFile {
     private shebang: string;
     private ast: Program
-
+    private isStrict: boolean = false;
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
     private built: boolean = false;
@@ -35,9 +35,11 @@ export class JSFile extends ReadableFile {
     private exports: Export;
 
     private namespace: Namespace
+    private moduleType: script_or_module;
 
-    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script', text ='') {
-        super(dir, rel, file, 0,text);
+    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script', text = '') {
+        super(dir, rel, file, 0, text);
+        this.moduleType = readType;
         this.imports = new ImportManager();
         this.shebang = '';
         this.toAddToTop = [];
@@ -57,6 +59,11 @@ export class JSFile extends ReadableFile {
             // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
             throw e;
         }
+
+
+        if ((this.ast.body[0] as Directive).directive === "use strict") {
+            this.isStrict = true;
+        }
         this.rebuildNamespace();
     }
 
@@ -73,6 +80,9 @@ export class JSFile extends ReadableFile {
         this.toAddToTop.push(toAdd)
     }
 
+    public setAsModule() {
+        this.moduleType = "module";
+    }
 
     public getAST(): Program {
         return this.ast;
@@ -88,7 +98,7 @@ export class JSFile extends ReadableFile {
 
 
     public registerReplace(replace: string, value: string): void {
-        this.stringReplace.set(replace,value);
+        this.stringReplace.set(replace, value);
     }
 
     /**
@@ -101,7 +111,7 @@ export class JSFile extends ReadableFile {
             return;
         }
         let body = this.ast.body;
-        this.ast.sourceType = "module"
+        this.ast.sourceType = this.moduleType//TODO B=
         this.toAddToTop.forEach((e) => {
             body.splice(0, 0, e)
         })
@@ -119,6 +129,9 @@ export class JSFile extends ReadableFile {
             this.exports.buildAll().forEach((e) => {
                 // body.push(e)
             });
+        }
+        if (this.isStrict && this.ast.sourceType !== "module") {
+            this.ast.body.splice(0, 0, useStrict);
         }
     }
 
@@ -178,4 +191,14 @@ export class JSFile extends ReadableFile {
     }
 
 
+}
+
+const useStrict: Directive = {
+    "type": "ExpressionStatement",
+    "expression": {
+        "type": "Literal",
+        "value": "use strict",
+        "raw": "\"use strict\""
+    },
+    "directive": "use strict"
 }
