@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const _moduleAccess____index = require('../index.js');
+import _moduleAccess____index from '../index.js';
+import repo from '../index.js';
 'use strict';
-var repo = require('../index.js');
 if (!process.argv[2]) {
     process.stdout.write('Missing argument: package' + '\n');
     process.exit(1);

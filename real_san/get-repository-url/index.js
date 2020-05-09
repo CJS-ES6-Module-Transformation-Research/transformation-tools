@@ -1,11 +1,11 @@
 
-const _moduleAccess_util = require('util');
-const _moduleAccess_parse_github_url = require('parse-github-url');
-const _moduleAccess_get_pkg = require('get-pkg');
+import _moduleAccess_get_pkg from 'get-pkg';
+import pkg from 'get-pkg';
+import _moduleAccess_parse_github_url from 'parse-github-url';
+import parse from 'parse-github-url';
+import _moduleAccess_util from 'util';
+import util from 'util';
 'use strict';
-const util = require('util');
-const parse = require('parse-github-url');
-const pkg = require('get-pkg');
 const isObject = val => val !== null && typeof val === 'object';
 const isString = val => val !== '' && typeof val === 'string';
 function getRepsitoryUrl(name, cb) {

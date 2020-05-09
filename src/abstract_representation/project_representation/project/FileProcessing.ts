@@ -31,7 +31,14 @@ export const projectReader = function (proj_dir: string, processType: script_or_
      * @param dir the current directory being walked.
      */
     function walk(dir: string, readType: script_or_module = 'script') {
-        let ls: string[] = readdirSync(dir);
+
+        let ls: string[]
+        try {
+            ls = readdirSync(dir);
+        }catch (readDirError) {
+            console.log(`ERROR: ${readDirError} \n in file ${proj_dir} \ncurrent called dir: ${dir}`)
+            throw readDirError
+        }
         //for file|dir in `ls`
         ls.forEach((file: string) => {
             //helps generate relative path

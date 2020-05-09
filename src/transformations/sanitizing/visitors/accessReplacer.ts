@@ -191,8 +191,8 @@ function getRequireStringFromDecl(node: VariableDeclarator) {
 
 function isForLoopAccess(node: Node, parent: Node) {
     return ((
-        parent && (parent.type === "ForStatement" && parent.init.type === "VariableDeclaration"
-        || parent.type === "ForInStatement" && parent.left.type === "VariableDeclaration")
+        parent && (parent.type === "ForStatement" && parent.init && parent.init.type === "VariableDeclaration"
+        || parent.type === "ForInStatement" && parent.left&&parent.left.type === "VariableDeclaration")
         && node.type === "VariableDeclaration"
         && node.declarations.length > 0
         && ((parent.type === "ForStatement" && node === parent.init)
@@ -221,7 +221,7 @@ function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPatter
 }
 
 function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr: string, ns: Namespace) => Identifier, js: JSFile) {
-     if ((e.init.type === "CallExpression"
+     if (( e.init && e.init.type === "CallExpression"
         && e.init.callee.type === "Identifier"
         && e.init.callee.name === "require"
         && e.init.arguments && e.init.arguments[0] !== null

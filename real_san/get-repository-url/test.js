@@ -1,11 +1,10 @@
 
-const _moduleAccess_mocha = require('mocha');
-const _moduleAccess_assert = require('assert');
-const _moduleAccess___index = require('./index.js');
+import _moduleAccess___index from './index.js';
+import repositoryURL from './index.js';
+import _moduleAccess_assert from 'assert';
+import assert from 'assert';
+import _moduleAccess_mocha from 'mocha';
 'use strict';
-require('mocha');
-var assert = require('assert');
-var repositoryURL = require('./index.js');
 describe('repository URL', function () {
     it('should get a package.json for the given project', function (cb) {
         repositoryURL('generate', function (err, url) {

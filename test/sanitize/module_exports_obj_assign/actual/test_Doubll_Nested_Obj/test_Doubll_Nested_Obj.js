@@ -1,0 +1,1 @@
+module.exports = {      a:"c",x:{b:{y:99 }}         };

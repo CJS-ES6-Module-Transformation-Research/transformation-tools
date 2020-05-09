@@ -13,14 +13,14 @@ import {existsSync} from "fs";
 import {join, dirname} from 'path';
 
 
-export function santiize(transformer: Transformer) {
+export function sanitize(transformer: Transformer) {
 
     transformer.transform(requireStringSanitizer)
     transformer.transformWithProject(jsonRequire)
     transformer.transform(flattenDecls)
     transformer.transform(accessReplace)
     transformer.rebuildNamespace()
-    // transformer.transform(collectDefaultObjectAssignments)
+    transformer.transform(collectDefaultObjectAssignments)
 
 }
 
@@ -71,33 +71,14 @@ switch (argv.length) {
     }
 }
 
-// console.log(pwd)
-// console.log(`source ${source}`)
-// console.log(`dest ${dest}`)
-// console.log(`inmpl=ace ${inPlace}`)
-// process.exit(1);
-
-
-// const cjs = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
-// const srcDrawer = `${cjs}/real_projects`
-// const projStr = `${srcDrawer}/get-repository-url`
-// const OUT_DIR = `${cjs}/real_san/get-repository-url`
-// let project: TransformableProject = projectReader(projStr);
-// let transformer: Transformer = Transformer.ofProject(project);
-
-// const cjs = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
-// const srcDrawer = `${cjs}/real_projects`
-// const projStr = `${srcDrawer}/get-repository-url`
-// const OUT_DIR = `${cjs}/real_san/get-repository-url`
-
 let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
 
 
-
-
-
-santiize(transformer)
+sanitize(transformer)
+import {transformImport}from '../import_transformations/visitors/import_replacement'
+// import {importTransforms} from "src/transformations/import_transformations/exec_transform";
+// transformer.transform(transformImport)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {
@@ -105,10 +86,3 @@ if (inPlace) {
 
 }
 console.log("finished.")
-// /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform
-//
-// for file in `ls  ./test/sanitize/qccess_replace/js_files`; do echo  "./src/transformations/sanitizing/sanitize_project.ts  "
-//     ;echo ./test/sanitize/qccess_replace/js_files/$file;
-//     echo ./test/sanitize/qccess_replace/exected/$file;
-//     done;
-//     ./src/transformations/sanitizing/sanitize_project.ts ./test/sanitize/qccess_replace/js_files ./test/sanitize/qccess_replace/exected

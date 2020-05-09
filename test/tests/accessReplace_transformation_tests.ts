@@ -4,33 +4,31 @@ import {readdirSync} from 'fs'
 import {projectReader, TransformableProject} from "../../src/abstract_representation/project_representation";
 import {Transformer} from "../../src/transformations/Transformer";
 import {accessReplace} from "../../src/transformations/sanitizing/visitors";
+
 const testFile_dir = "/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/sanitize/qccess_replace";
 const actualDir = `${testFile_dir}/js_files`
 const expectedDir = `${testFile_dir}/expected`
 // let filename: string,expectedName: string;
 
-let files_in_dir=readdirSync(`${testFile_dir}/js_files`)
-
+let files_in_dir = readdirSync(`${testFile_dir}/js_files`)
 
 
 describe('Access Replace Test Files', () => {
 
 
-    async function testFunction(proj:string)   {
-        let eProj = projectReader(`${expectedDir}/${proj}`)
-        let aProj = projectReader(`${actualDir}/${proj}`)
-        let transformer = Transformer.ofProject(aProj);
-        transformer.transform(accessReplace) ;
-
-        aProj.forEachSource(  (e)=>{
-            let actual = e.makeString();
-            let expected = eProj.getJS(e.getRelative()).makeString();
-            expect(actual).to.be.equal( expected);
-        });
-    }
-
     it('Test Files', () => {
-        files_in_dir.forEach(testFunction);
+        files_in_dir.forEach((proj: string) => {
+            let eProj = projectReader(`${expectedDir}/${proj}`)
+            let aProj = projectReader(`${actualDir}/${proj}`)
+            let transformer = Transformer.ofProject(aProj);
+            transformer.transform(accessReplace);
+
+            aProj.forEachSource((e) => {
+                let actual = e.makeString();
+                let expected = eProj.getJS(e.getRelative()).makeString();
+                expect(actual).to.be.equal(expected);
+            });
+        });
 
 
     });
