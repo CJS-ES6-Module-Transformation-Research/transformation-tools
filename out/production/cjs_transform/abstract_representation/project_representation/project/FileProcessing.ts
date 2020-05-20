@@ -57,6 +57,7 @@ export const projectReader = function (proj_dir: string, processType: script_or_
                         break;
                     case ".json":
                         let json :JSONFile;
+                        //package.json test //TODO add cases for multi package files
                         if(file === "package.json" && rel === "package.json"){
                             json = new PackageJSON(absDir);
                             builder.addPackageJson(json as PackageJSON);

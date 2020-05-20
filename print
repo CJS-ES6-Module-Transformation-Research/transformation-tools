@@ -1,0 +1,93 @@
+ 
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "Identifier",
+                        "name": "module"
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "exports"
+                    }
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": "i am a default export",
+                    "raw": "\"i am a default export\""
+                }
+            }
+        },
+
+
+        
+       
+
+
+        
+       
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "Identifier",
+                            "name": "module"
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": "exports"
+                        }
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "named"
+                    }
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": "named export",
+                    "raw": "\"named export\""
+                }
+            }
+        },
+
+
+        
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "AssignmentExpression",
+                "operator": "=",
+                "left": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "Identifier",
+                        "name": "exports"
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "exNamed"
+                    }
+                },
+                "right": {
+                    "type": "Literal",
+                    "value": "named export shortcut",
+                    "raw": "\"named export shortcut\""
+                }
+            }
+        }
+   

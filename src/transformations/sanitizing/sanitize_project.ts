@@ -29,6 +29,11 @@ export function sanitize(transformer: Transformer) {
 
 argv.shift();
 argv.shift();
+
+
+// argv[0] = ``
+// argv[1] = ``
+
 const pwd = process.cwd();// dirname(argv.shift());
 
 let source: string, dest: string, inPlace: boolean
@@ -58,7 +63,7 @@ switch (argv.length) {
             dest = join(pwd, second);
         }
         if (!existsSync(dest)) {
-            console.log(`Source directory ${source} was not found. Please check input data.`)
+            console.log(`Target directory ${dest} was not found: creating... `)
         }
         argv[2] = source;
         argv[3] = dest;
@@ -76,12 +81,13 @@ switch (argv.length) {
 let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
 
-
-transformer.transform(transformImport)
+sanitize(transformer)
+// transformer.transform(transformImport)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {
     project.writeOutNewDir(dest)
+
 
 }
 console.log("finished.")

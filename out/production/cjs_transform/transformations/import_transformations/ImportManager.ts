@@ -131,6 +131,7 @@ export class ImportManager implements ImportManagerI {
                 importString: importString,
                 isSideEff: false
             };
+
         this.importMap[importString] = curr
         curr.named[name] = alias;
     }
@@ -148,6 +149,8 @@ export class ImportManager implements ImportManagerI {
                 importString: importString,
                 isSideEff: true
             };
+        curr.isSideEff = true; // in case laready exists
+
         this.importMap[importString] = curr
 
     }

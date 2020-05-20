@@ -1,0 +1,32 @@
+{
+  "name": "tcppubsub",
+  "version": "1.0.5",
+  "description": "A simple node-js-tcp publish-subscribe framework. With a broker and a client called member.",
+  "main": "lib/main.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "homepage": "https://github.com/yamigr/tcppubsub#readme",
+  "keywords": [
+    "tcppubsub",
+    "publish",
+    "subscribe",
+    "dealer",
+    "consumer",
+    "server",
+    "member",
+    "broker",
+    "IoT",
+    "frameworks",
+    "backend"
+  ],
+  "author": "yannick grund, https://github.com/yamigr",
+  "license": "MIT",
+  "dependencies": {
+    "node-wildcard": "0.0.9",
+    "wildcard": "^1.1.2"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}

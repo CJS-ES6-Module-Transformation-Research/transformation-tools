@@ -24,7 +24,7 @@ function extracted(testDataDirString: string) {
 }
 
 
-describe('Testing of declarator flattening', () => {
+describe('Sanitize: 2 Testing of Declarator Flattening', () => {
     it('Base Declarator Flattening Tests', () => {
         BASE_TEST_DATA.forEach(extracted);
     });

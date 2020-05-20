@@ -153,19 +153,15 @@ export function transformImport(js: JSFile) {
 
                     }
                 }
-            } else if (node.type === "ExpressionStatement") {
+            } else  if (node.type === "ExpressionStatement") {
                 if (node.expression.type === "CallExpression" && node.expression.callee.type === "Identifier") {
                     if (node.expression.callee.name === 'require' && node.expression.arguments) {
                         if (node.expression.arguments[0] && node.expression.arguments[0].type === "Literal") {
 
-                            let tmpData: ImportData = {
-                                iType: ImportType.sideEffect,
-                                importNames: [],
-                                importString: node.expression.arguments[0].value.toString()
-                            }
                             // node.expression.arguments[0].value.toString()
                             // data.push(tmpData)
                             js.getImportManager().createSideEffect(node.expression.arguments[0].value.toString())
+                            console.log('created '+ node.expression.arguments[0].value.toString())
                             nodes.add(node)
                             return VisitorOption.Remove;
                         }

@@ -1,0 +1,11 @@
+simple_single.js
+simple_double.js
+simple_many_ordered.js
+uses_old_identifier.js
+multi_requires_same_string.js
+sorting_order_module.js
+sorting_order_relative.js
+sorting_order_mix.js
+hoists_from_bottom.js
+hoists_from_middle.js
+no_assign_to_obj_decons.js

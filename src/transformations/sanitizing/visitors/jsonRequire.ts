@@ -1,11 +1,14 @@
-import {JSFile, JSONFile, TransformableProject} from "../../../abstract_representation/project_representation";
+import {JSFile, TransformableProject} from "../../../abstract_representation/project_representation";
 import {traverse, Visitor} from "estraverse";
 import {dirname, join} from "path";
-import relative from "relative";
 import {ProjectTransformFunction} from "../../Transformer";
-import {normalize, resolve} from 'path'
 import {existsSync} from "fs";
 
+
+/**
+ * TransformFunction for creating a JSONFile from a require string of the form '*.json'.
+ * @param project the TransformableProject.
+ */
 export const jsonRequire: ProjectTransformFunction = function (project: TransformableProject) {
     return function (js: JSFile): void {
 

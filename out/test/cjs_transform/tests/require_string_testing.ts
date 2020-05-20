@@ -15,7 +15,7 @@ const read =
         .split(`\n`);
 
 let project: TransformableProject;
-describe('Require String Tests', () => {
+describe('Sanitize: 0 Require String Tests', () => {
     it(`Require Tests From ${requireString}/tests.txt`, () => {
         let expected: string, expectedFileString: string, expectedProgString: string, expectedAST: Program,
             jsf: JSFile,loadedJSFile,actual;

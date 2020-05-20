@@ -8,6 +8,8 @@ import {Export} from "../../../transformations/export_transformations/Export";
 import {script_or_module} from "../project/FileProcessing";
 import {Namespace} from "./Namespace";
 import {ImportManager} from "../../../transformations/import_transformations/ImportManager";
+import {ExportBuilder} from "../../../transformations/export_transformations/ExportsBuilder";
+import exp from "constants";
 
 
 type StringReplace = (arg: string) => string
@@ -21,7 +23,7 @@ type JSFileVisitor<R> = (prog: Program) => R
 export class JSFile extends ReadableFile {
     private shebang: string;
     private ast: Program
-    private  isStrict:boolean = false;
+    private isStrict: boolean = false;
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
     private built: boolean = false;
@@ -32,13 +34,16 @@ export class JSFile extends ReadableFile {
     private replacer: StringReplace = (s) => s;
 
     private imports: ImportManager
-    private exports: Export;
+    private exports: ExportBuilder;
 
     private namespace: Namespace
+    private moduleType: script_or_module;
 
-    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script', text ='') {
-        super(dir, rel, file, 0,text);
+    constructor(dir: string, rel: string, file: string, readType: script_or_module = 'script', text = '') {
+        super(dir, rel, file, 0, text);
+        this.moduleType = readType;
         this.imports = new ImportManager();
+        this.exports = new ExportBuilder();
         this.shebang = '';
         this.toAddToTop = [];
         this.toAddToBottom = [];
@@ -57,9 +62,12 @@ export class JSFile extends ReadableFile {
             // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
             throw e;
         }
-        // if (this.ast.body[0].type ==="ExpressionStatement"&&this.ast.body[0].directive){
-        //     Directive d
-        // }
+
+
+        if (this.ast.body.length !== 0 && (this.ast.body[0] as Directive).directive === "use strict") {
+            this.ast.body.splice(0, 1)
+            this.isStrict = true;
+        }
 
         this.rebuildNamespace();
     }
@@ -70,13 +78,17 @@ export class JSFile extends ReadableFile {
 
 
     public addToTop(toAdd: Directive | Statement | ModuleDeclaration) {
-        this.toAddToTop.push(toAdd)
+        this.
+        toAddToTop.push(toAdd)
     }
 
     public addToBottom(toAdd: Directive | Statement | ModuleDeclaration) {
         this.toAddToTop.push(toAdd)
     }
 
+    public setAsModule() {
+        this.moduleType = "module";
+    }
 
     public getAST(): Program {
         return this.ast;
@@ -92,50 +104,52 @@ export class JSFile extends ReadableFile {
 
 
     public registerReplace(replace: string, value: string): void {
-        this.stringReplace.set(replace,value);
+        this.stringReplace.set(replace, value);
     }
 
     /**
-     * builds the AST for generating a string. can only be done ONCE.
+     * builds the AST for generating a string.
      */
-    private build() {
-        this.toAddToTop = [];
-        this.toAddToBottom = [];
-        if (this.built) {
-            return;
-        }
-        let body = this.ast.body;
-        this.ast.sourceType = "module"
-        this.toAddToTop.forEach((e) => {
+    private build():Program {
+
+        let addToTop = this.toAddToTop;
+        let addToBottom = this.toAddToBottom
+
+        let newAST = this.ast;
+        let body = newAST.body;
+        newAST.sourceType = this.moduleType//TODO B=
+
+        addToTop.forEach((e) => {
             body.splice(0, 0, e)
         })
 
-        this.toAddToBottom.forEach((e) => {
+        addToBottom .forEach((e) => {
             body.push(e)
         })
 
-        if (this.imports) {
-            this.imports.buildDeclList().forEach((e) => {
-                body.splice(0, 0, e)
-            })
+
+        this.imports.buildDeclList().forEach((e) => {
+            body.splice(0, 0, e)
+        })
+        let exports = this.exports.build();
+
+        body.push(exports.named_exports)
+        body.push(exports.default_exports)
+
+        if (this.isStrict && this.ast.sourceType !== "module") {
+            this.ast.body.splice(0, 0, useStrict);
         }
-        if (this.exports) {
-            this.exports.buildAll().forEach((e) => {
-                // body.push(e)
-            });
-        }
+        return newAST;
     }
 
     /**
      * generates a string from the built AST.
      */
     public makeString(): string {
-        this.build();
-
-
         try {
-            let program = generate(this.ast);
+            let program = generate(this.build());
             this.stringReplace.forEach((k: string, v: string) => {
+                //todo import.meta....
                 program = program.replace(k, v)
             });
             this.shebang = this.shebang ? this.shebang + '\n' : this.shebang;
@@ -170,10 +184,6 @@ export class JSFile extends ReadableFile {
     }
 
 
-    setExports(exports: Export) {
-        this.exports = exports;
-    }
-
     /**
      * gets the JSFiles ImportManager.
      */
@@ -182,8 +192,12 @@ export class JSFile extends ReadableFile {
     }
 
 
+    getExportBuilder(): ExportBuilder {
+        return this.exports;
+    }
 }
-const useStrict:Directive = {
+
+const useStrict: Directive = {
     "type": "ExpressionStatement",
     "expression": {
         "type": "Literal",

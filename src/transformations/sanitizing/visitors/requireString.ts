@@ -5,7 +5,12 @@ import {JSFile} from "../../../abstract_representation/project_representation/ja
 import {Visitor,traverse} from "estraverse";
 import {dirname,join} from 'path'
 
-export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
+
+ /**
+  * Require string sanitizer visitor. Type of TransformFunction.
+  * @param js a JSFile
+  */
+ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
     let requireStringTF: RequireStringTransformer = new RequireStringTransformer(dirname(join(js.getDir(),js.getRelative())))
     let visitor: Visitor = {
         enter: function (node: Node): void {
@@ -24,30 +29,6 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 
             }
         }
-        // {
-        //     let requireStringTF: RequireStringTransformer = new RequireStringTransformer(js.getDir())
-        //     let callExpr: CallExpression
-        //     let callee:Identifier
-        //     if (isCallExpr(node)) {
-        //         callExpr = node
-        //         if (isIdentifier(callExpr.callee)) {
-        //             callee = callExpr.callee
-        //             if (callee && isIdentifier(callee) && (callee as Identifier).name === "require") {
-        //                 if (isLiteral(callExpr.arguments[0])) {
-        //                     let literal = callExpr.arguments[0]
-        //                     let requireString: string
-        //                     if (literal.value) {//TODO remove? Type changed from Literal to SimpleLiteral -- verify works
-        //                         // all literals of this type should have a value field
-        //                         requireString = requireStringTF.getTransformed(`${literal.value}`)
-        //                         literal.value = requireString
-        //                         literal.raw = `'${requireString}'`
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //
-        //     }
-        // }
     };
     traverse(js.getAST(),visitor)
 

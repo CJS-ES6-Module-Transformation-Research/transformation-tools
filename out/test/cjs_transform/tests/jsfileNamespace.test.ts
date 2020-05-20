@@ -30,7 +30,7 @@ testData ['classDecl'] = readFileSync(`${testDir}/classDecl.js`).toString()
 // testData ['classDecl']
 // decl, assign in for
 // not rhs of module.exports = {};
-describe('basic namespace traversal tests', () => {
+describe('Utility: Basic Namespace Traversal Tests', () => {
 
 
     it('singleVDecl', () => {

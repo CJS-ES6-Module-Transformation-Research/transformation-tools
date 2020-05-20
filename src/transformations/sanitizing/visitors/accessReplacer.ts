@@ -37,7 +37,10 @@ const upper = 'QWERTYUIOPLKJHGFDSAZXCVBNM';
 const numeric = '1234567890';
 const alphaNumericString: string = `${lower}${upper}${numeric}`
 
-
+/**
+ * TransformFunction to replace 'accesses' of require calls.
+ * @param js the JSFile to transform.
+ */
 export function accessReplace(js: JSFile) {
 
     let runTraversal = function () {
@@ -48,12 +51,15 @@ export function accessReplace(js: JSFile) {
                     if (isARequire(node) && parent.type) {
                         let require: Require = node as Require
                         let requireString: string = (require.arguments[0] as Literal).value.toString();
+                        //gets the appropriate identifier for the require for a require string access variable.
                         let identifier = extract(requireString, js.getNamespace())
 
+                            //check is call expression and not single-identifier declarator
                         if ("CallExpression" === parent.type ||
                             "MemberExpression" === parent.type ||
                             "AssignmentExpression" === parent.type ||
                             ("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
+
 
                             switch (parent.type) {
                                 case "CallExpression":
@@ -95,12 +101,12 @@ export function accessReplace(js: JSFile) {
                                 default://TODO run thru types again
                                     return;
                             }
-                            // console.log(`unexpected type for  parent: ${parent.type}
-                            // Node type ${node.type} on require string: ${requireString} : ${imports[requireString]}`)
+
                         }
                     } else if (parent === null) {
                         return;
                     }
+                    //if there is a variable declaration of any type inside a for loop
                     if (isForLoopAccess(node, parent)
                         && node.type === "VariableDeclaration"
                     ) {
@@ -108,14 +114,6 @@ export function accessReplace(js: JSFile) {
                              extractRequireDataForAccess(e, extract, js);
                         });
                     }
-                    // else if(parent&& node.type === "BlockStatement" && parent.type === "ForStatement"
-                    // && node.body.forEach(e:=>{
-                    //
-                    //     }
-                    // )){
-                    //
-                    // }
-
                 }
         }
 

@@ -4,13 +4,15 @@ import {
     accessReplace,
     collectDefaultObjectAssignments,
     flattenDecls,
-    requireStringSanitizer,
-    jsonRequire
+    jsonRequire,
+    requireStringSanitizer
 } from "./visitors";
 import {argv} from "process";
 import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
-import {join, dirname} from 'path';
+import {join} from 'path';
+// sanitize(transformer)
+import {transformImport} from '../import_transformations/visitors/import_replacement'
 
 
 export function sanitize(transformer: Transformer) {
@@ -27,6 +29,11 @@ export function sanitize(transformer: Transformer) {
 
 argv.shift();
 argv.shift();
+
+
+// argv[0] = ``
+// argv[1] = ``
+
 const pwd = process.cwd();// dirname(argv.shift());
 
 let source: string, dest: string, inPlace: boolean
@@ -56,7 +63,7 @@ switch (argv.length) {
             dest = join(pwd, second);
         }
         if (!existsSync(dest)) {
-            console.log(`Source directory ${source} was not found. Please check input data.`)
+            console.log(`Target directory ${dest} was not found: creating... `)
         }
         argv[2] = source;
         argv[3] = dest;
@@ -74,15 +81,13 @@ switch (argv.length) {
 let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
 
-
 sanitize(transformer)
-import {transformImport}from '../import_transformations/visitors/import_replacement'
-// import {importTransforms} from "src/transformations/import_transformations/exec_transform";
 // transformer.transform(transformImport)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {
     project.writeOutNewDir(dest)
+
 
 }
 console.log("finished.")

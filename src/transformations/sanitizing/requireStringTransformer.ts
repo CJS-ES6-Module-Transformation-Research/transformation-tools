@@ -6,6 +6,9 @@ import relative from "relative";
 const _JS = ".js";
 const _JSON = ".json";
 
+/**
+ * Require String object transformer that generates the expected ES6 version of the require string.
+ */
 export class RequireStringTransformer {
     private dirname: string;
 
@@ -17,7 +20,10 @@ export class RequireStringTransformer {
         return resolve(this.dirname, path)
     }
 
-
+    /**
+     * Transforms require string to ES6 string based on project.
+     * @param path require string.
+     */
     getTransformed(path: string) {
         let absolute: string = this.absPath(path)
         let computedPath: string

@@ -1,0 +1,103 @@
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "CallExpression",
+                "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "Identifier",
+                        "name": "module"
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "exports"
+                    }
+                },
+                "arguments": []
+            }
+        }
+    ],
+    "sourceType": "script"
+}
+
+
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "CallExpression",
+                "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "Identifier",
+                            "name": "module"
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": "exports"
+                        }
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "myFunc"
+                    }
+                },
+                "arguments": []
+            }
+        }
+    ],
+    "sourceType": "script"
+}
+
+
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "CallExpression",
+                "callee": {
+                    "type": "MemberExpression",
+                    "computed": false,
+                    "object": {
+                        "type": "MemberExpression",
+                        "computed": false,
+                        "object": {
+                            "type": "MemberExpression",
+                            "computed": false,
+                            "object": {
+                                "type": "Identifier",
+                                "name": "module"
+                            },
+                            "property": {
+                                "type": "Identifier",
+                                "name": "exports"
+                            }
+                        },
+                        "property": {
+                            "type": "Identifier",
+                            "name": "myObj"
+                        }
+                    },
+                    "property": {
+                        "type": "Identifier",
+                        "name": "myFunc"
+                    }
+                },
+                "arguments": []
+            }
+        }
+    ],
+    "sourceType": "script"
+}

@@ -36,6 +36,10 @@ export class Namespace {
         });
     }
 
+    public addToNamespace(name: string): void {
+        this.names.add(name)
+    }
+
     /**
      * returns true if name is in the namespace.
      * @param name the tewt name.

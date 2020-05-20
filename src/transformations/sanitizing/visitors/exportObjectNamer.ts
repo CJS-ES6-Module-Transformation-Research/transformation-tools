@@ -5,6 +5,11 @@ import {createNamedAssignment} from "../../../abstract_representation/es_tree_st
 import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {TransformFunction} from "../../Transformer";
 
+
+/**
+ * TransformFunction for flattening object assignments to module.exports.
+ * @param js the JSFile to transform
+ */
 export const collectDefaultObjectAssignments: TransformFunction = function (js: JSFile): void {
     let internalVis: Visitor = {
         enter: (node: Node, parent: Node) => {

@@ -1,0 +1,1 @@
+let {a,b,c} = require('eightySix').invoke()

@@ -39,7 +39,7 @@ let project: TransformableProject;
 let manager = new ImportManager();
 
 
-describe('testing for ImportManager', () => {
+describe('Utility Testing for ImportManager', () => {
     beforeEach('before each', () => {
         manager = new ImportManager()
     })
