@@ -13,7 +13,7 @@ import {existsSync} from "fs";
 import {join} from 'path';
 // sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
-import {_transformBaseExports} from ".//visitors/exportTransformMain";
+import {_transformBaseExports} from "./visitors/exportTransformMain";
 
 argv.shift();
 argv.shift();

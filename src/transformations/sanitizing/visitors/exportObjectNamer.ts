@@ -1,7 +1,6 @@
-import {Expression, Node} from "estree";
+import {AssignmentOperator, Expression, Node, Statement} from "estree";
 import {traverse, Visitor} from "estraverse";
 import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
-import {createNamedAssignment} from "../../../abstract_representation/es_tree_stuff/exportsTools";
 import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {TransformFunction} from "../../Transformer";
 
@@ -53,3 +52,34 @@ export const collectDefaultObjectAssignments: TransformFunction = function (js: 
     traverse(js.getAST(), internalVis)
 }
 
+function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
+    return {
+        type: "ExpressionStatement",
+        expression: {
+            type: "AssignmentExpression",
+            operator: op,
+            left: {
+                type: "MemberExpression",
+                computed: false,
+                object: {
+                    type: "MemberExpression",
+                    computed: false,
+                    object: {
+                        type: "Identifier",
+                        name: "module"
+                    },
+                    property: {
+                        type: "Identifier",
+                        name: "exports"
+                    }
+                },
+                property: {
+                    type: "Identifier",
+                    name: named
+                }
+            },
+            right: assignable
+        }
+    };
+
+}

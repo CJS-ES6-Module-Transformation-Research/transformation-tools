@@ -7,43 +7,16 @@ import {
     Statement,
     VariableDeclaration
 } from "estree";
-import {ExportInstance} from "../../transformations/export_transformations/visitors/types";
 
-export function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
-    return {
-        type: "ExpressionStatement",
-        expression: {
-            type: "AssignmentExpression",
-            operator: op,
-            left: {
-                type: "MemberExpression",
-                computed: false,
-                object: {
-                    type: "MemberExpression",
-                    computed: false,
-                    object: {
-                        type: "Identifier",
-                        name: "module"
-                    },
-                    property: {
-                        type: "Identifier",
-                        name: "exports"
-                    }
-                },
-                property: {
-                    type: "Identifier",
-                    name: named
-                }
-            },
-            right: assignable
-        }
-    };
-
+export interface ExportInstance {
+    alias: string
+    identifier: string
+    expr: Expression
+    type: string
+    isDefault: boolean
 }
 
-
-
-
+//
 export function createAnExport(exp: ExportInstance): ExportDefaultDeclaration | ExportNamedDeclaration {
 
 

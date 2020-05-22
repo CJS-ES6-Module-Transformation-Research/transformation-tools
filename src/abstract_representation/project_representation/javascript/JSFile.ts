@@ -4,12 +4,10 @@ import {generate} from "escodegen";
 import {ReadableFile} from "../project/FilesTypes";
 import {Directive, ModuleDeclaration, Statement} from "estree";
 
-import {Export} from "../../../transformations/export_transformations/Export";
 import {script_or_module} from "../project/FileProcessing";
 import {Namespace} from "./Namespace";
 import {ImportManager} from "../../../transformations/import_transformations/ImportManager";
 import {ExportBuilder} from "../../../transformations/export_transformations/ExportsBuilder";
-import exp from "constants";
 
 
 type StringReplace = (arg: string) => string
@@ -26,7 +24,6 @@ export class JSFile extends ReadableFile {
     private isStrict: boolean = false;
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
-    private built: boolean = false;
 
     private stringReplace: Map<string, string> = new Map<string, string>();
 

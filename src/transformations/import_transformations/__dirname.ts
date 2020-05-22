@@ -6,13 +6,12 @@ import {Identifier, Node, VariableDeclaration} from 'estree'
 import {generate} from "escodegen";
 
 
-
 export function dirname(js: JSFile): TransformFunction {
     js.rebuildNamespace();
-    if (!js.namespaceContains('__dirname')) {
+    if (!(js.namespaceContains('__dirname') || js.namespaceContains('__filename'))) {
         return;
     }
-    let ast: Program = js.getAST();
+    const ast: Program = js.getAST();
     let path: string, url: string;
 
     path = js.getNamespace().generateBestName('dirname').name
@@ -21,10 +20,10 @@ export function dirname(js: JSFile): TransformFunction {
     js.getImportManager().createNamedWithAlias('path', 'dirname', path);
     js.getImportManager().createNamedWithAlias('url', 'fileURLToPath', url);
 
-    let importMetaUrl = `import.meta.url`
-    let replace: string = js.getNamespace().generateBestName("IMPORT_META_URL").name;
-    js.registerReplace(replace, importMetaUrl)
-    let __filename: VariableDeclaration =
+    const importMetaUrl = `import.meta.url`
+    const import_meta_url: string = js.getNamespace().generateBestName("IMPORT_META_URL").name;
+    js.registerReplace(import_meta_url, importMetaUrl)
+    const __filename: VariableDeclaration =
         {
             "type": "VariableDeclaration",
             "declarations": [
@@ -43,7 +42,7 @@ export function dirname(js: JSFile): TransformFunction {
                         "arguments": [
                             {
                                 "type": "Identifier",
-                                "name": replace
+                                "name": import_meta_url
                             }
                         ]
                     }
@@ -51,7 +50,7 @@ export function dirname(js: JSFile): TransformFunction {
             ],
             "kind": "const"
         };
-    let __dirname: VariableDeclaration = {
+    const __dirname: VariableDeclaration = {
         "type": "VariableDeclaration",
         "declarations": [
             {

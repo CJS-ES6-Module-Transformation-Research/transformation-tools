@@ -1,17 +1,7 @@
 import {JSFile} from "../../../abstract_representation/project_representation";
 import {TransformFunction} from "../../Transformer";
-import {replace, traverse, Visitor, VisitorOption} from "estraverse";
-import {
-    AssignmentExpression,
-    MemberExpression,
-    Node,
-    Program,
-    Statement,
-    VariableDeclaration,
-    VariableDeclarator
-} from "estree";
-import {ExportBuilder} from "../ExportsBuilder";
-import {parseScript} from "esprima";
+import {replace, Visitor, VisitorOption} from "estraverse";
+import {AssignmentExpression, MemberExpression, Node, VariableDeclaration, VariableDeclarator} from "estree";
 import {generate} from "escodegen";
 
 
@@ -29,17 +19,17 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
 
             let assignmentNode: AssignmentExpression;
 
-if(parent.type&& parent === null){
+            if (parent.type && parent === null) {
 
-    // console.log(parent.expression.type)
+                // console.log(parent.expression.type)
 
-    // process.exit(0)
-}
+                // process.exit(0)
+            }
             if (
 
 
                 // parent.type&&
-                parent === null&&
+                parent === null &&
 
                 node.type === "ExpressionStatement" &&
                 node.expression.type === "AssignmentExpression") {
@@ -113,7 +103,7 @@ if(parent.type&& parent === null){
                                         alias: best
                                     }, assignmentNode.right
                                 );
-                                const declarator:VariableDeclarator={
+                                const declarator: VariableDeclarator = {
                                     type: "VariableDeclarator",
                                     id: {type: "Identifier", name: best},
                                     init: assignmentNode.right
@@ -177,10 +167,11 @@ if(parent.type&& parent === null){
                     }
                     ;
                 } else {
-                    console.log( 'null???  ')
-                };
+                    console.log('null???  ')
+                }
+                ;
             } else {
-              return null;
+                return null;
             }
             ;
         }
@@ -207,24 +198,3 @@ if(parent.type&& parent === null){
     // replace(js.getAST(), visitor)
 
 }
-
-
-let js = new JSFile('', '', '', 'script', `
- let hello = 9;
- module.exports.world = 900
- module.exports.hello = function x(){}
- if(true){
-    for (i=0; false; i++){
-    console.log(i)
-    }
- }
- function w(){return 3;}
- // module.exports = {a:b}
- `)
-// let builder: ExportBuilder = new ExportBuilder()
-// transformBaseExports(js);
-// let built = builder.build()
-// console.log(JSON.stringify(built,null,4))
-// console.log(generate(built.named_exports))
-// console.log(generate(built.default_exports))
-
