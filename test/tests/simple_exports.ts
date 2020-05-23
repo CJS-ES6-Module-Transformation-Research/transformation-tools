@@ -1,13 +1,12 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
-import {transformBaseExports} from '../../src/transformations/export_transformations/visitors/_____search_nameless_df_exports'
-import {ExportBuilder} from '../../src/transformations/export_transformations/ExportsBuilder'
+ import {ExportBuilder} from '../../src/transformations/export_transformations/ExportsBuilder'
 import {readdirSync, readFileSync} from "fs";
 
 
 import {projectReader, TransformableProject} from "../../src/abstract_representation/project_representation";
 import {Transformer} from "../../src/transformations/Transformer";
-import {} from "../../src/transformations/export_transformations/visitors/_____search_nameless_df_exports";
+ import {transformBaseExports} from "transformations/export_transformations/visitors/exportTransformMain";
 
 
 
@@ -20,9 +19,12 @@ testFiles.forEach(e => {
 
 
     if (e.isDirectory()) {
-        readFileSync(`.js`)
+        // readFileSync(`.js`)
         let projDir = `${testPath}/${e.name}`
         let proj = projectReader(projDir,'script' )
+        let transformer =   Transformer.ofProject(proj);
+        transformer.transform(transformBaseExports)
+
 
         //  // console.log(e.name)
        //  // console.log(`${testPath}/${e.name}`)

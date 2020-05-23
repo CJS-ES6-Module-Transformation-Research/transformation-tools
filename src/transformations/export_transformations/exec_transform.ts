@@ -13,7 +13,7 @@ import {existsSync} from "fs";
 import {join} from 'path';
 // sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
-import {_transformBaseExports} from "./visitors/exportTransformMain";
+import {transformBaseExports} from "./visitors/exportTransformMain";
 
 argv.shift();
 argv.shift();
@@ -65,7 +65,7 @@ switch (argv.length) {
 let project: TransformableProject = projectReader(source);
 let transformer: Transformer = Transformer.ofProject(project);
 
-transformer.transform(_transformBaseExports)
+transformer.transform(transformBaseExports)
 if (inPlace) {
     project.writeOutInPlace('.pre-transform')
 } else {

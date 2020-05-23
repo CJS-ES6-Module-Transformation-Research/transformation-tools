@@ -47,12 +47,15 @@ export class JSFile extends ReadableFile {
         let program: string = this.text
         if (shebangRegex.test(this.text)) {
             this.shebang = shebangRegex.exec(this.text)[0].toString()
-            program = program.replace(this.shebang, '');
+             program = program.replace(this.shebang, '');
+
         }
         try {
             if (readType === 'script') {
+
                 this.ast = parseScript(program)
             } else {
+
                 this.ast = parseModule(program)
             }
         } catch (e) {
@@ -108,7 +111,6 @@ export class JSFile extends ReadableFile {
      * builds the AST for generating a string.
      */
     private build():Program {
-
         let addToTop = this.toAddToTop;
         let addToBottom = this.toAddToBottom
 
@@ -128,14 +130,21 @@ export class JSFile extends ReadableFile {
         this.imports.buildDeclList().forEach((e) => {
             body.splice(0, 0, e)
         })
+
         let exports = this.exports.build();
 
-        body.push(exports.named_exports)
-        body.push(exports.default_exports)
+        if (exports.named_exports) {
+            body.push(exports.named_exports)
+        }
+        if (exports.default_exports) {
+            body.push(exports.default_exports)
+        }
+
 
         if (this.isStrict && this.ast.sourceType !== "module") {
             this.ast.body.splice(0, 0, useStrict);
         }
+
         return newAST;
     }
 

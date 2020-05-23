@@ -15,7 +15,7 @@ import {
     VariableDeclarator
 } from "estree";
 import {parseScript} from "esprima";
-import {_transformBaseExports} from "./src/transformations/export_transformations/visitors/exportTransformMain";
+import {transformBaseExports} from "./src/transformations/export_transformations/visitors/exportTransformMain";
 
 
 let filesinExportsTests = [`obj_to_name`,
@@ -47,7 +47,7 @@ let transformer = Transformer.ofProject(project)
 
 
 
-transformer.transform(_transformBaseExports)
+transformer.transform(transformBaseExports)
 
 
 project.forEachSource(js => {

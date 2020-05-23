@@ -8,12 +8,13 @@ import {
     Statement, VariableDeclaration,
     VariableDeclarator
 } from "estree";
+import {generate} from "escodegen";
 
-export const _transformBaseExports: TransformFunction = (js: JSFile) => {
+export const transformBaseExports: TransformFunction = (js: JSFile) => {
     const exportBuilder = js.getExportBuilder();
     const namespace = js.getNamespace();
     let leave = (node: (Directive | Statement | ModuleDeclaration)): (Directive | Statement | ModuleDeclaration) => {
-        let rVal = node;
+
 
         let assignmentNode: AssignmentExpression;
 
@@ -44,7 +45,8 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                                 generator: short.generator
                             };
                             name = assignmentNode.right.id.name
-                            exportBuilder.registerDefault({name: name, alias: name}, assignmentNode.right)
+                            exportBuilder.registerName({name:name,alias:name} )
+                            exportBuilder.registerDefault({name: name, type: "Identifier"} )
                             return FD
                         }
                         break;
@@ -56,7 +58,8 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                             superClass: assignmentNode.right.superClass
                         };
                         name = assignmentNode.right.id.name
-                        exportBuilder.registerDefault({name: name, alias: name}, assignmentNode.right)
+                        exportBuilder.registerName({name:name,alias:name} )
+                        exportBuilder.registerDefault({name: name, type: "Identifier"} )
 
                         return decl// {type:"ExpressionStatement", expression:assignmentNode.right} ;
                     default:
@@ -65,26 +68,17 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                 }
                 let defExpt = namespace.generateBestName('defaultExport');
 
-                let the_names = {
-                    name: 'defaultExport',
-                    alias: defExpt.name
-                }
 
-                exportBuilder.registerDefault(the_names, assignmentNode.right);
-                //TODO ensure there are no accesses... do this as a sanitize step.
-                // const varDecl: VariableDeclaration = {
-                //     type: "VariableDeclaration",
-                //     kind: "const",
-                //     declarations: [
-                //
-                //     ]
-                // }
-                let declarator: VariableDeclarator = {
+
+                exportBuilder.registerDefault(defExpt );
+                console.log('logging  ' +  'defex '+' '+ defExpt.name)
+
+                const declarator: VariableDeclarator = {
                     type: "VariableDeclarator",
                     id: defExpt,
                     init: assignmentNode.right
                 }
-                rVal = {
+                    return {
                     type: "VariableDeclaration",
                     kind: 'const',
                     declarations: [declarator]
@@ -108,18 +102,18 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                 ) {
                     let best = namespace.generateBestName(memex.property.name).name
                     namespace.addToNamespace(best)
-
+console.log('logging  ' + best +' '+ memex.property.name)
                     exportBuilder.registerName({
                             name: memex.property.name,
                             alias: best
-                        }, assignmentNode.right
+                        }
                     );
                     const declarator: VariableDeclarator = {
                         type: "VariableDeclarator",
                         id: {type: "Identifier", name: best},
                         init: assignmentNode.right
                     };
-                    rVal = {
+                   return {
                         type: "VariableDeclaration",
                         kind: 'const',
                         declarations: [declarator]
@@ -129,15 +123,15 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                     && memex.object.name === "exports") {
 
 
-                    let best = namespace.generateBestName(memex.property.name).name
+                    const best = namespace.generateBestName(memex.property.name).name
 
                     namespace.addToNamespace(best);
                     exportBuilder.registerName({
                             name: memex.property.name,
                             alias: best
-                        }, assignmentNode.right
+                        }
                     )
-                    const varDecl: VariableDeclaration = {
+                    return   {
                         type: "VariableDeclaration",
                         kind: 'const',
                         declarations: [{
@@ -146,22 +140,17 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                             init: assignmentNode.right
                         }]
                     };
-
-
-                    rVal = varDecl;
-                }
+                 }
             }
 
 
         }
-        ;
-        return rVal;
     }
     js.getAST().body.forEach((node, index, array) => {
         let val
             = leave(node);
 
-        if (val !== null) {
+        if (val) {
             array[index] = val
         }
 

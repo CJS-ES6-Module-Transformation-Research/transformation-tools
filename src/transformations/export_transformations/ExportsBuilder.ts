@@ -2,71 +2,114 @@ import {
     Declaration,
     ExportDefaultDeclaration,
     ExportNamedDeclaration,
-    ExportSpecifier, Expression,
+    ExportSpecifier,
+    Expression,
     Identifier,
-    ModuleDeclaration,
     ObjectExpression
 } from "estree";
-import exp from "constants";
 
-interface exportlist {
+interface ExportIdentifier {
     name: string
     alias?: string
-    value: any
 }
 
-interface exportkeys {
-    [name: string]: exportlist
+interface ExportMap {
+    [name: string]: ExportIdentifier
 }
 
-export interface exportTypes {
+export interface ExportTypes {
     default_exports: ExportDefaultDeclaration
     named_exports: ExportNamedDeclaration
 }
 
 
+
 export class ExportBuilder {
 
-    private exportList: exportlist[] = [];
-    private defaultExport: exportlist;
-    private exAssocArr: exportkeys = {};
+    private exportList: ExportIdentifier[] = [];
+    private defaultIdentifier: Identifier;
+    private exportNameValue: ExportMap = {};
+    private defaultExport: Identifier = null;
 
-    registerName(names: exportNaming, value) {
+    constructor() {
+    }
+
+    clear() {
+        this.exportList = [];
+        this.exportNameValue = {};
+
+
+        this.defaultIdentifier = null;
+
+    }
+
+    registerName(names: exportNaming) {
 
 
         let exportsTmp = {
             name: names.name,
-            value: value,
             alias: names.alias
         }
         this.exportList.push(exportsTmp);
-        this.exAssocArr[names.name] = exportsTmp;
+        this.exportNameValue[names.name] = exportsTmp;
     }
 
 
     //////////////////MUST BE ABLE TO REGISTER DEFAULT WITHOUT NAME
     //////////////////DEFAULTS CANNOT HAVE ALIASES IN NODE
-
-    registerDefault(names: exportNaming, value: Expression | Declaration): void {
-
-        this.defaultExport = {
-            name: names.name,
-            value: value
-        }
+    /**
+     * case where there is an expression but no name... names is the default export name for the 'named' portion.
+     * @param names named export name.
+     * @param value expression/declaration value
+     */
+    registerDefault(names: Identifier): void {
+        this.defaultExport = names;
     }
 
 
-    build(): exportTypes {
-        let exports: exportTypes = {named_exports: null, default_exports: null};
+    build(): ExportTypes {
+        let exports: ExportTypes = {named_exports: null, default_exports: null};
 
-
-        this.exportList.forEach((value, index) => {
-            console.log(`${JSON.stringify(value, null, 3)}`)
-        })
 
         let specifiers: ExportSpecifier[] = [];
         let objEx: ObjectExpression = {type: "ObjectExpression", properties: []}
 
+        this.populateNames(specifiers, objEx)
+
+
+        //unset
+        if (!this.defaultExport && !this.exportList.length) {
+            return exports;
+        }
+
+        exports.named_exports = {
+            type: "ExportNamedDeclaration",
+            specifiers: specifiers,
+            declaration: null,
+            source: null
+        };//todo
+
+
+        exports.default_exports = {
+            type: "ExportDefaultDeclaration",
+            declaration:
+                this.defaultExport ? this.defaultExport : objEx
+        }
+        //named-only case... no default
+        // if (!this.defaultExport) {
+        //
+        //     };
+        // } else {
+        //     exports.default_exports = {
+        //         type: "ExportDefaultDeclaration",
+        //         declaration: {type: "Identifier", name: this.defaultExport.name}
+        //     }
+        // }
+        return exports;
+    }
+
+
+    private populateNames(specifiers: ExportSpecifier[], objEx: ObjectExpression) {
 
         this.exportList.forEach(e => {
 
@@ -97,64 +140,6 @@ export class ExportBuilder {
             specifiers.push(specifier)
         });
 
-
-        //unset
-        if (!this.defaultExport && !this.exportList.length) {
-            // console.log(this.defaultExport)
-            // console.log(this.exportList)
-
-
-            return exports;
-        }
-        let defaultEX: ExportDefaultDeclaration
-        let named: ExportNamedDeclaration
-        if (!this.defaultExport) {
-            defaultEX = {type: "ExportDefaultDeclaration", declaration: objEx}
-        }
-        //named case... no default
-        if (!this.defaultExport) {
-
-            defaultEX = {type: "ExportDefaultDeclaration", declaration: objEx}
-            named = {type: "ExportNamedDeclaration", specifiers: specifiers, declaration: null, source: null};//todo
-
-            exports.named_exports = named
-            exports.default_exports = defaultEX;
-
-        } else {
-
-            //has a default TODO add named default cases
-            let namedDecl: ExportNamedDeclaration
-            if (this.defaultExport.name) {
-                // let identifier: Identifier = {
-                //     type: "Identifier",
-                //     name: this.defaultExport.name ? this.defaultExport.name : 'defaultExport'
-                // }
-                let spec: ExportSpecifier = {
-                    exported: {
-                        type: "Identifier",
-                        name: this.defaultExport.alias ? this.defaultExport.alias : this.defaultExport.name
-                    },
-                    local: {type: "Identifier", name: this.defaultExport.name},
-                    type: "ExportSpecifier"
-                }
-                specifiers.push(spec)
-                namedDecl = {type: "ExportNamedDeclaration", specifiers: specifiers};
-
-            } else {
-                throw new
-                Error('todo organize ')
-            }
-            if (!namedDecl) {
-                //TODO GET IDEENTIFIER OF NAEMD EXPORT ASGMT AS NAME FOR EXPOIR T
-            }
-            let defaultEx: ExportDefaultDeclaration = {
-                type: "ExportDefaultDeclaration",
-                declaration: {type: "Identifier", name: this.defaultExport.name}
-            }
-            exports.named_exports = namedDecl
-            exports.default_exports = defaultEx
-        }
-        return exports;
     }
 }
 
