@@ -8,7 +8,6 @@ import {
     ObjectExpression
 } from "estree";
 import exp from "constants";
-import {exportNaming} from "transformations/export_transformations/extractExportsInfo";
 
 interface exportlist {
     name: string
@@ -159,59 +158,7 @@ export class ExportBuilder {
     }
 }
 
-// build(): ModuleDeclaration[] {
-//     let specifiers: ExportSpecifier[] = [];
-//     let objEx: ObjectExpression = {type: "ObjectExpression", properties: []}
-//     this.exportList.forEach(e => {
-//         let exported: Identifier = {
-//             type: "Identifier",
-//             name: e.alias ? e.alias : e.name
-//         }
-//         let local: Identifier = {
-//             type: "Identifier",
-//             name: e.name
-//         }
-//         objEx.properties.push({
-//             type: "Property",
-//             key: exported,
-//             value: local,
-//             kind: "init",
-//             method: false,
-//             shorthand: false,
-//             computed: false
-//         })
-//         specifiers.push({exported: exported, local: local, type: "ExportSpecifier"})
-//     });
-//     const exports: ModuleDeclaration[] = [];
-//     //unset
-//     if (!this.defaultExport && !this.exportList.length) {
-//         return exports;
-//     }
-//     //named case... no default
-//     if (!this.defaultExport) {
-//
-//
-//         let defaultEX: ExportDefaultDeclaration = {type: "ExportDefaultDeclaration", declaration: objEx}
-//         exports.push({type: "ExportNamedDeclaration", specifiers: specifiers})
-//
-//         exports.push(defaultEX);
-//         return exports;
-//     } else {
-//         //has a default
-//         let namedDecl: ExportNamedDeclaration
-//         if (this.defaultExport.name) {
-//             let identifier: Identifier = {type: "Identifier", name: this.defaultExport.name}
-//             let spec: ExportSpecifier = {exported: identifier, local: identifier, type: "ExportSpecifier"}
-//             namedDecl = {type: "ExportNamedDeclaration", specifiers: [spec]};
-//         }
-//         if (namedDecl) {
-//             exports.push(namedDecl);
-//         }
-//         let defaultEx: ExportDefaultDeclaration = {
-//             type: "ExportDefaultDeclaration",
-//             declaration: this.defaultExport.value
-//         }
-//         exports.push(defaultEx);
-//         return exports;
-//     }
-// }
+export interface exportNaming {
+    name: string
+    alias: string
+}
