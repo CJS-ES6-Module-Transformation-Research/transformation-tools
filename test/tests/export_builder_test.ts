@@ -1,4 +1,4 @@
-import {ExportBuilder, exportTypes} from '../../src/transformations/export_transformations/ExportsBuilder'
+import {ExportBuilder, exportTypes,exportNaming} from '../../src/transformations/export_transformations/ExportsBuilder'
 import {describe, it} from "mocha";
 import {expect} from 'chai'
 import {
@@ -11,7 +11,6 @@ import {
     VariableDeclaration
 } from "estree";
 import exp from "constants";
-import {exportNaming} from "transformations/export_transformations/extractExportsInfo";
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
 

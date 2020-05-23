@@ -2,7 +2,5 @@
 const defaultExport = function (a, b) {
     return a + b;
 };
-export {
-    defaultExport
-};
+export { };
 export default defaultExport;

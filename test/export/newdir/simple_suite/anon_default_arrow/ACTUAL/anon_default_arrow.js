@@ -1,7 +1,5 @@
 
 const defaultExport = () => {
 };
-export {
-    defaultExport
-};
+export { };
 export default defaultExport;
