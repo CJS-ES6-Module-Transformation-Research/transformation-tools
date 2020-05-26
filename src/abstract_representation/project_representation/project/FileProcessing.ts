@@ -10,6 +10,7 @@ import {OtherFile, SymLink, Dir} from './FilesTypes'
 
 const illegalDirs: Set<string> = new Set<string>();
 illegalDirs.add("node_modules")
+illegalDirs.add(".git")
 
 export type script_or_module = 'script' | 'module'
 

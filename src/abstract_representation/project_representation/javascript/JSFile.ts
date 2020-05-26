@@ -13,7 +13,6 @@ import {ExportBuilder} from "../../../transformations/export_transformations/Exp
 type StringReplace = (arg: string) => string
 type JSFileVisitor<R> = (prog: Program) => R
 
-
 /**
  * Project representation of a javascript file. This object contains the file's text, AST in MDN/esprima/estree format,
  * as well as tools related to generating new and replacing old data.
@@ -25,7 +24,9 @@ export class JSFile extends ReadableFile {
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
 
-    private stringReplace: Map<string, string> = new Map<string, string>();
+    // private stringReplace: Map<string, string> = new Map<string, string>();
+    private stringReplace: StringReplaceValues = {} ;
+
 
 
     private replacer: StringReplace = (s) => s;
@@ -100,7 +101,8 @@ export class JSFile extends ReadableFile {
 
 
     public registerReplace(replace: string, value: string): void {
-        this.stringReplace.set(replace, value);
+        // this.stringReplace.set(replace, value);
+        this.stringReplace[replace] = value
     }
 
     /**
@@ -164,11 +166,15 @@ export class JSFile extends ReadableFile {
     public makeString(): string {
         try {
             let program = generate(this.build());
-            this.stringReplace.forEach((k: string, v: string) => {
+         for ( let key  in    this.stringReplace){
+             let value = this.stringReplace[key];
+             console.log(`replacing ${key} with ${value}`)
+             program = program.replace(key, value)
+         }
+                // .forEach((k: string, v: string) => {
                 //todo import.meta....
-                console.log(`replacing ${k} with ${v}`)
-                program = program.replace(k, v)
-            });
+
+            // });
             this.shebang = this.shebang ? this.shebang + '\n' : this.shebang;
             return `${this.shebang}\n${program}\n`
 
@@ -222,4 +228,8 @@ const useStrict: Directive = {
         "raw": "\"use strict\""
     },
     "directive": "use strict"
+}
+
+interface StringReplaceValues{
+    [key:string]:string
 }

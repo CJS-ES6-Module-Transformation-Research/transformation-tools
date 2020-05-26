@@ -189,11 +189,11 @@ function create__dirname(pathImportString:string):VariableDeclaration{
 
 
 // ```````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                                                                                                                                                                                `                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ```````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
-let js = new JSFile('','','','module','');
-js.getNamespace().addToNamespace('__filename')
-js.getNamespace().addToNamespace('__dirname')
-dirname(js);
-console.log(js.makeString())
+// let js = new JSFile('','','','module','');
+// js.getNamespace().addToNamespace('__filename')
+// js.getNamespace().addToNamespace('__dirname')
+// dirname(js);
+// console.log(js.makeString())
 
 
 

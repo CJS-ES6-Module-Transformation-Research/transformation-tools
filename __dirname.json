@@ -65,7 +65,7 @@
             }
          }
       ],
-      "kind": "const"
+      "kind": "var"
    },
    {
       "type": "VariableDeclaration",

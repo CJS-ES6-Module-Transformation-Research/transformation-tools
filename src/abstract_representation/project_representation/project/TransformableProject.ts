@@ -6,6 +6,7 @@ import relative from "relative";
 import path from "path";
 import {script_or_module} from "./FileProcessing";
 
+
 export class TransformableProject {
     private files: ProjectFile[];
     private jsFiles: JSFile[];
@@ -48,7 +49,7 @@ export class TransformableProject {
     }
 
 
-    public static builder(): ProjectBuilder {
+    public static builder(options:ProjectReadOpts={} ): ProjectBuilder {
         return new ProjectBuilder();
     }
 
@@ -188,6 +189,11 @@ class ProjectBuilder {
     }
 }
 
+
+export interface ProjectReadOpts{
+    readLinks?:boolean
+    readNonSource?:boolean
+}
 
 interface FileMap<T> {
     [key: string]: T

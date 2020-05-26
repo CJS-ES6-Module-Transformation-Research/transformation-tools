@@ -62,7 +62,7 @@ switch (argv.length) {
             dest = join(pwd, second);
         }
         if (!existsSync(dest)) {
-            console.log(`Target directory ${dest} was not found: creating... `)
+            console.log(`Target directory was not found: creating... `)
         }
         argv[2] = source;
         argv[3] = dest;
@@ -85,7 +85,7 @@ importTransforms(transformer)
 transformer.transform(transformBaseExports)
 // transformer.transform(transformImport)
 if (inPlace) {
-    project.writeOutInPlace('.pre-transform')
+    project.writeOutInPlace('.suffix')
 } else {
     project.writeOutNewDir(dest)
 

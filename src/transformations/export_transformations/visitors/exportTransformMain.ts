@@ -19,7 +19,7 @@ function createVarDeclFromNameVal(best: string, rhs: Expression): TypeSafeReturn
     return {
         node: {
             type: "VariableDeclaration",
-            kind: 'const',
+            kind: 'let',
             declarations: [{
                 type: "VariableDeclarator",
                 id: {type: "Identifier", name: `${best}`},
@@ -126,19 +126,19 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
 
 
                 exportBuilder.registerDefault(defExpt);
-
-                const declarator: VariableDeclarator = {
-                    type: "VariableDeclarator",
-                    id: defExpt,
-                    init: assignmentNode.right
-                }
-                return {
-                    node: {
-                        type: "VariableDeclaration",
-                        kind: 'const',
-                        declarations: [declarator]
-                    }
-                }
+                return createVarDeclFromNameVal(defExpt.name,assignmentNode.right)
+                // const declarator: VariableDeclarator = {
+                //     type: "VariableDeclarator",
+                //     id: defExpt,
+                //     init: assignmentNode.right
+                // }
+                // return {
+                //     node: {
+                //         type: "VariableDeclaration",
+                //         kind: 'var',
+                //         declarations: [declarator]
+                //     }
+                // }
 
 
             } else if (assignmentNode.left.type === "MemberExpression") {
