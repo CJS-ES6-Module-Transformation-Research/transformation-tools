@@ -155,6 +155,10 @@ export class ExportBuilder {
         });
 
     }
+
+    getDefaultIdentifier() {
+        return this.defaultIdentifier;
+    }
 }
 
 export interface exportNaming {
