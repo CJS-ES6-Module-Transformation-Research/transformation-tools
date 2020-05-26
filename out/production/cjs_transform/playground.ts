@@ -322,8 +322,8 @@ let count=0
 
 let projectStr =`/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/export/export_test_files/simple_suite`
 
+import { transformBaseExports as transformBaseExports} from './transformations/export_transformations/visitors/exportTransformMain';
 
-import {transformBaseExports} from './transformations/export_transformations/visitors/_____search_nameless_df_exports';
 import { Transformer,ProjectTransformFunction} from './transformations/Transformer';
 import {projectReader,JSFile,TransformableProject,script_or_module } from './abstract_representation/project_representation/index';
 function getFileInExTest(index:number=0 ){

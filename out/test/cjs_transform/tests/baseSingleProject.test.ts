@@ -216,8 +216,11 @@ describe('Misc', () => {
     it('Test Write-Out for shebangs', () => {
         projectReader(directories['untouched']).forEachSource((e) => {
             if (e.getSheBang()) {
+                console.log(`SHEBANG DETECTED: ${e.getSheBang()}`)
                 let out = e.makeString()
+
                 let shebang = shebangRegex.test(out)
+                expect(shebang).to.be.eq(true,e.getAbsolute());
                 expect(shebangRegex.test(out)).to.be.true;
                 expect(e.getSheBang().trim()).to.be.equal(shebangRegex.exec(out)[0].toString().trim())
             }

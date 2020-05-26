@@ -3,7 +3,6 @@ const defaultExport = () => {
 };
 const assign = 'world';
 export {
-    assign,
-    defaultExport
+    assign
 };
 export default defaultExport;

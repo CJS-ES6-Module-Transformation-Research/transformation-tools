@@ -2,19 +2,15 @@
 let x = 3;
 let y = 'hello';
 let z = x;
-const a = x;
-const x0 = y;
-const y0 = y;
-const b = z;
 export {
-    a,
-    x0 as x,
-    y0 as y,
-    b
+    x as a,
+    y as x,
+    y,
+    z as b
 };
 export default {
-    a,
-    x: x0,
-    y: y0,
-    b
+    a: x,
+    x: y,
+    y,
+    b: z
 };

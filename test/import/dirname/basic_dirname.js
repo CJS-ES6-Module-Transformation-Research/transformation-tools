@@ -1,1 +1,1 @@
-basic_dirnameZZZZZconsole.log(__dirname)
+ console.log(__dirname)

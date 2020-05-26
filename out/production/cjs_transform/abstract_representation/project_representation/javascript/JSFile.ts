@@ -4,12 +4,10 @@ import {generate} from "escodegen";
 import {ReadableFile} from "../project/FilesTypes";
 import {Directive, ModuleDeclaration, Statement} from "estree";
 
-import {Export} from "../../../transformations/export_transformations/Export";
 import {script_or_module} from "../project/FileProcessing";
 import {Namespace} from "./Namespace";
 import {ImportManager} from "../../../transformations/import_transformations/ImportManager";
 import {ExportBuilder} from "../../../transformations/export_transformations/ExportsBuilder";
-import exp from "constants";
 
 
 type StringReplace = (arg: string) => string
@@ -26,7 +24,6 @@ export class JSFile extends ReadableFile {
     private isStrict: boolean = false;
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
-    private built: boolean = false;
 
     private stringReplace: Map<string, string> = new Map<string, string>();
 
@@ -50,12 +47,15 @@ export class JSFile extends ReadableFile {
         let program: string = this.text
         if (shebangRegex.test(this.text)) {
             this.shebang = shebangRegex.exec(this.text)[0].toString()
-            program = program.replace(this.shebang, '');
+             program = program.replace(this.shebang, '');
+
         }
         try {
             if (readType === 'script') {
+
                 this.ast = parseScript(program)
             } else {
+
                 this.ast = parseModule(program)
             }
         } catch (e) {
@@ -111,7 +111,6 @@ export class JSFile extends ReadableFile {
      * builds the AST for generating a string.
      */
     private build():Program {
-
         let addToTop = this.toAddToTop;
         let addToBottom = this.toAddToBottom
 
@@ -131,14 +130,34 @@ export class JSFile extends ReadableFile {
         this.imports.buildDeclList().forEach((e) => {
             body.splice(0, 0, e)
         })
+
         let exports = this.exports.build();
 
-        body.push(exports.named_exports)
-        body.push(exports.default_exports)
+        if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
+            body.push(exports.named_exports)
+        }
+        if (exports.default_exports&& exports.default_exports.declaration) {
+
+            switch (exports.default_exports.declaration.type) {
+
+                case "ObjectExpression":
+                    if (exports.default_exports.declaration.properties.length === 0){
+                        break;
+                    }
+
+                // not technically neccessary however it is the only other possibility at this time... seems explicit.
+                case "Identifier":
+                default:
+                    body.push(exports.default_exports)
+                    break;
+            }
+        }
+
 
         if (this.isStrict && this.ast.sourceType !== "module") {
             this.ast.body.splice(0, 0, useStrict);
         }
+
         return newAST;
     }
 
@@ -150,6 +169,7 @@ export class JSFile extends ReadableFile {
             let program = generate(this.build());
             this.stringReplace.forEach((k: string, v: string) => {
                 //todo import.meta....
+                console.log(`replacing ${k} with ${v}`)
                 program = program.replace(k, v)
             });
             this.shebang = this.shebang ? this.shebang + '\n' : this.shebang;

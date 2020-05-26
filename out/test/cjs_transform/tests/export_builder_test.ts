@@ -1,9 +1,9 @@
-import {ExportBuilder, exportTypes} from '../../src/transformations/export_transformations/ExportsBuilder'
+import {ExportBuilder, ExportTypes, exportNaming} from '../../src/transformations/export_transformations/ExportsBuilder'
 import {describe, it} from "mocha";
 import {expect} from 'chai'
 import {
     AssignmentProperty, BlockStatement, Declaration, Directive, EmptyStatement, Expression, FunctionDeclaration,
-    FunctionExpression,
+    FunctionExpression, Identifier,
     ModuleDeclaration,
     ObjectPattern,
     Property,
@@ -11,7 +11,6 @@ import {
     VariableDeclaration
 } from "estree";
 import exp from "constants";
-import {exportNaming} from "transformations/export_transformations/extractExportsInfo";
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
 
@@ -31,25 +30,26 @@ function PROP(ident: string, ident2: string): Property {
     }
 }
 
-function makeExpected(code: string, index: number = 0): Directive | Statement | ModuleDeclaration {
-    return parseModule(code).body[index]
+function makeExpected(code: string, index: number = 0): string {
+    return generate(parseModule(code).body[index])
 }
 
 function createExNames(name: string, alias: string = name): exportNaming {
     return {name: name, alias: alias}
 }
 
-function id(idString: string) {
+function id(idString: string): Identifier {
     return {type: "Identifier", name: idString}
 }
 
 let builder = new ExportBuilder();
-let built: exportTypes;//:ModuleDeclaration[] = []
+let built: ExportTypes;//:ModuleDeclaration[] = []
 
 describe('ExportBuilder Testing Without Code', () => {
     it('no exports', () => {
         built = builder.build()
-        expect(built).to.be.null;
+        expect(built.default_exports).to.be.null;
+        expect(built.named_exports).to.be.null;
     });
 
     it('one named', () => {
@@ -70,16 +70,12 @@ describe('ExportBuilder Testing Without Code', () => {
 
     it('one named with alias', () => {
         builder = new ExportBuilder()
-        builder.registerName(createExNames('hello', 'world'), {type: "Identifier", name: "one named"});
+        builder.registerName(createExNames('hello', 'hello1'), {type: "Identifier", name: "one named"});
         built = builder.build()
-        let defaultExport = built.default_exports
-        expect(built.default_exports).to.be.deep.equal(makeExpected('export default { hello:world}'))
 
 
-        //named
-        expect(built.named_exports).to.be.deep.equal(makeExpected('export {hello as world}'))
-        expect(built.named_exports.specifiers[0].local.name).to.be.equal("hello")
-        expect(built.named_exports.specifiers[0].exported.name).to.be.equal("world")
+        expect(generate(built.named_exports)).to.be.equal(makeExpected('export {hello1 as hello}'))
+        expect(generate(built.default_exports)).to.be.equal(makeExpected('export default {hello:hello1 }'))
 
 
     });
@@ -89,17 +85,7 @@ describe('ExportBuilder Testing Without Code', () => {
         builder.registerName(createExNames('propname0'), id('2named'));
         built = builder.build()
         let defaultExport = built.default_exports
-        expect(built.default_exports).to.be.deep.equal(makeExpected('export default {propname1:alias1, propname0}', 0))
-
-
-        //named
-        expect(built.named_exports).to.be.deep.equal(makeExpected('export {propname1 as alias1 , propname0}', 0))
-        expect(built.named_exports.specifiers[0].local.name).to.be.equal("propname1")
-        expect(built.named_exports.specifiers[0].exported.name).to.be.equal("alias1")
-
-        expect(built.named_exports.specifiers[1].local.name).to.be.equal("propname0")
-        expect(built.named_exports.specifiers[1].exported.name).to.be.equal("propname0")
-        expect(built.named_exports).to.be.deep.equal(makeExpected(`export {propname1 as alias1, propname0 }`))
+        expect(generate(built.default_exports)).to.be.equal((makeExpected('export default {propname1:alias1, propname0}')))
 
 
     });
@@ -110,9 +96,9 @@ describe('ExportBuilder Testing Without Code', () => {
         builder.registerName(createExNames('propname0'), id('2named'));
         builder.registerName(createExNames('propname2'), id('3named'));
         built = builder.build()
-        expect(built.default_exports).to.be.deep.equal(makeExpected('export default {propname1:alias1, propname0, propname2}', 0))
+        expect(generate(built.default_exports)).to.be.equal(makeExpected('export default {propname1:alias1, propname0, propname2}', 0))
 
-        expect(built.named_exports).to.be.deep.equal(makeExpected(`export {propname1 as alias1, propname0, propname2}`))
+        expect(generate(built.named_exports)).to.be.equal(makeExpected(`export { alias1 as propname1  , propname0, propname2}`))
 
     });
 
@@ -131,12 +117,13 @@ describe('ExportBuilder Testing Without Code', () => {
         }
 
         builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
-        builder.registerDefault(createExNames('defaultExport'), anonFunc)
+        builder.registerDefault(id('defaultExport'))
 
         built = builder.build()
-        expect(generate(built.default_exports)).to.be.deep.equal(generate(makeExpected(`export default function(){}`, 0)))
 
-        expect(generate(built.named_exports)).to.be.deep.equal(generate(makeExpected(`export {propname1 as alias1, defaultExport}`)))
+        expect(generate(built.default_exports)).to.be.deep.equal((makeExpected(`export default defaultExport`)))
+
+        expect(generate(built.named_exports)).to.be.deep.equal((makeExpected(`export {alias1 as propname1}`)))
     });
 
     it('one namedanondefaultAndNamedDefault', () => {
@@ -154,12 +141,11 @@ describe('ExportBuilder Testing Without Code', () => {
         }
 
         builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
-        builder.registerDefault(createExNames('defaultExport'), anonFunc)
+        builder.registerDefault(id('defaultExport'))
 
         built = builder.build()
-        expect(generate(built.default_exports)).to.be.deep.equal(generate(makeExpected(`export default function(){}`, 0)))
-
-        expect(generate(built.named_exports)).to.be.deep.equal(generate(makeExpected(`export {propname1 as alias1, defaultExport}`)))
+        expect(generate(built.default_exports)).to.be.equal(makeExpected(`export default defaultExport`))
+        expect(generate(built.named_exports)).to.be.equal(makeExpected(`export {   alias1 as propname1}`))
     });
 
     it('one default', () => {
@@ -208,9 +194,7 @@ describe('ExportBuilder Testing Without Code', () => {
 
     it('one of eachanon default', () => {
         builder = new ExportBuilder()
-        let bodyStmt = parseScript('let x =function(){}').body[0];
-        // let init =
-        // let         from = ini=t as
+
         let anonFunc: FunctionDeclaration = {
             params: [],
             async: false,
@@ -221,12 +205,12 @@ describe('ExportBuilder Testing Without Code', () => {
         }
 
         builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
-        builder.registerDefault(createExNames('defaultExport'), anonFunc)
+        builder.registerDefault(id('defaultExport'))
 
         built = builder.build()
-        expect(generate(built.default_exports)).to.be.deep.equal(generate(makeExpected(`export default function(){}`, 0)))
+        expect(generate(built.default_exports)).to.be.equal(makeExpected(`export default  defaultExport`))
 
-        expect(generate(built.named_exports)).to.be.deep.equal(generate(makeExpected(`export {propname1 as alias1, defaultExport}`)))
+        expect(generate(built.named_exports)).to.be.equal(makeExpected(`export {alias1 as propname1  }`))
     });
 
     it('one of eachanondefaultAndNamedDefault', () => {

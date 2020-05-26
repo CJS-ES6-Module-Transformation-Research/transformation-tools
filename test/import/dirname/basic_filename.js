@@ -1,2 +1,2 @@
-basic_filenameZZZZZconsole.log(__filename)
+ console.log(__filename)
  

@@ -1,42 +1,64 @@
+import {JSFile, TransformableProject} from '../index'
 
-import {JSFile,TransformableProject} from '../index'
+
+/**
+ * Tool for running transformations on a project.
+ */
 export class Transformer {
+
+    /**
+     * Runs a namespace re-building on all javascript files in the project.
+     */
     rebuildNamespace() {
-         this.project.forEachSource( (js:JSFile)=>{
+        this.project.forEachSource((js: JSFile) => {
             js.rebuildNamespace();
-         })
+        })
 
 
     }
-    private project: TransformableProject
 
+
+    private project: TransformableProject
 
 
     private constructor(project: TransformableProject) {
         this.project = project;
     }
 
-    public transformWithProject(func:ProjectTransformFunction){
-        let tfFunc :TransformFunction = func(this.project);
+
+    /**
+     * Transforms project while passing the project to the transformation function.
+     * @param projTransformFunc creates a transformation function using the project.
+     */
+    public transformWithProject(projTransformFunc: ProjectTransformFunction) {
+        let tfFunc: TransformFunction = projTransformFunc(this.project);
         this.transform(tfFunc);
     }
-    
-   
+
+    /**
+     * Transforms a project with a TransformFunction.
+     * @param transformer the TransformFunction passed.
+     */
     public transform(transformer: TransformFunction): void {
         this.project.forEachSource((js) => {
             try {
                 transformer(js)
-            }catch (e) {
+            } catch (e) {
                 throw e;
             }
         })
     }
+
+    /**
+     * Factory function that creates transformer from TransformableProject.
+     * @param projectTransformableProject.
+     */
 
     static ofProject(project: TransformableProject): Transformer {
         return new Transformer(project);
     }
 
 }
-
-export type TransformFunction = (js:JSFile) => void;
-export type ProjectTransformFunction = (proj:TransformableProject) => TransformFunction;
+// transformation function types for restricting function while as typescript
+export type TransformFunction = (js: JSFile) => void;
+export type ProjectTransformFunction = (proj: TransformableProject) => TransformFunction;

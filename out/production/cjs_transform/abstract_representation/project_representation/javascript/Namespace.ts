@@ -16,6 +16,9 @@ export class Namespace {
                 switch (node.type) {
                     case "VariableDeclarator": {
                         walkPatternToIdentifier(node.id, this.names);
+                        if (node.init && node.init.type==='Identifier'){
+                            walkPatternToIdentifier(node.init, this.names)
+                        }
                         break;
                     }
                     case "AssignmentExpression": {
@@ -121,6 +124,10 @@ function walkPatternToIdentifier(node: (Identifier | ObjectPattern | ArrayPatter
             break;
         case "AssignmentPattern":
             walkPatternToIdentifier(node.left, ids)
+            if (node.right.type === 'Identifier') {
+                walkPatternToIdentifier(node.right, ids)
+            }
+
             break;
         case "Identifier":
             ids.add(node.name);

@@ -1,19 +1,24 @@
 import {TransformFunction} from "../../Transformer";
 import {JSFile} from "../../../abstract_representation/project_representation";
 import {
-    AssignmentExpression, ClassDeclaration,
-    Directive, EmptyStatement, FunctionDeclaration, FunctionExpression,
+    AssignmentExpression,
+    ClassDeclaration,
+    Directive,
+    FunctionDeclaration,
+    FunctionExpression,
     MemberExpression,
     ModuleDeclaration,
-    Statement, VariableDeclaration,
+    Statement,
     VariableDeclarator
 } from "estree";
+import {VisitorOption} from "estraverse";
+import {collectDefaultObjectAssignments} from "../../sanitizing/visitors/exportObjectNamer";
 
-export const _transformBaseExports: TransformFunction = (js: JSFile) => {
+export const transformBaseExports: TransformFunction = (js: JSFile) => {
     const exportBuilder = js.getExportBuilder();
     const namespace = js.getNamespace();
-    let leave = (node: (Directive | Statement | ModuleDeclaration)): (Directive | Statement | ModuleDeclaration) => {
-        let rVal = node;
+    let leave = (node: (Directive | Statement | ModuleDeclaration)): TypeSafeReturn => {
+
 
         let assignmentNode: AssignmentExpression;
 
@@ -44,8 +49,9 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                                 generator: short.generator
                             };
                             name = assignmentNode.right.id.name
-                            exportBuilder.registerDefault({name: name, alias: name}, assignmentNode.right)
-                            return FD
+                            exportBuilder.registerName({name: name, alias: name})
+                            exportBuilder.registerDefault({name: name, type: "Identifier"})
+                            return {node: FD}
                         }
                         break;
                     case   "ClassExpression":
@@ -56,38 +62,30 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                             superClass: assignmentNode.right.superClass
                         };
                         name = assignmentNode.right.id.name
-                        exportBuilder.registerDefault({name: name, alias: name}, assignmentNode.right)
+                        exportBuilder.registerName({name: name, alias: name})
+                        exportBuilder.registerDefault({name: name, type: "Identifier"})
 
-                        return decl// {type:"ExpressionStatement", expression:assignmentNode.right} ;
+                        return {node: decl}// {type:"ExpressionStatement", expression:assignmentNode.right} ;
                     default:
                         break;
 
                 }
                 let defExpt = namespace.generateBestName('defaultExport');
 
-                let the_names = {
-                    name: 'defaultExport',
-                    alias: defExpt.name
-                }
 
-                exportBuilder.registerDefault(the_names, assignmentNode.right);
-                //TODO ensure there are no accesses... do this as a sanitize step.
-                // const varDecl: VariableDeclaration = {
-                //     type: "VariableDeclaration",
-                //     kind: "const",
-                //     declarations: [
-                //
-                //     ]
-                // }
-                let declarator: VariableDeclarator = {
+                exportBuilder.registerDefault(defExpt);
+
+                const declarator: VariableDeclarator = {
                     type: "VariableDeclarator",
                     id: defExpt,
                     init: assignmentNode.right
                 }
-                rVal = {
-                    type: "VariableDeclaration",
-                    kind: 'const',
-                    declarations: [declarator]
+                return {
+                    node: {
+                        type: "VariableDeclaration",
+                        kind: 'const',
+                        declarations: [declarator]
+                    }
                 }
 
 
@@ -106,64 +104,139 @@ export const _transformBaseExports: TransformFunction = (js: JSFile) => {
                     && memex.property.type === "Identifier"
 
                 ) {
-                    let best = namespace.generateBestName(memex.property.name).name
-                    namespace.addToNamespace(best)
 
-                    exportBuilder.registerName({
-                            name: memex.property.name,
-                            alias: best
-                        }, assignmentNode.right
-                    );
-                    const declarator: VariableDeclarator = {
-                        type: "VariableDeclarator",
-                        id: {type: "Identifier", name: best},
-                        init: assignmentNode.right
-                    };
-                    rVal = {
-                        type: "VariableDeclaration",
-                        kind: 'const',
-                        declarations: [declarator]
-                    };
+
+                    if (assignmentNode.right.type === "Identifier") {
+                        exportBuilder.registerName({
+                                name: assignmentNode.right.name,
+                                alias: assignmentNode.right.name,
+                            }
+                        );
+                        return {option: VisitorOption.Remove};
+                    } else {
+
+                        let best = namespace.generateBestName(memex.property.name).name
+                        namespace.addToNamespace(best)
+                        exportBuilder.registerName({
+                                name: memex.property.name,
+                                alias: best
+                            }
+                        );
+
+                        const declarator: VariableDeclarator = {
+                            type: "VariableDeclarator",
+                            id: {type: "Identifier", name: best},
+                            init: assignmentNode.right
+                        };
+                        return {
+                            node: {
+                                type: "VariableDeclaration",
+                                kind: 'const',
+                                declarations: [declarator]
+                            }
+                        };
+                    }
                 } else if (memex.object.type === "Identifier"
                     && memex.property.type === "Identifier"
                     && memex.object.name === "exports") {
 
+                    if (assignmentNode.right.type === "Identifier") {
+                        exportBuilder.registerName({
+                                name: assignmentNode.right.name,
+                                alias: assignmentNode.right.name
+                            }
+                        )
+                        return {option:VisitorOption.Remove};
+                    } else {
+                        const best = namespace.generateBestName(memex.property.name).name
 
-                    let best = namespace.generateBestName(memex.property.name).name
+                        namespace.addToNamespace(best);
+                        exportBuilder.registerName({
+                                name: memex.property.name,
+                                alias: best
+                            }
+                        )
+                        return {
+                            node: {
+                                type: "VariableDeclaration",
+                                kind: 'const',
+                                declarations: [{
+                                    type: "VariableDeclarator",
+                                    id: {type: "Identifier", name: `${best}`},
+                                    init: assignmentNode.right
+                                }]
+                            }
+                        };
 
-                    namespace.addToNamespace(best);
-                    exportBuilder.registerName({
-                            name: memex.property.name,
-                            alias: best
-                        }, assignmentNode.right
-                    )
-                    const varDecl: VariableDeclaration = {
-                        type: "VariableDeclaration",
-                        kind: 'const',
-                        declarations: [{
-                            type: "VariableDeclarator",
-                            id: {type: "Identifier", name: `${best}`},
-                            init: assignmentNode.right
-                        }]
-                    };
 
-
-                    rVal = varDecl;
+                    }
                 }
             }
 
 
         }
-        ;
-        return rVal;
     }
-    js.getAST().body.forEach((node, index, array) => {
+    let toDelete = []
+    let body =  js.getAST().body
+   body.forEach((node, index, array) => {
+        // console.log(JSON.stringify(array,null,3))
         let val
             = leave(node);
-
-        if (val !== null) {
-            array[index] = val
+        // console.log(val)
+        if (val !== undefined) {
+            // console.log(' undefined '+index)
+            if (val && val.option && val.option === VisitorOption.Remove) {
+                // console.log(' delete '+index)
+                toDelete.push(node);
+            } else if (val.node) {
+                // console.log(' node ')
+                array[index] = val.node
+            }
         }
-
     })
+
+    toDelete.forEach(e=>{
+        body.splice(body.indexOf(e),1)
+    });
 }
+
+interface TypeSafeReturn {
+    node?: (Directive | Statement | ModuleDeclaration)
+    option?: VisitorOption
+}
+
+//
+// let js = new JSFile('', '', '', 'script', `
+// function stringify (obj, options = {}) {
+//   const EOL = options.EOL || 'n'
+//
+//   const str = JSON.stringify(obj, options ? options.replacer : null, options.spaces)
+//
+//   return str + EOL
+// }
+//
+// function stripBom (content) {
+//   // we do this because JSON.parse would convert it to a utf8 string if encoding wasn't specified
+//   if (Buffer.isBuffer(content)) content = content.toString('utf8')
+//   return content
+// }
+//
+// module.exports = { stringify, stripBom }
+//
+//
+// `)
+// transformBaseExports(js)
+// console.log(js.makeString())
+//
+
+// let js = new JSFile('','','','script',`
+//
+//
+//
+// module.exports = { stringify, stripBom }
+//
+// `)
+//
+// collectDefaultObjectAssignments(js)
+// transformBaseExports(js)
+// console.log(js.makeString())

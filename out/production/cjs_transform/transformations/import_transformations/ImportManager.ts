@@ -155,26 +155,6 @@ export class ImportManager implements ImportManagerI {
 
     }
 
-    //
-    // private create(importString: string, value: string, alias: string, _default: boolean = false): void {
-    //     let curr: ImportRepresentation = this.importMap[importString]
-    //         ? this.importMap[importString] : {
-    //             named: {},
-    //             hasDefault: false,
-    //             defaultIdentifiers: {},
-    //             importString: importString
-    //         };
-    //
-    //     this.importMap[importString] = curr
-    //
-    //     if (_default) {
-    //         curr.defaultIdentifiers[value] = alias;
-    //         curr.hasDefault = true;
-    //     } else {
-    //         curr.named[value] = alias;
-    //     }
-    //
-    // }
 
     buildDeclList(): ImportDeclaration[] {
         let decls: ImportDeclaration[] = [];
@@ -199,24 +179,6 @@ export class ImportManager implements ImportManagerI {
             }
 
         })
-
-        // for (let imp in this.importMap) {
-        //     let value = this.importMap [imp];
-        //
-        //     if (value.hasDefault) {
-        //         value.defaultIdentifiers.forEach(name => {
-        //             decls.push(createADefault(value.importString, name))
-        //         })
-        //
-        //     }
-        //     if (Object.keys(value.named).length > 0) {
-        //         decls.push(createAnExport(value.importString, value.named))
-        //     }
-        //
-        //     if (value.isSideEff) {
-        //         decls.push(createASideEffect(value.importString))
-        //     }
-        // }
 
         return decls;
     }

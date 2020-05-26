@@ -98,10 +98,6 @@ export class JSFile extends ReadableFile {
         return this.shebang;
     }
 
-    public accept<R>(visitor: JSFileVisitor<R>) {
-        return visitor(this.ast);
-    }
-
 
     public registerReplace(replace: string, value: string): void {
         this.stringReplace.set(replace, value);
@@ -133,11 +129,25 @@ export class JSFile extends ReadableFile {
 
         let exports = this.exports.build();
 
-        if (exports.named_exports) {
+        if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
             body.push(exports.named_exports)
         }
-        if (exports.default_exports) {
-            body.push(exports.default_exports)
+
+        if (exports.default_exports&& exports.default_exports.declaration) {
+
+            switch (exports.default_exports.declaration.type) {
+
+                case "ObjectExpression":
+                    if (exports.default_exports.declaration.properties.length === 0){
+                        break;
+                    }
+
+                // not technically necessary however it is the only other possibility at this time... seems explicit.
+                case "Identifier":
+                default:
+                    body.push(exports.default_exports)
+                    break;
+            }
         }
 
 
@@ -156,6 +166,7 @@ export class JSFile extends ReadableFile {
             let program = generate(this.build());
             this.stringReplace.forEach((k: string, v: string) => {
                 //todo import.meta....
+                console.log(`replacing ${k} with ${v}`)
                 program = program.replace(k, v)
             });
             this.shebang = this.shebang ? this.shebang + '\n' : this.shebang;
