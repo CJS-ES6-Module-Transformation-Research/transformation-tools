@@ -23,7 +23,6 @@ export interface ExportTypes {
 }
 
 
-
 export class ExportBuilder {
 
     private exportList: ExportIdentifier[] = [];
@@ -37,15 +36,27 @@ export class ExportBuilder {
     clear() {
         this.exportList = [];
         this.exportNameValue = {};
-
-
         this.defaultIdentifier = null;
 
     }
 
+    //todo test
+    getByName(name: string): Identifier {
+        let theNamed = this.exportNameValue[name];
+        if (theNamed) {
+            return {
+                name: theNamed.name,
+                type: "Identifier"
+            }
+        }
+        return null;
+    }
+
     registerName(names: exportNaming) {
-
-
+// console.log(names.name)
+        if (this.exportNameValue[names.name]) {
+            return;
+        }
         let exportsTmp = {
             name: names.name,
             alias: names.alias
@@ -63,6 +74,10 @@ export class ExportBuilder {
      * @param value expression/declaration value
      */
     registerDefault(names: Identifier): void {
+        if (this.defaultExport) {
+            this.clear();
+        }
+
         this.defaultExport = names;
     }
 
@@ -122,7 +137,6 @@ export class ExportBuilder {
                 name: e.alias ? e.alias : e.name
             }
 
-            console.log(`local: ${local.name} || exported: ${exported.name}`)
 
             objEx.properties.push({
                 type: "Property",
@@ -135,7 +149,7 @@ export class ExportBuilder {
             })
             let specifier: ExportSpecifier = {exported: exported, local: local, type: "ExportSpecifier"}
 
-            console.log(specifier)
+            // console.log(specifier)
 
             specifiers.push(specifier)
         });

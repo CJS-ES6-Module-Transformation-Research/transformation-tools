@@ -96,7 +96,6 @@ export enum ImportType {
 export function transformImport(js: JSFile) {
 
     let nodes: Set<Node> = new Set<Node>()
-    let data: ImportData[] = []
     let visitor: Visitor = {
         enter: (node: Node) => {
 

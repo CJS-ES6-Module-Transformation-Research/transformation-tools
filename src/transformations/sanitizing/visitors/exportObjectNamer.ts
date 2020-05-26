@@ -3,6 +3,7 @@ import {traverse, Visitor} from "estraverse";
 import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
 import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {TransformFunction} from "../../Transformer";
+import {transformBaseExports} from "transformations/export_transformations/visitors/exportTransformMain";
 
 
 /**
@@ -51,6 +52,18 @@ export const collectDefaultObjectAssignments: TransformFunction = function (js: 
     }
     traverse(js.getAST(), internalVis)
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
     return {

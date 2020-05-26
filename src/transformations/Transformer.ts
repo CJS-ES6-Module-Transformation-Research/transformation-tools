@@ -49,6 +49,10 @@ export class Transformer {
         })
     }
 
+    public setSourceAsModule(){
+        this.project.forEachSource(js=> js.setAsModule())
+    }
+
     /**
      * Factory function that creates transformer from TransformableProject.
      * @param projectTransformableProject.
