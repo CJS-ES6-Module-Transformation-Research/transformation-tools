@@ -116,7 +116,7 @@ export class JSFile extends ReadableFile {
         let body = newAST.body;
         newAST.sourceType = this.moduleType//TODO B=
 
-        addToTop.forEach((e) => {
+        addToTop.reverse().forEach((e) => {
             body.splice(0, 0, e)
         })
 
