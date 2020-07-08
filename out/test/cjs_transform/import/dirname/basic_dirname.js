@@ -1,1 +1,0 @@
-basic_dirnameZZZZZconsole.log(__dirname)

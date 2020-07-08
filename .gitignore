@@ -1,24 +1,11 @@
-.idea
 
-___DEPR___
-asdf
+.idea
 node_modules
 *.iml
 .DS_Store
 
 */node_modules
-./*.js
 
-src/*.js
-src/depr.ast/*.js
-src/depr.fsys/*.js
-src/depr.import_transformations/*.js
-src/depr.io/*.js
-src/depr.sanitize/*.js
-src/depr.sanitize/depr.sanitize-visitors/*.js
-src/depr.scripts/*.js
+out/*
 
 test/*.js
-
-runCov
-demo-iplace.sh

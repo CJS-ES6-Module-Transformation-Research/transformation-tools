@@ -1,1 +1,0 @@
-a = require('amodule').invoke()

@@ -1,2 +1,0 @@
-#!/bin/bash
-nyc --exclude node_modules --exclude test/res ts-mocha test/*.ts

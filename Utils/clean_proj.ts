@@ -5,4 +5,3 @@ export function cleanProject() {
     return execFileSync(binary).toString();
 }
 
-export default cleanProject;

@@ -1,4 +1,0 @@
-if statements with module.exports-> hoist block (true)
-
-for now assuming no if-exports...shoujld be illegal anyway
-

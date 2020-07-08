@@ -1,1 +1,0 @@
-const x = 32, y = "hello";

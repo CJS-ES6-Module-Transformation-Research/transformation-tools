@@ -1,1 +1,0 @@
- if(true){var {val} = deconstructableObject; var a = 32;} 

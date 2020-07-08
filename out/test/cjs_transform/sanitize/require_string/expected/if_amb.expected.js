@@ -1,1 +1,0 @@
-if(require('./lib.js')){console.log('')};

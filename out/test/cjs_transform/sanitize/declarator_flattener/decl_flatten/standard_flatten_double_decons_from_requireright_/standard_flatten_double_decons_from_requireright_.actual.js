@@ -1,1 +1,0 @@
-var a = 32,{val} = require('deconstructable')

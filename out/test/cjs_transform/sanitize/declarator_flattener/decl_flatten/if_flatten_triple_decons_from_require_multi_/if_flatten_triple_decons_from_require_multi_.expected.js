@@ -1,1 +1,0 @@
- if(true){ var  assign = 99;  var  {val} = require('deconstructable');   var {another, one} = deconstruct2;} 

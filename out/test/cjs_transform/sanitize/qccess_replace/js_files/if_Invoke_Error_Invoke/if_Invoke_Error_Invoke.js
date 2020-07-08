@@ -1,1 +1,0 @@
-if(require('trueOrFalse').get()){throw new Error(require('getAnError').create('error'))}

@@ -1,1 +1,0 @@
-var imported = require('npmModule'), x =  {a : 35};

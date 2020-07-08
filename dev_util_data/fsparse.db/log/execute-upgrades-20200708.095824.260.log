@@ -1,0 +1,15 @@
+[2020-07-08 09:58:24] This is codeql execute upgrades -J-Xmx2048M --off-heap-ram=2048 --verbosity=progress --logdir=/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/fsparse.db/log --ml-model-path=/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform --native-library-path=/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform -- /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/fsparse.db/db-javascript /Users/sam/codeql/javascript/upgrades/03c078a7e6eec294f1457b3d20f9fec4427cb4af
+[2020-07-08 09:58:24] [PROGRESS] execute upgrades> Will apply 1 upgrade scripts.
+[2020-07-08 09:58:24] Creating executor with 1 threads.
+[2020-07-08 09:58:24] [SPAMMIER] execute upgrades> Recursing into /users/sam.
+[2020-07-08 09:58:24] [SPAMMIER] execute upgrades> Recursing into /users/sam/codeql.
+[2020-07-08 09:58:24] [SPAMMIER] execute upgrades> Recursing into /users/sam/codeql/misc/legacy-support.
+[2020-07-08 09:58:24] [DETAILS] execute upgrades> Dbscheme is now 03c078a7e6eec294f1457b3d20f9fec4427cb4af.
+[2020-07-08 09:58:24] [SPAMMY] execute upgrades> Reading upgrade specification from /Users/sam/codeql/javascript/upgrades/03c078a7e6eec294f1457b3d20f9fec4427cb4af.
+[2020-07-08 09:58:24] [PROGRESS] execute upgrades> [1/1] Applying: add @node_in_stmt_container type.
+[2020-07-08 09:58:24] [SPAMMY] execute upgrades> Compiling upgrade script /Users/sam/codeql/javascript/upgrades/03c078a7e6eec294f1457b3d20f9fec4427cb4af.
+[2020-07-08 09:58:24] [SPAMMY] execute upgrades> Executing 0 instructions in /Users/sam/codeql/javascript/upgrades/03c078a7e6eec294f1457b3d20f9fec4427cb4af.
+[2020-07-08 09:58:24] 	-> Cleaning up...
+[2020-07-08 09:58:24] 	-> Upgrade completed.
+[2020-07-08 09:58:24] [DETAILS] execute upgrades> Final dbscheme is 2dc7a0389827d235763a3748aba73c2d4a677b15.
+[2020-07-08 09:58:24] Terminating normally.

@@ -1,1 +1,0 @@
-if(true){var {val} = deconstructableObject,a = 32}

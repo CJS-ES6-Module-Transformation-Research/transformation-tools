@@ -1,1 +1,0 @@
-var  a = 35, require('./index.js');

@@ -146,11 +146,11 @@ export interface supported_commands {
 // const mod =
 export const cli_parse = (yargs) => {
     return yargs
-        .command('cmd <commandName>','desc',args=>{return args })
-        .choices('commandName',['execute', 'sanitize', 'import', 'export', 'run-all'])
+        // .command('cmd <commandName>','desc',args=>{return args })
+        .choices('commandName',['execute'])
         .demandCommand()
-        .command('out <outPut>','desc',args=>{return args })
-        .choices('out',['in-place', 'out-dir'])
+        // .command('out <outPut>','desc',args=>{return args })
+        // .choices('out',['in-place', 'out-dir'])
         .demandCommand()
         .option({
         // "_cmd___": {
@@ -165,15 +165,16 @@ export const cli_parse = (yargs) => {
             nargs: 1,
             alias: ["input"],
             // demandOption: true
-        }
-        // "out": {
-        //     desc: "--out <out-dir> specifies output directory for transformed project",
-        //     type: "string",
-        //     alias: ['o', 'ip', 'inPlace'],
-        //     nargs: 1
-        // },
-        // "no-sanitize": {desc: "omits the 'sanitize' step.", alias: "ns"},
-        // "in-place": {desc: "omits the 'sanitize' step.", type: "string"}
+        },
+        "out": {
+            desc: "--out <out-dir> specifies output directory for transformed project",
+            type: "string",
+            alias: ['o'],
+            nargs: 1
+        },
+        "no-sanitize": {desc: "omits the 'sanitize' step."},
+            // "const-exports":{"const-exports <fname> [varnames]"},
+        "in-place": {desc: "omits the 'sanitize' step.", type: "string"}
     }).argv;
 }
 const mod = cli_parse(yargs)
