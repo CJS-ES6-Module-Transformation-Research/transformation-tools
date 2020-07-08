@@ -9,3 +9,8 @@ node_modules
 out/*
 
 test/*.js
+
+#for new tree walking tests... not testing data
+
+dev_util_data
+dev_util_data/*
