@@ -1,5 +1,8 @@
-import * as yargs from "yargs";
 
+import yargs from 'yargs'
+import ncp from 'ncp'
+console.log('helo')
+console.log('helo')
 
 interface TransformationOptions {
     src: string
@@ -7,6 +10,13 @@ interface TransformationOptions {
     in_place: boolean
     suffix?: string
 }
+let options:TransformationOptions = parse(yargs)
+
+
+
+//FIXME NCP IS SYNCHRONOUS
+
+
 
 
 function parse(yargs): TransformationOptions {
@@ -47,4 +57,3 @@ function parse(yargs): TransformationOptions {
             }).argv;
     }
 }
-

@@ -18,18 +18,19 @@ type JSFileVisitor<R> = (prog: Program) => R
  * as well as tools related to generating new and replacing old data.
  */
 export class JSFile extends ReadableFile {
-    private shebang: string;
     private ast: Program
+
+    private shebang: string;
+
     private isStrict: boolean = false;
+
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[]
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[]
 
-    // private stringReplace: Map<string, string> = new Map<string, string>();
-    private stringReplace: StringReplaceValues = {} ;
+    private stringReplace: { [key: string]: string } = {};
 
 
-
-    private replacer: StringReplace = (s) => s;
+    private replacer: (s: string) => string = (s) => s;
 
     private imports: ImportManager
     private exports: ExportBuilder;
@@ -48,7 +49,7 @@ export class JSFile extends ReadableFile {
         let program: string = this.text
         if (shebangRegex.test(this.text)) {
             this.shebang = shebangRegex.exec(this.text)[0].toString()
-             program = program.replace(this.shebang, '');
+            program = program.replace(this.shebang, '');
 
         }
         try {
@@ -65,10 +66,13 @@ export class JSFile extends ReadableFile {
         }
 
 
-        if (this.ast.body.length !== 0 && (this.ast.body[0] as Directive).directive === "use strict") {
+
+        this.isStrict = this.ast.body.length !== 0
+            && (this.ast.body[0]['directive'] === "use strict")
+        if (this.isStrict) {
             this.ast.body.splice(0, 1)
-            this.isStrict = true;
         }
+
 
         this.rebuildNamespace();
     }
@@ -79,8 +83,7 @@ export class JSFile extends ReadableFile {
 
 
     public addToTop(toAdd: Directive | Statement | ModuleDeclaration) {
-        this.
-        toAddToTop.push(toAdd)
+        this.toAddToTop.push(toAdd)
     }
 
     public addToBottom(toAdd: Directive | Statement | ModuleDeclaration) {
@@ -108,19 +111,20 @@ export class JSFile extends ReadableFile {
     /**
      * builds the AST for generating a string.
      */
-    private build():Program {
+    private build(): Program {
         let addToTop = this.toAddToTop;
         let addToBottom = this.toAddToBottom
 
         let newAST = this.ast;
-        let body = newAST.body;
+        let body
+            = newAST.body;
         newAST.sourceType = this.moduleType//TODO B=
 
         addToTop.reverse().forEach((e) => {
             body.splice(0, 0, e)
         })
 
-        addToBottom .forEach((e) => {
+        addToBottom.forEach((e) => {
             body.push(e)
         })
 
@@ -135,12 +139,12 @@ export class JSFile extends ReadableFile {
             body.push(exports.named_exports)
         }
 
-        if (exports.default_exports&& exports.default_exports.declaration) {
+        if (exports.default_exports && exports.default_exports.declaration) {
 
             switch (exports.default_exports.declaration.type) {
 
                 case "ObjectExpression":
-                    if (exports.default_exports.declaration.properties.length === 0){
+                    if (exports.default_exports.declaration.properties.length === 0) {
                         break;
                     }
 
@@ -166,13 +170,13 @@ export class JSFile extends ReadableFile {
     public makeString(): string {
         try {
             let program = generate(this.build());
-         for ( let key  in    this.stringReplace){
-             let value = this.stringReplace[key];
-             console.log(`replacing ${key} with ${value}`)
-             program = program.replace(key, value)
-         }
-                // .forEach((k: string, v: string) => {
-                //todo import.meta....
+            for (let key in this.stringReplace) {
+                let value = this.stringReplace[key];
+                console.log(`replacing ${key} with ${value}`)
+                program = program.replace(key, value)
+            }
+            // .forEach((k: string, v: string) => {
+            //todo import.meta....
 
             // });
             this.shebang = this.shebang ? this.shebang + '\n' : this.shebang;
@@ -230,6 +234,6 @@ const useStrict: Directive = {
     "directive": "use strict"
 }
 
-interface StringReplaceValues{
-    [key:string]:string
+interface StringReplaceValues {
+    [key: string]: string
 }

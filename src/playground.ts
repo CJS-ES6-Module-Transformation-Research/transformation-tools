@@ -1,121 +1,99 @@
-#!/usr/local/bin/ts-node
-import {
-    AssignmentExpression,
-    BaseModuleDeclaration,
-    BaseModuleSpecifier,
-    CallExpression,
-    Declaration,
-    Directive,
-    ExportAllDeclaration,
-    ExportDefaultDeclaration,
-    ExportNamedDeclaration,
-    ExportSpecifier,
-    Expression,
-    Identifier,
-    ImportDeclaration,
-    ImportDefaultSpecifier,
-    ImportNamespaceSpecifier,
-    ImportSpecifier,
-    Literal, MemberExpression, ModuleDeclaration, ObjectExpression, Pattern, Program,
-    Property,
-    VariableDeclaration
-} from 'estree'
-import {parseModule, parseScript} from "esprima";
+// #!/usr/local/bin/ts-node
+import {Directive, Program} from 'estree'
+import {parseScript} from "esprima";
 import {generate} from "escodegen";
-import exp from "constants";
-import {traverse, Visitor, VisitorOption} from "estraverse";
 
-try {
-    // console.log(JSON.stringify(parseModule('import "hello"\n'), null, 5))
-
-} catch (e) {
-    console.log(e)
-}
-let is: ImportSpecifier = {
-    type: "ImportSpecifier",
-    imported: {
-        name: "importSpecifier",
-        type: "Identifier"
-    },
-    local: {
-        name: "localSpecifier",
-        type: "Identifier"
-    }
-}
-let is2: ImportSpecifier = {
-    type: "ImportSpecifier",
-    imported: {
-        name: "importSpecifier",
-        type: "Identifier"
-    },
-    local: {
-        name: "localSpecifier",
-        type: "Identifier"
-    }
-}
-let ids: ImportDefaultSpecifier = {
-    type: "ImportDefaultSpecifier",
-    local: {
-        name: "defaultSpecifier",
-        type: "Identifier"
-    }
-}
-let ins: ImportNamespaceSpecifier = {
-    type: "ImportNamespaceSpecifier",
-    local: {
-        name: "namespaceSpecifier",
-        type: "Identifier"
-    }
-}
-let x: ImportDeclaration = {
-    type: "ImportDeclaration",
-    specifiers: [is, is2, ids, ins],
-    source: {
-        type: "Literal",
-        value: "chai"
-    }
-}
-
-
-let ex1: CallExpression = {
-    type: "CallExpression",
-    callee: {type: "Identifier", name: "key"},
-    arguments: []
-}
-let ap: Property = {
-    type: "Property",
-    key: {
-        type: "Literal",
-        value: 3
-    },
-
-    shorthand: false,
-    computed: false,
-    value: {type: "Identifier", name: "value"},
-    kind: "init",
-    method: false
-}
-const proj_dir = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
-const test_root = `${proj_dir}/test/res/fixtures/test_proj`;
-
-const files: string[] = [
-    'index.js',
-    'lib.js',
-    'lib/index.js',
-    'src/index.js',
-    'test/default.test.js',
-    'test/fixt/parcel.js',
-    'package.json'
-];
-
-let relativeRequirePath = {};
-relativeRequirePath['index.js'] = './test/test_dat.json';
-relativeRequirePath['lib.js'] = './test/test_dat.json';
-relativeRequirePath ['lib/index.js'] = '../test/test_dat.json';
-relativeRequirePath ['src/index.js'] = '../test/test_dat.json';
-relativeRequirePath['test/default.test.js'] = './test_dat.json';
-relativeRequirePath['test/fixt/parcel.js'] = '../test_dat.json';
-relativeRequirePath['package.json'] = './test/test_dat.json';
+// try {
+//     // console.log(JSON.stringify(parseModule('import "hello"\n'), null, 5))
+//
+// } catch (e) {
+//     console.log(e)
+// }
+// let is: ImportSpecifier = {
+//     type: "ImportSpecifier",
+//     imported: {
+//         name: "importSpecifier",
+//         type: "Identifier"
+//     },
+//     local: {
+//         name: "localSpecifier",
+//         type: "Identifier"
+//     }
+// }
+// let is2: ImportSpecifier = {
+//     type: "ImportSpecifier",
+//     imported: {
+//         name: "importSpecifier",
+//         type: "Identifier"
+//     },
+//     local: {
+//         name: "localSpecifier",
+//         type: "Identifier"
+//     }
+// }
+// let ids: ImportDefaultSpecifier = {
+//     type: "ImportDefaultSpecifier",
+//     local: {
+//         name: "defaultSpecifier",
+//         type: "Identifier"
+//     }
+// }
+// let ins: ImportNamespaceSpecifier = {
+//     type: "ImportNamespaceSpecifier",
+//     local: {
+//         name: "namespaceSpecifier",
+//         type: "Identifier"
+//     }
+// }
+// let x: ImportDeclaration = {
+//     type: "ImportDeclaration",
+//     specifiers: [is, is2, ids, ins],
+//     source: {
+//         type: "Literal",
+//         value: "chai"
+//     }
+// }
+//
+//
+// let ex1: CallExpression = {
+//     type: "CallExpression",
+//     callee: {type: "Identifier", name: "key"},
+//     arguments: []
+// }
+// let ap: Property = {
+//     type: "Property",
+//     key: {
+//         type: "Literal",
+//         value: 3
+//     },
+//
+//     shorthand: false,
+//     computed: false,
+//     value: {type: "Identifier", name: "value"},
+//     kind: "init",
+//     method: false
+// }
+// const proj_dir = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
+// const test_root = `${proj_dir}/test/res/fixtures/test_proj`;
+//
+// const files: string[] = [
+//     'index.js',
+//     'lib.js',
+//     'lib/index.js',
+//     'src/index.js',
+//     'test/default.test.js',
+//     'test/fixt/parcel.js',
+//     'package.json'
+// ];
+//
+// let relativeRequirePath = {};
+// relativeRequirePath['index.js'] = './test/test_dat.json';
+// relativeRequirePath['lib.js'] = './test/test_dat.json';
+// relativeRequirePath ['lib/index.js'] = '../test/test_dat.json';
+// relativeRequirePath ['src/index.js'] = '../test/test_dat.json';
+// relativeRequirePath['test/default.test.js'] = './test_dat.json';
+// relativeRequirePath['test/fixt/parcel.js'] = '../test_dat.json';
+// relativeRequirePath['package.json'] = './test/test_dat.json';
 //
 // relativeRequirePath['index.js'] = './package.json';
 // relativeRequirePath['lib.js'] = './package.json';
@@ -192,33 +170,33 @@ relativeRequirePath['package.json'] = './test/test_dat.json';
 // console.log(parsedJSON.type)
 // console.log(package_JSON)
 
-
-interface $ExportSpecifier extends BaseModuleSpecifier {
-    type: "ExportSpecifier";
-    exported: Identifier;
-}
-
-interface $ExportNamedDeclaration extends BaseModuleDeclaration {
-    type: "ExportNamedDeclaration";
-    declaration?: Declaration | null;
-    specifiers: Array<ExportSpecifier>;
-    source?: Literal | null;
-}
-
-interface $ExportSpecifier extends BaseModuleSpecifier {
-    type: "ExportSpecifier";
-    exported: Identifier;
-}
-
-interface $ExportDefaultDeclaration extends BaseModuleDeclaration {
-    type: "ExportDefaultDeclaration";
-    declaration: Declaration | Expression;
-}
-
-interface $ExportAllDeclaration extends BaseModuleDeclaration {
-    type: "ExportAllDeclaration";
-    source: Literal;
-}
+//
+// interface $ExportSpecifier extends BaseModuleSpecifier {
+//     type: "ExportSpecifier";
+//     exported: Identifier;
+// }
+//
+// interface $ExportNamedDeclaration extends BaseModuleDeclaration {
+//     type: "ExportNamedDeclaration";
+//     declaration?: Declaration | null;
+//     specifiers: Array<ExportSpecifier>;
+//     source?: Literal | null;
+// }
+//
+// interface $ExportSpecifier extends BaseModuleSpecifier {
+//     type: "ExportSpecifier";
+//     exported: Identifier;
+// }
+//
+// interface $ExportDefaultDeclaration extends BaseModuleDeclaration {
+//     type: "ExportDefaultDeclaration";
+//     declaration: Declaration | Expression;
+// }
+//
+// interface $ExportAllDeclaration extends BaseModuleDeclaration {
+//     type: "ExportAllDeclaration";
+//     source: Literal;
+// }
 
 //
 // function tester(e: any): boolean {
@@ -269,16 +247,15 @@ interface $ExportAllDeclaration extends BaseModuleDeclaration {
 // // `).body[1] as ExportDefaultDeclaration).declaration as ObjectExpression,null,4))
 // let count = 0;
 let ast: Program;
-ast = parseScript(`
-
-module.exports = "hello"
-console.log("hello")
-if(isTrue()){
-    console.log("true")
-}
-
-`)
-let count = 0
+// ast = parseScript(`
+//
+// module.exports = "hello"
+// console.log("hello")
+// if(isTrue()){
+//     console.log("true")
+// }
+//
+// `)
 // let visitor: Visitor = {
 //     enter: (node, parentNode) => {
 //         if (parentNode===null  ){
@@ -361,5 +338,19 @@ let count = 0
 // })
 // // transformer.transform(js=>js.setAsModule() )
 //
+function testIt(ast: Program): boolean {
+    if (ast.body.length !== 0
+        // && ast.body[0].type === "ExpressionStatement"
+        // && ast.body[0]['directive']
+        && (ast.body[0]['directive'] === "use strict") ){
+        return true;
+    }
+    return false;
+}
+ast = parseScript(`"use strict"\n`)
+console.log(testIt(ast ))
+console.log(generate(ast))
 
-
+ast = parseScript(`x\n`)
+console.log(testIt(ast ))
+console.log(generate(ast))
