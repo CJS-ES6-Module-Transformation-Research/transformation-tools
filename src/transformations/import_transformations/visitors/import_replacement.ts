@@ -1,6 +1,6 @@
 import {Literal, Node, Pattern} from "estree";
 import {replace, Visitor, VisitorOption} from "estraverse";
-import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
+// import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 
 
 export interface ImportData {

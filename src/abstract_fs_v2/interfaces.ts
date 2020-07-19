@@ -1,6 +1,7 @@
 import {Stats} from "fs";
-import {Dir} from "src/abstract_fs_v2/Dirv2";
-import {AbstractFile} from "src/abstract_fs_v2/Abstractions";
+import {Dir} from "./Dirv2";
+import {AbstractFile} from "./Abstractions";
+import {JSFile} from "./JSv2";
 
 
 
@@ -41,6 +42,7 @@ export interface DirSupplier {
 }
 export type write_status = "copy"| "in-place"
 
+export type script_or_module = "script" | "module"
 
 export interface MetaData {
     rootDir:string
@@ -52,3 +54,4 @@ export interface MetaData {
     path_relative:string
     target_dir:string
 }
+export type TransformFunction = (js:JSFile)=> void

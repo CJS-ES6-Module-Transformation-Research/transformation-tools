@@ -1,9 +1,7 @@
-import {TransformFunction} from "src/transformations/Transformer";
-import {JSFile} from "../../../abstract_representation/project_representation";
-import {parseModule, parseScript, Program} from "esprima";
-import {traverse, Visitor} from "estraverse";
+
 import {Identifier, Node, VariableDeclaration} from 'estree'
-import {generate} from "escodegen";
+import {TransformFunction} from "src/abstract_fs_v2/interfaces";
+import {JSFile} from "src/abstract_fs_v2/JSv2";
 
 
 export const dirname: TransformFunction = (js: JSFile) => {

@@ -1,5 +1,4 @@
 #!/usr/local/bin/ts-node
-import {Transformer} from "../Transformer";
 import {
     accessReplace,
     collectDefaultObjectAssignments,
@@ -8,12 +7,15 @@ import {
     requireStringSanitizer
 } from '../../';
 import {argv} from "process";
-import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+// import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
 import {join} from 'path';
 // sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
 import {transformBaseExports} from "./visitors/exportTransformMain";
+import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
+import {importTransforms} from "transformations/import_transformations/exec_transform";
+import {sanitize} from "transformations/main";
 
 argv.shift();
 argv.shift();
@@ -62,15 +64,17 @@ switch (argv.length) {
     }
 }
 
-let project: TransformableProject = projectReader(source);
-let transformer: Transformer = Transformer.ofProject(project);
 
-transformer.transform(transformBaseExports)
-if (inPlace) {
-    project.writeOutInPlace('.pre-transform')
-} else {
-    project.writeOutNewDir(dest)
+let projectManager = new ProjectManager(source, {
+    target_dir: dest,
+    suffix: '.bak',
+    isModule: false,
+    write_status: inPlace ? "in-place" : "copy"
+})
+sanitize(projectManager)
+importTransforms(projectManager)
+projectManager.forEachSource(transformBaseExports)
 
 
-}
+projectManager.writeOut()
 console.log("finished.")

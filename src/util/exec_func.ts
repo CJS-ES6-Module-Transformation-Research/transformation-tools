@@ -1,82 +1,55 @@
-import {Transformer} from "../transformations/Transformer";
-
-import {argv} from "process";
-import {projectReader, TransformableProject} from "../abstract_representation/project_representation";
-import {existsSync} from "fs";
-import {join} from 'path';
-import {sanitize} from "../transformations/sanitizing/sanitize_project";
-// sanitize(transformer)
-import {importTransforms} from  '../transformations/import_transformations/exec_transform'
+import * as yargs from "yargs";
+import {runTransform} from "transformations/main";
+import {ProjConstructionOpts} from "src/abstract_fs_v2/ProjectManager";
+import {write_status} from "src/abstract_fs_v2/interfaces";
 
 
-import yargs from 'yargs'
-let yargv =yargs.command('run','help').option('i',{nargs:1,type:"string",demandOption:true})
-    .option('o',{nargs:1,type:"string",demandOption:true}).strict().argv
-console.log(yargv)
-process.exit(0)
-
-argv.shift();
-argv.shift();
+interface TransformationOptions {
+    src: string
+    target?: string
+    in_place: boolean
+    suffix?: string
+}
 
 
-// argv[0] = ``
-// argv[1] = ``
+function cli_parse(yargs) {
+    return yargs
+        .option({
+            "in": {
+                desc: "--in <input-proj> specifies input project path",
+                type: "string",
+                nargs: 1,
+                alias: ["input"],
+                demandOption: true
+            },
+            "out": {
+                desc: "--out <out-dir> specifies output directory for transformed project",
+                type: "string",
+                alias: ['o'],
+                nargs: 1
+            },
+            "in-place": {
+                desc: "omits the 'sanitize' step.", type: "string"
+            },
+            "suffix": {desc: "suffix for keeping copies in-place", type: "string"}
+        }).argv;
+}
 
-const pwd = process.cwd();// dirname(argv.shift());
 
-let source: string, dest: string, inPlace: boolean
-//
-// switch (argv.length) {
-//     case 0:
-//         console.log("no arguments supplied");
-//         process.exit(1);
-//     case 1:
-//         let arg = argv.shift();
-//         if (arg === '-i') {
-//             console.log('please provide a project to transform')
-//         } else {
-//             console.log('please confirm you want to do this in place with the -i flag prior to your directory.')
-//         }
-//         process.exit(1);
-//     case 2:
-//         let first = argv.shift()
-//         let second = argv.shift()
-//         if (first === '-i') {
-//             inPlace = true;
-//             source = join(pwd, second);
-//             dest = join(pwd, source);
-//         } else {
-//             inPlace = false;
-//             source = join(pwd, first);
-//             dest = join(pwd, second);
-//         }
-//         if (!existsSync(dest)) {
-//             console.log(`Target directory ${dest} was not found: creating... `)
-//         }
-//        source = argv[2];
-//        dest =  argv[3];
-//         console.log(argv)
-//         console.log()
-//         break;
-//     default: {
-//         console.log('Args: ')
-//         console.log(argv)
-//         console.log('could not parse arguments--try again')
-//         process.exit(1);
-//     }
-// }
-process.exit(1);
+const mod = cli_parse(yargs)
+if (!mod['in-place'] && !mod["out"]) {
+    console.log(`Please either choose an output directory --out <out-dir> or use the flag --in-place`)
+    process.exit(1);
+}else if(mod['in-place'] && mod["out"]){
+    console.log(`Please either choose a single option: an output directory --out <out-dir> OR use the flag --in-place`)
+    process.exit(1);
+}
 
-let project: TransformableProject = projectReader(source);
-let transformer: Transformer = Transformer.ofProject(project);
-
-sanitize(transformer)
-// transformer.transform(transformImport)
-if (inPlace) {
-    project.writeOutInPlace('.pre-transform')
-} else {
-    project.writeOutNewDir(dest)
-
+let opts: ProjConstructionOpts = {
+    isModule: false,
+    suffix: mod.suffix ? mod.suffix : '',
+    target_dir: mod.out,
+    write_status: mod['in-place'] ? "in-place" : "copy"
 
 }
-console.log("finished.")
+runTransform(mod.in, opts)

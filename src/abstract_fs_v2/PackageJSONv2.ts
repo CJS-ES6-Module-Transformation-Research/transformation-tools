@@ -1,4 +1,4 @@
- import {MetaData, SerializedJSData} from "src/abstract_fs_v2/interfaces";
+ import {MetaData, SerializedJSData} from "./interfaces";
 import {Dir} from "./Dirv2";
 import {AbstractDataFile } from './Abstractions'
 

@@ -1,9 +1,9 @@
- import {Transformer} from "../../transformations/Transformer";
-import {transformImport} from "./visitors/import_replacement";
+ import {transformImport} from "./visitors/import_replacement";
 import {dirname} from './visitors/__dirname'
- export function importTransforms(transformer:Transformer){
+ import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
+ export function importTransforms(projectManager:ProjectManager){
 
-    transformer.transform(transformImport);
-    transformer.transform(dirname);
+     projectManager.forEachSource(transformImport);
+     projectManager.forEachSource(dirname);
 }
 

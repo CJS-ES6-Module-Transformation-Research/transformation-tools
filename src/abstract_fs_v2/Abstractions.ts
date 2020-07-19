@@ -1,5 +1,5 @@
-import {DirSupplier, FileType, FileVisitor, MetaData, SerializedJSData} from "src/abstract_fs_v2/interfaces";
-import {Dir} from "src/abstract_fs_v2/Dirv2";
+import {DirSupplier, FileType, FileVisitor, MetaData, SerializedJSData} from "./interfaces";
+import {Dir} from "./Dirv2";
 import {readFileSync, Stats} from "fs";
 
 export abstract class AbstractFile {
@@ -50,7 +50,7 @@ export abstract class AbstractFile {
         return this.isRoot ? null : this.parent()
     }
 
-    absolutePath(): string {
+    getAbsolute(): string {
         return this.path_abs
     }
 

@@ -1,0 +1,11 @@
+Object.defineProperty(exports, "__esModule", { value: true });
+var exportObjectNamer_1 = require("./exportObjectNamer");
+Object.defineProperty(exports, "collectDefaultObjectAssignments", { enumerable: true, get: function () { return exportObjectNamer_1.collectDefaultObjectAssignments; } });
+var requireString_1 = require("./requireString");
+Object.defineProperty(exports, "requireStringSanitizer", { enumerable: true, get: function () { return requireString_1.requireStringSanitizer; } });
+var declFlattener_1 = require("./declFlattener");
+Object.defineProperty(exports, "flattenDecls", { enumerable: true, get: function () { return declFlattener_1.flattenDecls; } });
+var accessReplacer_1 = require("./accessReplacer");
+Object.defineProperty(exports, "accessReplace", { enumerable: true, get: function () { return accessReplacer_1.accessReplace; } });
+var jsonRequire_1 = require("./jsonRequire");
+Object.defineProperty(exports, "jsonRequire", { enumerable: true, get: function () { return jsonRequire_1.jsonRequire; } });

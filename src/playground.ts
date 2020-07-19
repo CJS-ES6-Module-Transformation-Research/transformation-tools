@@ -338,19 +338,16 @@ let ast: Program;
 // })
 // // transformer.transform(js=>js.setAsModule() )
 //
-function testIt(ast: Program): boolean {
-    if (ast.body.length !== 0
-        // && ast.body[0].type === "ExpressionStatement"
-        // && ast.body[0]['directive']
-        && (ast.body[0]['directive'] === "use strict") ){
-        return true;
-    }
-    return false;
-}
-ast = parseScript(`"use strict"\n`)
-console.log(testIt(ast ))
-console.log(generate(ast))
 
-ast = parseScript(`x\n`)
-console.log(testIt(ast ))
-console.log(generate(ast))
+// try {
+//     ast = parseScript(`
+// var x = 3;
+// x++
+// -x-
+// let y = 3
+// `)
+// }catch (e) {
+//     console.log(e.index)
+// }
+console.log()
+

@@ -1,11 +1,11 @@
-import {Dir} from "src/abstract_fs_v2/Dirv2";
+import {Dir} from "./Dirv2";
 import {basename, extname, join, normalize, relative, resolve} from "path";
-import {CJSBuilderData, FileType, MetaData} from "src/abstract_fs_v2/interfaces";
+import {CJSBuilderData, FileType, MetaData} from "./interfaces";
 import {lstatSync, Stats} from "fs";
-import {AbstractDataFile, AbstractFile} from "src/abstract_fs_v2/Abstractions";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
-import {CJSToJSON, PackageJSON} from "src/abstract_fs_v2/PackageJSONv2";
-import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
+import {AbstractDataFile, AbstractFile} from "./Abstractions";
+import {JSFile} from "./JSv2";
+import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
+import {ProjectManager} from "./ProjectManager";
 
 export class FileFactory {
     readonly root_dir: Dir
@@ -28,7 +28,7 @@ export class FileFactory {
     }
 
     createPackageCJSRequire(data: CJSBuilderData) {
-        let resolved = normalize(join((data.dir.absolutePath()), data.cjsFileName))
+        let resolved = normalize(join((data.dir.getAbsolute()), data.cjsFileName))
         let metaData: MetaData = {
             target_dir: this.target_dir,
             stat: null,

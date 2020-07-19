@@ -9,16 +9,13 @@ import {
     MetaData,
     SerializedJSData,
     write_status
-} from "src/abstract_fs_v2/interfaces";
+} from "./interfaces";
 import {Dir} from './Dirv2'
-import {PackageJSON} from "src/abstract_fs_v2/PackageJSONv2";
+import {PackageJSON} from "./PackageJSONv2";
 import {JSFile} from "./JSv2";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
-import {FileFactory} from "src/abstract_fs_v2/Factory";
-import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
-
-
-
+import {FileFactory} from "./Factory";
+import {ProjectManager} from "./ProjectManager";
 
 
 

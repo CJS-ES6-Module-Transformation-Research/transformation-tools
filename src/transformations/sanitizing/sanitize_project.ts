@@ -1,5 +1,4 @@
 #!/usr/local/bin/ts-node
-import {Transformer} from "../Transformer";
 import {
     accessReplace,
     collectDefaultObjectAssignments,
@@ -8,24 +7,23 @@ import {
     requireStringSanitizer
 } from "./visitors";
 import {argv} from "process";
-import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+// import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
 import {join} from 'path';
 // sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
+import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
 
+export function sanitize(projectManager: ProjectManager) {
 
-export function sanitize(transformer: Transformer) {
-
-    transformer.transform(requireStringSanitizer)
-    transformer.transformWithProject(jsonRequire)
-    transformer.transform(flattenDecls)
-    transformer.transform(accessReplace)
-    transformer.rebuildNamespace()
-    transformer.transform(collectDefaultObjectAssignments)
+    projectManager.forEachSource(requireStringSanitizer)
+    projectManager.forEachSource(jsonRequire)
+    projectManager.forEachSource(flattenDecls)
+    projectManager.forEachSource(accessReplace)
+    projectManager.rebuildNamespace()
+    projectManager.forEachSource(collectDefaultObjectAssignments)
 
 }
-
 
 argv.shift();
 argv.shift();
@@ -77,17 +75,3 @@ switch (argv.length) {
         process.exit(1);
     }
 }
-
-let project: TransformableProject = projectReader(source);
-let transformer: Transformer = Transformer.ofProject(project);
-
-sanitize(transformer)
-// transformer.transform(transformImport)
-if (inPlace) {
-    project.writeOutInPlace('.pre-transform')
-} else {
-    project.writeOutNewDir(dest)
-
-
-}
-console.log("finished.")

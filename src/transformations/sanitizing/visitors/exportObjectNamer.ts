@@ -1,9 +1,10 @@
 import {AssignmentOperator, Expression, Node, Statement} from "estree";
 import {traverse, Visitor} from "estraverse";
 import {isExpr} from "../../../abstract_representation/es_tree_stuff/astTools";
-import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
-import {TransformFunction} from "../../Transformer";
+// import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {transformBaseExports} from "transformations/export_transformations/visitors/exportTransformMain";
+import {JSFile} from "src/abstract_fs_v2/JSv2";
+import {TransformFunction} from "src/abstract_fs_v2/interfaces";
 
 
 /**

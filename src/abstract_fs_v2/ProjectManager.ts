@@ -1,16 +1,16 @@
-import {Dir} from "src/abstract_fs_v2/Dirv2";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
-import {PackageJSON} from "src/abstract_fs_v2/PackageJSONv2";
-import {FileFactory} from "src/abstract_fs_v2/Factory";
-import {AbstractDataFile, AbstractFile} from "src/abstract_fs_v2/Abstractions";
+import {Dir} from "./Dirv2";
+import {JSFile} from "./JSv2";
+import {PackageJSON} from "./PackageJSONv2";
+import {FileFactory} from "./Factory";
+import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {ok as assertTrue} from "assert";
 import {appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, unlinkSync} from "fs";
 import path, {join} from "path";
-import {SerializedJSData} from "src/abstract_fs_v2/interfaces";
+import {SerializedJSData} from "./interfaces";
 import {write_status} from './interfaces'
-import {FileType} from "src/abstract_fs_v2/internals";
+import {FileType} from "./interfaces";
 import cpr from "cpr";
-interface pm_opts {
+export interface ProjConstructionOpts {
     write_status: write_status,
     target_dir: string,
     suffix: string
@@ -39,7 +39,7 @@ export class ProjectManager {
     private readonly suffix: string
 
 
-    constructor(path: string, opts: pm_opts) {
+    constructor(path: string, opts: ProjConstructionOpts) {
         this.src = path
         this.write_status = opts.write_status
         this.suffix = opts.suffix;
@@ -132,7 +132,7 @@ export class ProjectManager {
 
         if (suffix) {
             allFiles.forEach((file: AbstractDataFile) => {
-                let absolute = join(this.root.absolutePath(), file.getRelative())
+                let absolute = join(this.root.getAbsolute(), file.getRelative())
 
                 copyFileSync(absolute, absolute + suffix)
             });
@@ -141,7 +141,7 @@ export class ProjectManager {
         this.writeAll(allFiles)
     }
 
-    private removeAll(allFiles: AbstractDataFile[], root_dir: string = this.root.absolutePath()) {
+    private removeAll(allFiles: AbstractDataFile[], root_dir: string = this.root.getAbsolute()) {
         allFiles.forEach((file: AbstractDataFile) => {
             let toRemove: string = join(root_dir, file.getRelative());
             unlinkSync(toRemove)
@@ -149,7 +149,7 @@ export class ProjectManager {
     }
 
 
-    private writeAll(allFiles: AbstractDataFile[], root_dir: string = this.root.absolutePath()) {
+    private writeAll(allFiles: AbstractDataFile[], root_dir: string = this.root.getAbsolute()) {
         allFiles.forEach((file: AbstractDataFile) => {
             let serialized: SerializedJSData = file.makeSerializable()
             let dir = path.dirname(join(root_dir, serialized.relativePath))

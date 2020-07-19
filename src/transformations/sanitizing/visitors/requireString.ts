@@ -1,9 +1,10 @@
  import {Identifier, Node, CallExpression} from "estree";
 import {RequireStringTransformer} from "../requireStringTransformer";
-import {TransformFunction} from '../../Transformer'
-import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
+// import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {Visitor,traverse} from "estraverse";
 import {dirname,join} from 'path'
+ import {JSFile} from "src/abstract_fs_v2/JSv2";
+ import {TransformFunction} from "src/abstract_fs_v2/interfaces";
 
 
  /**
@@ -11,7 +12,7 @@ import {dirname,join} from 'path'
   * @param js a JSFile
   */
  export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
-    let requireStringTF: RequireStringTransformer = new RequireStringTransformer(dirname(join(js.getDir(),js.getRelative())))
+    let requireStringTF: RequireStringTransformer = new RequireStringTransformer(dirname(js.getAbsolute()), js.getParent().getPackageJSON().getMain())
     let visitor: Visitor = {
         enter: function (node: Node): void {
 

@@ -24,12 +24,13 @@ import {
 } from 'estree'
 import {replace, traverse, Visitor} from 'estraverse'
 import _ from 'lodash'
-import {JSFile} from "../../../index";
+// import {JSFile} from "../../../index";
 import {RequireAccessIDs} from "../../../Types";
 import {createRequireDecl, isExpr} from '../../../abstract_representation/es_tree_stuff/astTools';
-import {Namespace} from "../../../abstract_representation/project_representation/javascript/Namespace";
+import {Namespace} from "src/abstract_fs_v2/Namespace";
 import {generate} from "escodegen";
 import {parseScript} from "esprima";
+import {JSFile} from "src/abstract_fs_v2/JSv2";
 
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';

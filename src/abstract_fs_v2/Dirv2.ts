@@ -1,9 +1,9 @@
 import {readdirSync} from "fs";
 import {join} from "path";
-import {CJSBuilderData, FileVisitor, MetaData} from "src/abstract_fs_v2/interfaces";
-import {CJSToJSON, PackageJSON} from "src/abstract_fs_v2/PackageJSONv2";
-import {AbstractFile} from "src/abstract_fs_v2/Abstractions";
-import {FileFactory} from "src/abstract_fs_v2/Factory";
+import {CJSBuilderData, FileVisitor, MetaData} from "./interfaces";
+import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
+import {AbstractFile} from "./Abstractions";
+import {FileFactory} from "./Factory";
 
 export class  Dir extends AbstractFile  {
 
@@ -36,7 +36,7 @@ export class  Dir extends AbstractFile  {
     }
 
     buildTree() {
-        readdirSync(this.absolutePath()).forEach(e => {
+        readdirSync(this.getAbsolute()).forEach(e => {
             let child = this.factory().createFile(join(this.path_abs, e), this)
             if (child && child instanceof Dir) {
                 child.buildTree()
@@ -62,9 +62,9 @@ export class  Dir extends AbstractFile  {
     }
 
 
-    spawnCJS(buildData: CJSBuilderData): void {
+    spawnCJS(buildData: CJSBuilderData): string  {
         let cjs: CJSToJSON = this.factory().createPackageCJSRequire(buildData);
         this.addChild(cjs)
-
+        return cjs.getRelative()
     }
 }

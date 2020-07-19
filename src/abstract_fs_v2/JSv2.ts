@@ -1,14 +1,14 @@
 import {Directive, ModuleDeclaration, Program, Statement} from "estree";
 import {ImportManager} from "transformations/import_transformations/ImportManager";
 import {ExportBuilder} from "transformations/export_transformations/ExportsBuilder";
-import {Namespace} from "abstract_representation/project_representation/javascript/Namespace";
-import {script_or_module} from "abstract_representation/project_representation";
+import {Namespace} from "./Namespace";
+import {script_or_module} from "./interfaces";
 import {basename, join} from "path";
 import {existsSync} from "fs";
 import shebangRegex from "shebang-regex";
 import {parseModule, parseScript} from "esprima";
 import {generate} from "escodegen";
-import {MetaData, SerializedJSData} from "src/abstract_fs_v2/interfaces";
+import {MetaData, SerializedJSData} from "./interfaces";
 import {Dir} from './Dirv2'
 import {AbstractDataFile } from './Abstractions'
 
@@ -76,9 +76,9 @@ export class JSFile extends AbstractDataFile  {
 
     }
 
-    public spawnCJS(moduleID:string){
+    public spawnCJS(moduleID:string):string{
         let parent:Dir = this.parent();
-        let parentDir = parent.absolutePath()
+        let parentDir = parent.getAbsolute()
         let base = basename(moduleID,".json");
         let cjsName = `${base}.cjs`
         if(existsSync(join(parentDir, cjsName))){
@@ -89,7 +89,7 @@ export class JSFile extends AbstractDataFile  {
                 i++
             }
         }
-        let text =
+        return name 
             this.parent().spawnCJS({
                 cjsFileName:cjsName,
                 jsonFileName:moduleID,
@@ -97,7 +97,8 @@ export class JSFile extends AbstractDataFile  {
                 dir:parent
 
             })
-    }
+ 
+     }
 
     private removeStrict() {
         this.isStrict = this.ast.body.length !== 0
@@ -215,8 +216,7 @@ export class JSFile extends AbstractDataFile  {
         try {
             return (isModule ? parseModule : parseScript)(program)
         } catch (e) {
-            // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
-            throw e;
+             throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
         }
     }
 

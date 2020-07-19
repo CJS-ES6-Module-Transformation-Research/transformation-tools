@@ -1,5 +1,4 @@
-import {TransformFunction} from "../../Transformer";
-import {JSFile} from "../../../abstract_representation/project_representation";
+// import {JSFile} from "../../../abstract_representation/project_representation";
 import {
     Node,
     AssignmentExpression,
@@ -15,6 +14,8 @@ import {
 import {Visitor, VisitorOption} from "estraverse";
 import {collectDefaultObjectAssignments} from "../../sanitizing/visitors/exportObjectNamer";
 import {parseScript} from "esprima";
+import {TransformFunction} from "src/abstract_fs_v2/interfaces";
+import {JSFile} from "src/abstract_fs_v2/JSv2";
 
 function createVarDeclFromNameVal(best: string, rhs: Expression): TypeSafeReturn {
     return {

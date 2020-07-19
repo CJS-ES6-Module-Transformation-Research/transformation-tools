@@ -11,9 +11,10 @@ const _JSON = ".json";
  */
 export class RequireStringTransformer {
     private dirname: string;
-
-    constructor(dirname: string) {
+    private main:string
+    constructor(dirname: string,main:string) {
         this.dirname = dirname
+        this.main = main
     }
 
     private absPath(path: string) {
@@ -42,10 +43,10 @@ export class RequireStringTransformer {
                 computedPath = absolute
             }
         } else {//directory
-            computedPath = absolute + "/index.js"
+            computedPath =  `${absolute}/${this.main? this.main:'index.js'}`
         }
-
-        let relativized: string = relative(this.dirname, computedPath,null);
+ 
+        let relativized: string = relative(this.dirname, computedPath,null); 
 
         if (!(relativized.charAt(0) === '.') && !(relativized.charAt(0) === '/')) {
             relativized = "./" + relativized
