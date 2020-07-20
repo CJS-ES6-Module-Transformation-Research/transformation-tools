@@ -4,16 +4,17 @@ import {PackageJSON} from "./PackageJSONv2";
 import {FileFactory} from "./Factory";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {ok as assertTrue} from "assert";
-import {appendFileSync, existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync} from "fs";
+import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync} from "fs";
 import path, {join} from "path";
 import {FileType, SerializedJSData, write_status} from "./interfaces";
 import cpr from "cpr";
 
 export interface ProjConstructionOpts {
-    write_status: write_status,
-    target_dir: string,
+    write_status: write_status
+    target_dir: string
     suffix: string
-    isModule: boolean
+    isModule?: boolean
+    copy_node_modules?: boolean
 }
 
 export class ProjectManager {
@@ -164,13 +165,13 @@ export class ProjectManager {
             if (!existsSync(dir)) {
                 mkdirSync(dir, {recursive: true})
             }
-            appendFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+            writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
         })
-        for(let filename in this.additions)  {
+        for (let filename in this.additions) {
             let file = this.additions[filename]
             let serialized: SerializedJSData = file.makeSerializable()
             let dir = path.dirname(join(root_dir, serialized.relativePath))
-            appendFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+            writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
 
         }
     }
@@ -186,8 +187,15 @@ export class ProjectManager {
         // })
 
         // let x =
-        cpr(this.src, this.target, {confirm: false, deleteFirst: true, overwrite: true}, () => {
-            this.removeAll(this.target)
+        cpr(this.src, this.target, {confirm: false, overwrite: true,filter:function (testFile) {
+           let ext = path.extname(testFile)
+
+
+            return !( path.basename(testFile) === 'package.json'
+                    ||ext === '.js' ||ext === '.cjs')
+
+            }}, () => {
+            // this.removeAll(this.target)
             this.writeAll(this.target)
         })
 

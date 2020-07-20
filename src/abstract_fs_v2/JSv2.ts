@@ -2,8 +2,10 @@ import {Directive, ModuleDeclaration, Program, Statement} from "estree";
 import {ImportManager} from "transformations/import_transformations/ImportManager";
 import {ExportBuilder} from "transformations/export_transformations/ExportsBuilder";
 import {Namespace} from "./Namespace";
-import {script_or_module} from "./interfaces";
-import {basename, join} from "path";
+
+// import {script_or_module} from "./interfaces";
+type script_or_module = "script" | "module"
+import {basename, dirname, join, relative} from "path";
 import {existsSync} from "fs";
 import shebangRegex from "shebang-regex";
 import {parseModule, parseScript} from "esprima";
@@ -89,14 +91,23 @@ export class JSFile extends AbstractDataFile  {
                 i++
             }
         }
-        return this.parent().spawnCJS({
-                cjsFileName:cjsName,
-                jsonFileName:moduleID,
-                dataAsString:`module.exports = require('${moduleID}');`,
-                dir:parent
+        let json = join(this.path_abs, moduleID)
+        let relativeToRoot = relative(this.parent().getRootDirPath(), json)
+        let dirRelativeToRoot = dirname(relativeToRoot)
 
-            })
- 
+        let builder = {
+            cjsFileName: `${dirRelativeToRoot}/${basename(json)}.cjs`,
+            jsonFileName:relative(this.parent().getRootDirPath(), json),
+            dataAsString:`module.exports = require('./${basename(moduleID)}');`,
+            dir: parent
+
+        }
+
+
+        let spawn  = this.parent().spawnCJS(builder)
+
+       return join(dirname(moduleID) , basename(spawn))
+
      }
 
     private removeStrict() {

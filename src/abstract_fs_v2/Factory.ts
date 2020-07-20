@@ -56,11 +56,10 @@ export class FileFactory {
 
         let child = this.getFileFromType(path, data, parent)
         if (!child) {
-            console.log(`path ${path} was created as null: `)
             return;
         }
-        if (child.getParent()) {
-            child.getParent().addChild(child)
+        if (parent) {
+            parent.addChild(child)
         }
 
 

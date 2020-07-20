@@ -10,6 +10,7 @@ export class Dir extends AbstractFile {
 
     private factory: () => FileFactory
     private readonly childrenNames: string[];
+    private readonly root: string;
 
     listChildrenByName() {
         return this.childrenNames;
@@ -27,8 +28,12 @@ export class Dir extends AbstractFile {
         super(path, b, parent);
         this.factory = () => factory;
         this.childrenNames = readdirSync(this.path_abs)
+        this.root = factory.rootPath
     }
 
+    getRootDirPath(){
+        return this.root
+    }
 
     visit(visitor: FileVisitor) {
         visitor(this)
