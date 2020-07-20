@@ -30,7 +30,7 @@ class FileFactory {
         };
         let newestMember = new PackageJSONv2_1.CJSToJSON(resolved, metaData, data.dir, data.dataAsString);
         if (this.pm) {
-            this.pm.recieveFactoryUpdate(newestMember, interfaces_1.FileType.cjs, this);
+            this.pm.receiveFactoryUpdate(newestMember, interfaces_1.FileType.cjs, this);
         }
         return newestMember;
     }

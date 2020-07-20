@@ -29,9 +29,6 @@ export class PackageJSON extends AbstractDataFile   {
         return this.main;
     }
 
-    getBin(): string | null {
-        return this.bin;
-    }
 
 
     makeSerializable(): SerializedJSData {

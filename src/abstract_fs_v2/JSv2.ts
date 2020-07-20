@@ -89,8 +89,7 @@ export class JSFile extends AbstractDataFile  {
                 i++
             }
         }
-        return name 
-            this.parent().spawnCJS({
+        return this.parent().spawnCJS({
                 cjsFileName:cjsName,
                 jsonFileName:moduleID,
                 dataAsString:`module.exports = require('${moduleID}');`,

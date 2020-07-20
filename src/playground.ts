@@ -349,5 +349,26 @@ let ast: Program;
 // }catch (e) {
 //     console.log(e.index)
 // }
-console.log()
+import path from 'path'
+let args = process.argv
+
+console.log(process.cwd())
+args.shift()
+args.shift()
+let {join,normalize,dirname} = path
+const pwd = process.cwd();
+let level = args[0]
+args.shift()
+// console.log(level)
+console.log(join(pwd,level))
+
+
+let upOne = args[0]
+args.shift()
+console.log(join(pwd,upOne))
+
+let upOneDown2 = args[0]
+args.shift()
+console.log(join (pwd,upOneDown2))
+
 

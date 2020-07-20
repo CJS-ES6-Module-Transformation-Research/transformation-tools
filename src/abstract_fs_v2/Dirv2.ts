@@ -1,11 +1,11 @@
-import {readdirSync} from "fs";
+import {mkdirSync, readdirSync} from "fs";
 import {join} from "path";
 import {CJSBuilderData, FileVisitor, MetaData} from "./interfaces";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {AbstractFile} from "./Abstractions";
 import {FileFactory} from "./Factory";
 
-export class  Dir extends AbstractFile  {
+export class Dir extends AbstractFile {
 
 
     private factory: () => FileFactory
@@ -62,9 +62,46 @@ export class  Dir extends AbstractFile  {
     }
 
 
-    spawnCJS(buildData: CJSBuilderData): string  {
+    spawnCJS(buildData: CJSBuilderData): string {
         let cjs: CJSToJSON = this.factory().createPackageCJSRequire(buildData);
         this.addChild(cjs)
         return cjs.getRelative()
+    }
+
+
+    mkdirs(root: string) {
+
+        if (!this.isRoot) {
+            let dirChildren: Dir[] = this.children
+                .filter(e => e instanceof Dir)
+                .map(e => e as Dir)
+            let thisRoot = join(root, this.path_relative);
+            if (dirChildren) {
+                dirChildren.forEach(d => d.mkdirs(thisRoot))
+            } else {
+                mkdirSync(thisRoot, {recursive: true})
+            }
+        } else {
+            this.mkdirs(this.factory().rootPath)
+        }
+
+
+        // if(!root){
+        //     root = this.factory().rootPath
+        //     mkdirSync(root)
+        // }
+        //
+        // let paths:Dir[] = [];
+        // this.children.forEach(e=>{
+        //     if (e instanceof Dir){
+        //         paths.push( e )
+        //     }
+        // })
+        // if (!paths){
+        //     mkdirSync(join(root, ))
+        // }
+        // paths.forEach(e=>{
+        //     e.mkdirs(this.isRoot? root:join(root, this.path_relative))
+        // })
     }
 }

@@ -2,14 +2,7 @@ import * as yargs from "yargs";
 import {runTransform} from "transformations/main";
 import {ProjConstructionOpts} from "src/abstract_fs_v2/ProjectManager";
 import {write_status} from "src/abstract_fs_v2/interfaces";
-
-
-interface TransformationOptions {
-    src: string
-    target?: string
-    in_place: boolean
-    suffix?: string
-}
+import {isAbsolute,join} from 'path'
 
 
 function cli_parse(yargs) {
@@ -43,6 +36,14 @@ if (!mod['in-place'] && !mod["out"]) {
 }else if(mod['in-place'] && mod["out"]){
     console.log(`Please either choose a single option: an output directory --out <out-dir> OR use the flag --in-place`)
     process.exit(1);
+}
+let cwd = process.cwd()
+if(!isAbsolute(mod.in)){
+    mod.in = join(cwd, mod.in)
+}
+
+if(mod.out && !isAbsolute(mod.out)){
+    mod.out = join(cwd, mod.out)
 }
 
 let opts: ProjConstructionOpts = {

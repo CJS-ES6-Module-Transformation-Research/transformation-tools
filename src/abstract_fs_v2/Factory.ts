@@ -40,9 +40,10 @@ export class FileFactory {
             path_relative: join(data.dir.getRelative(), data.cjsFileName)
         };
         let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)
-        if (this.pm) {
-            this.pm.recieveFactoryUpdate(newestMember, FileType.cjs, this)
-        }
+        // if (this.pm) {
+        //     this.pm.receiveFactoryUpdate(newestMember, FileType.cjs, this)
+        // }
+        this.pm.addSource(newestMember)
         return newestMember
     }
 
