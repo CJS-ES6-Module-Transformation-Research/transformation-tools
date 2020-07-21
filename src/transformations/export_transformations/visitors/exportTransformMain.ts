@@ -12,10 +12,9 @@ import {
     VariableDeclarator, Identifier, Expression, ExpressionStatement
 } from "estree";
 import {Visitor, VisitorOption} from "estraverse";
-import {collectDefaultObjectAssignments} from "../../sanitizing/visitors/exportObjectNamer";
 import {parseScript} from "esprima";
-import {TransformFunction} from "src/abstract_fs_v2/interfaces";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
+import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
 
 function createVarDeclFromNameVal(best: string, rhs: Expression): TypeSafeReturn {
     return {

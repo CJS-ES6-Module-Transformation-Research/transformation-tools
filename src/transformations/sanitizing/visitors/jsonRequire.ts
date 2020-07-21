@@ -2,8 +2,8 @@
 import {traverse, Visitor} from "estraverse";
 import {dirname, join} from "path";
 import {existsSync} from "fs";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
-import {TransformFunction} from "src/abstract_fs_v2/interfaces";
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
 
 
 /**

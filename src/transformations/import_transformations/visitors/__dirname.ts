@@ -1,7 +1,7 @@
 
 import {Identifier, Node, VariableDeclaration} from 'estree'
-import {TransformFunction} from "src/abstract_fs_v2/interfaces";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
+import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
 
 
 export const dirname: TransformFunction = (js: JSFile) => {

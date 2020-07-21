@@ -1,21 +1,19 @@
+import {generate} from "escodegen";
+import {parseModule, parseScript} from "esprima";
 import {Directive, ModuleDeclaration, Program, Statement} from "estree";
-import {ImportManager} from "transformations/import_transformations/ImportManager";
-import {ExportBuilder} from "transformations/export_transformations/ExportsBuilder";
+import {existsSync} from "fs";
+import {basename, dirname, join, relative} from "path";
+import shebangRegex from "shebang-regex";
+import {RequireTracker} from "../RequireTracker";
+import {ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
+import {ImportManager} from "../transformations/import_transformations/ImportManager";
+import {AbstractDataFile} from './Abstractions'
+import {Dir} from './Dirv2'
+import {MetaData, SerializedJSData} from "./interfaces";
 import {Namespace} from "./Namespace";
 
 // import {script_or_module} from "./interfaces";
 type script_or_module = "script" | "module"
-import {basename, dirname, join, relative} from "path";
-import {existsSync} from "fs";
-import shebangRegex from "shebang-regex";
-import {parseModule, parseScript} from "esprima";
-import {generate} from "escodegen";
-import {MetaData, SerializedJSData} from "./interfaces";
-import {Dir} from './Dirv2'
-import {AbstractDataFile } from './Abstractions'
-
-
-
 
 
 // export interface JSFile {
@@ -47,8 +45,12 @@ import {AbstractDataFile } from './Abstractions'
 // }
 
 
+export class JSFile extends AbstractDataFile {
+    getRequireTracker(): RequireTracker {
+        return this.r_tracker;
+    }
 
-export class JSFile extends AbstractDataFile  {
+    private r_tracker: RequireTracker;
     private readonly ast: Program;
     private shebang: string;
     private isStrict: boolean = false;//TODO might be unnnecssary--find purposes
@@ -70,24 +72,24 @@ export class JSFile extends AbstractDataFile  {
 
         this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
-        this.ast = this.parseProgram(this.data,isModule)
+        this.ast = this.parseProgram(this.data, isModule)
 
-
+        this.r_tracker = new RequireTracker();
         this.removeStrict();
         this.rebuildNamespace();
 
     }
 
-    public spawnCJS(moduleID:string):string{
-        let parent:Dir = this.parent();
+    public spawnCJS(moduleID: string): string {
+        let parent: Dir = this.parent();
         let parentDir = parent.getAbsolute()
-        let base = basename(moduleID,".json");
+        let base = basename(moduleID, ".json");
         let cjsName = `${base}.cjs`
-        if(existsSync(join(parentDir, cjsName))){
-            let i=0;
-            let cjsName= `${base}_${i}.cjs`
-            while(existsSync(join(parentDir, cjsName))){
-                cjsName= `${base}_${i}.cjs`
+        if (existsSync(join(parentDir, cjsName))) {
+            let i = 0;
+            let cjsName = `${base}_${i}.cjs`
+            while (existsSync(join(parentDir, cjsName))) {
+                cjsName = `${base}_${i}.cjs`
                 i++
             }
         }
@@ -97,18 +99,18 @@ export class JSFile extends AbstractDataFile  {
 
         let builder = {
             cjsFileName: `${dirRelativeToRoot}/${basename(json)}.cjs`,
-            jsonFileName:relative(this.parent().getRootDirPath(), json),
-            dataAsString:`module.exports = require('./${basename(moduleID)}');`,
+            jsonFileName: relative(this.parent().getRootDirPath(), json),
+            dataAsString: `module.exports = require('./${basename(moduleID)}');`,
             dir: parent
 
         }
 
 
-        let spawn  = this.parent().spawnCJS(builder)
+        let spawn = this.parent().spawnCJS(builder)
 
-       return join(dirname(moduleID) , basename(spawn))
+        return join(dirname(moduleID), basename(spawn))
 
-     }
+    }
 
     private removeStrict() {
         this.isStrict = this.ast.body.length !== 0
@@ -169,12 +171,20 @@ export class JSFile extends AbstractDataFile  {
             body.push(e)
         })
 
+
+        if (this.moduleType === "module") {
+            this.makeExportsArray(newAST.body)
+        }
+        this.getImportManager().buildDeclList().forEach(e => {
+            newAST.body.splice(0, 0, e)
+        })
+
+        //MUST BE LAST
         if (this.isStrict && this.ast.sourceType !== "module") {
             this.ast.body.splice(0, 0,
                 JSFile.useStrict
             );
         }
-
         return newAST;
     }
 
@@ -197,7 +207,6 @@ export class JSFile extends AbstractDataFile  {
         }
 
         if (exports.default_exports && exports.default_exports.declaration) {
-
             switch (exports.default_exports.declaration.type) {
 
                 case "ObjectExpression":
@@ -214,7 +223,7 @@ export class JSFile extends AbstractDataFile  {
         }
     }
 
-    private parseProgram(program:string,isModule):Program {
+    private parseProgram(program: string, isModule): Program {
         if (shebangRegex.test(this.data)) {
             this.shebang = shebangRegex.exec(this.data)[0].toString()
             program = program.replace(this.shebang, '');
@@ -226,12 +235,9 @@ export class JSFile extends AbstractDataFile  {
         try {
             return (isModule ? parseModule : parseScript)(program)
         } catch (e) {
-             throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
+            throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
         }
     }
-
-
-
 
 
     /**
@@ -254,11 +260,17 @@ export class JSFile extends AbstractDataFile  {
      * gets the JSFiles ImportManager.
      */
     getImportManager(): ImportManager {
+        if (!this.imports) {
+            this.imports = new ImportManager();
+        }
         return this.imports;
     }
 
 
     getExportBuilder(): ExportBuilder {
+        if (!this.exports) {
+            this.exports = new ExportBuilder();
+        }
         return this.exports;
     }
 

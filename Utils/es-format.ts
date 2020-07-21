@@ -4,6 +4,7 @@ import {generate} from 'escodegen';
 import {parseScript, parseModule, Program} from 'esprima';
 import {argv} from 'process';
 import shebangRegex from "shebang-regex";
+import {sanitize} from "../src/transformations/sanitizing/sanitize_project";
 let i = 0;
 argv.shift();
 argv.shift();

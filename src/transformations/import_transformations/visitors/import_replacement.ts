@@ -1,5 +1,6 @@
 import {Literal, Node, Pattern} from "estree";
 import {replace, Visitor, VisitorOption} from "estraverse";
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
 // import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 
 
@@ -160,7 +161,7 @@ export function transformImport(js: JSFile) {
                             // node.expression.arguments[0].value.toString()
                             // data.push(tmpData)
                             js.getImportManager().createSideEffect(node.expression.arguments[0].value.toString())
-                            console.log('created '+ node.expression.arguments[0].value.toString())
+                            // console.log('created '+ node.expression.arguments[0].value.toString())
                             nodes.add(node)
                             return VisitorOption.Remove;
                         }

@@ -1,36 +1,29 @@
 #!/bin/env ts-node
+import {replace, traverse, Visitor} from 'estraverse'
 import {
+    ArrayPattern,
+    AssignmentExpression,
+    AssignmentPattern,
+    Expression,
     Identifier,
     Literal,
-    Node,
-    VariableDeclaration,
-    VariableDeclarator,
-    ObjectPattern,
-    ArrayPattern,
-    RestElement,
-    AssignmentPattern,
     MemberExpression,
-    AssignmentExpression,
+    Node,
+    ObjectPattern,
     Pattern,
-    Expression,
     Property,
-    AssignmentProperty,
+    RestElement,
+    SimpleCallExpression,
     Statement,
-    FunctionDeclaration,
-    FunctionExpression,
-    ArrowFunctionExpression,
-    ForStatement,
-    BaseNode, CallExpression, SimpleCallExpression, Super, SpreadElement
+    VariableDeclaration,
+    VariableDeclarator
 } from 'estree'
-import {replace, traverse, Visitor} from 'estraverse'
 import _ from 'lodash'
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {Namespace} from "../../../abstract_fs_v2/Namespace";
+import {createRequireDecl} from '../../../abstract_representation/es_tree_stuff/astTools';
 // import {JSFile} from "../../../index";
 import {RequireAccessIDs} from "../../../Types";
-import {createRequireDecl, isExpr} from '../../../abstract_representation/es_tree_stuff/astTools';
-import {Namespace} from "src/abstract_fs_v2/Namespace";
-import {generate} from "escodegen";
-import {parseScript} from "esprima";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
 
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';
@@ -43,7 +36,7 @@ const alphaNumericString: string = `${lower}${upper}${numeric}`
  * @param js the JSFile to transform.
  */
 export function accessReplace(js: JSFile) {
-
+    let requireTracker = js.getRequireTracker();
     let runTraversal = function () {
         let imports: RequireAccessIDs = {};
         let visitor: Visitor = {
@@ -52,10 +45,19 @@ export function accessReplace(js: JSFile) {
                     if (isARequire(node) && parent.type) {
                         let require: Require = node as Require
                         let requireString: string = (require.arguments[0] as Literal).value.toString();
-                        //gets the appropriate identifier for the require for a require string access variable.
-                        let identifier = extract(requireString, js.getNamespace())
+                        let tracked = requireTracker.getIfExists(requireString)
+                        let identifier:Identifier
+                        if (tracked) {
+                            identifier = tracked.identifier
+                        } else {
+                            identifier = extract(requireString, js.getNamespace())
+                            requireTracker.insertBlind(identifier.name, requireString, true)
 
-                            //check is call expression and not single-identifier declarator
+                        }
+
+                        //gets the appropriate identifier for the require for a require string access variable.
+
+                        //check is call expression and not single-identifier declarator
                         if ("CallExpression" === parent.type ||
                             "MemberExpression" === parent.type ||
                             "AssignmentExpression" === parent.type ||
@@ -111,8 +113,8 @@ export function accessReplace(js: JSFile) {
                     if (isForLoopAccess(node, parent)
                         && node.type === "VariableDeclaration"
                     ) {
-                         node.declarations.forEach((e: VariableDeclarator) => {
-                             extractRequireDataForAccess(e, extract, js);
+                        node.declarations.forEach((e: VariableDeclarator) => {
+                            extractRequireDataForAccess(e, extract, js);
                         });
                     }
                 }
@@ -134,11 +136,11 @@ export function accessReplace(js: JSFile) {
 
 
         replace(js.getAST(), visitor)
-        js.getAST().body.forEach(e =>{
+        js.getAST().body.forEach(e => {
             traverse(e, {
-                enter:(node, parent) => {
-                    if (parent !==  null  &&  node.type === "VariableDeclaration"){
-                        node.declarations.forEach(e=> {
+                enter: (node, parent) => {
+                    if (parent !== null && node.type === "VariableDeclaration") {
+                        node.declarations.forEach(e => {
                             extractRequireDataForAccess(e, extract, js);
                         })
                     }
@@ -191,7 +193,7 @@ function getRequireStringFromDecl(node: VariableDeclarator) {
 function isForLoopAccess(node: Node, parent: Node) {
     return ((
         parent && (parent.type === "ForStatement" && parent.init && parent.init.type === "VariableDeclaration"
-        || parent.type === "ForInStatement" && parent.left&&parent.left.type === "VariableDeclaration")
+        || parent.type === "ForInStatement" && parent.left && parent.left.type === "VariableDeclaration")
         && node.type === "VariableDeclaration"
         && node.declarations.length > 0
         && ((parent.type === "ForStatement" && node === parent.init)
@@ -220,13 +222,13 @@ function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPatter
 }
 
 function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr: string, ns: Namespace) => Identifier, js: JSFile) {
-     if (( e.init && e.init.type === "CallExpression"
+    if ((e.init && e.init.type === "CallExpression"
         && e.init.callee.type === "Identifier"
         && e.init.callee.name === "require"
         && e.init.arguments && e.init.arguments[0] !== null
         && e.init.arguments[0].type === "Literal")) {
         let id = extract(getRequireStringFromDecl(e), js.getNamespace());
-         e.init = id;
+        e.init = id;
     }
 }
 

@@ -12,8 +12,8 @@ import {existsSync} from "fs";
 // import {projectReader, TransformableProject} from "../abstract_representation/project_representation";
 import {importTransforms} from "./import_transformations/exec_transform";
 import {transformBaseExports} from "./export_transformations/visitors/exportTransformMain";
-import {ProjConstructionOpts, ProjectManager} from "src/abstract_fs_v2/ProjectManager";
-import {sanitize} from "transformations/sanitizing/sanitize_project";
+import {ProjConstructionOpts, ProjectManager} from "../abstract_fs_v2/ProjectManager";
+import {sanitize} from "../transformations/sanitizing/sanitize_project";
 
 
 

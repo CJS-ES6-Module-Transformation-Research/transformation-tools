@@ -13,9 +13,9 @@ import {join} from 'path';
 // sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
 import {transformBaseExports} from "./visitors/exportTransformMain";
-import {ProjectManager} from "src/abstract_fs_v2/ProjectManager";
-import {importTransforms} from "transformations/import_transformations/exec_transform";
-import {sanitize} from "transformations/main";
+import {ProjectManager} from "../../abstract_fs_v2/ProjectManager";
+import {importTransforms} from "../import_transformations/exec_transform";
+import {sanitize} from "../sanitizing/sanitize_project";
 
 argv.shift();
 argv.shift();

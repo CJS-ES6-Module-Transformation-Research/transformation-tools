@@ -9,8 +9,8 @@ import {
     VariableDeclarator
 } from "estree";
 import {traverse, Visitor} from "estraverse";
-import {TransformFunction} from "src/abstract_fs_v2/interfaces";
-import {JSFile} from "src/abstract_fs_v2/JSv2";
+import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
+import {JSFile} from "../../../abstract_fs_v2/JSv2";
 
 /**
  * TransformFunction that does Variable Declaration Declarator flattening.

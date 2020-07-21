@@ -1,5 +1,5 @@
 import {mkdirSync, readdirSync} from "fs";
-import {join} from "path";
+import {basename, join} from "path";
 import {CJSBuilderData, FileVisitor, MetaData} from "./interfaces";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {AbstractFile} from "./Abstractions";
@@ -11,6 +11,8 @@ export class Dir extends AbstractFile {
     private factory: () => FileFactory
     private readonly childrenNames: string[];
     private readonly root: string;
+    private copyGit: Boolean;
+    private copyNodeModules: Boolean;
 
     listChildrenByName() {
         return this.childrenNames;
@@ -31,7 +33,7 @@ export class Dir extends AbstractFile {
         this.root = factory.rootPath
     }
 
-    getRootDirPath(){
+    getRootDirPath() {
         return this.root
     }
 
@@ -41,13 +43,20 @@ export class Dir extends AbstractFile {
     }
 
     buildTree() {
-        readdirSync(this.getAbsolute()).forEach(e => {
-            let child = this.factory().createFile(join(this.path_abs, e), this)
-            if (child && child instanceof Dir) {
-                child.buildTree()
-            }
+        let dir_dirname = basename(this.getAbsolute())
+        if (dir_dirname === '.git' || dir_dirname === 'node_modules') {
+            this.children = [];
+            return;
+        }
+        readdirSync(this.getAbsolute())
+            .forEach(e => {
+                let child = this.factory()
+                    .createFile(join(this.path_abs, e), this)
+                if (child && child instanceof Dir) {
+                    child.buildTree()
+                }
+            })
 
-        })
     }
 
 
@@ -74,20 +83,28 @@ export class Dir extends AbstractFile {
     }
 
 
-    mkdirs(root: string) {
+    mkdirs(root_start: string) {
+        let dir_name = basename(this.path_relative)
+        switch (dir_name) {
+            case ".git":
+            case "node_modules":
+                return;
+            default:
+                break;
+        }
 
-        if (!this.isRoot) {
-            let dirChildren: Dir[] = this.children
-                .filter(e => e instanceof Dir)
-                .map(e => e as Dir)
-            let thisRoot = join(root, this.path_relative);
-            if (dirChildren) {
-                dirChildren.forEach(d => d.mkdirs(thisRoot))
-            } else {
-                mkdirSync(thisRoot, {recursive: true})
-            }
+        let dirChildren: Dir[] = this.children
+            .filter(e => {
+                return e instanceof Dir
+            })
+            .map(e => e as Dir)
+
+        let thisRoot = join(root_start, this.path_relative);
+
+        if (dirChildren.length) {
+            dirChildren.forEach(d => d.mkdirs(root_start))
         } else {
-            this.mkdirs(this.factory().rootPath)
+            mkdirSync(thisRoot, {recursive: true})
         }
 
 

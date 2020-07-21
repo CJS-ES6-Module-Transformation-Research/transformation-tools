@@ -5,7 +5,7 @@ import {FileFactory} from "./Factory";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {ok as assertTrue} from "assert";
 import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync} from "fs";
-import path, {join} from "path";
+import {basename, dirname, extname, join, relative} from "path";
 import {FileType, SerializedJSData, write_status} from "./interfaces";
 import cpr from "cpr";
 
@@ -40,13 +40,14 @@ export class ProjectManager {
     private readonly target: string;
     private readonly suffix: string
     private readonly suffixFsData: { [abs: string]: string } = {}
+    private includeGit: boolean = false;
+    private includeNodeModules: boolean = false;
 
 
     constructor(path: string, opts: ProjConstructionOpts) {
         this.src = path
         this.write_status = opts.write_status
         this.suffix = opts.suffix;
-        console.log(JSON.stringify(opts, null, 3))
 
         assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 
@@ -148,33 +149,77 @@ export class ProjectManager {
 
         this.removeAll()
         this.writeAll()
+        console.log("DONE!")
     }
 
     private removeAll(root_dir: string = this.root.getAbsolute()) {
+        let unlinkAsyncFunc = (file) => unlinkSync(file
+            //     , (err) => {
+            //     if (err) {
+            //         console.log('error deleting old files: ' + err)
+            //     }
+            // }
+        );
         this.dataFiles.forEach((file: AbstractDataFile) => {
-            let toRemove: string = join(root_dir, file.getRelative());
-            unlinkSync(toRemove)
-        });
+            // join(root_dir, file.getRelative());
+            unlinkSync(join(root_dir, file.getRelative()))
+        })
+
+        // this.dataFiles.forEach((file: AbstractDataFile) => {
+        //     let toRemove: string = join(root_dir, file.getRelative());
+        //     unlinkSync(toRemove)
+        // });
     }
 
 
     private writeAll(root_dir: string = this.root.getAbsolute()) {
-        this.dataFiles.forEach((file: AbstractDataFile) => {
-            let serialized: SerializedJSData = file.makeSerializable()
-            let dir = path.dirname(join(root_dir, serialized.relativePath))
-            if (!existsSync(dir)) {
-                mkdirSync(dir, {recursive: true})
-            }
-            writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
-        })
-        for (let filename in this.additions) {
-            let file = this.additions[filename]
-            let serialized: SerializedJSData = file.makeSerializable()
-            let dir = path.dirname(join(root_dir, serialized.relativePath))
-            writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+        this.dataFiles.forEach(file => {
+            let serialized = file.makeSerializable();
 
+
+            writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData)
+        })
+        // writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+
+        for (let filename in this.additions) {
+            let serialized: SerializedJSData = this.additions[filename].makeSerializable()
+            let file = join(root_dir, serialized.relativePath)
+            // require('fs').open(file,'w',(e,f)=>{
+
+            writeFileSync(file, serialized.fileData)
+            //     , (err) => {
+            //     if (err) {
+            //         console.log('error occurred: ' + err)
+            //         throw err;
+            //     }
+            // }
+
+
+            // })
+
+            // let dir = path.dirname(join(root_dir, serialized.relativePath))
+            // writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
         }
     }
+
+    //
+    // private writeAll(root_dir: string = this.root.getAbsolute()) {
+    //     this.dataFiles.forEach((file: AbstractDataFile) => {
+    //         let serialized: SerializedJSData = file.makeSerializable()
+    //         let dir = path.dirname(join(root_dir, serialized.relativePath))
+    //         if (!existsSync(dir)) {
+    //             mkdirSync(dir, {recursive: true})
+    //         }
+    //         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+    //     })
+    //     for (let filename in this.additions) {
+    //         let file = this.additions[filename]
+    //         let serialized: SerializedJSData = file.makeSerializable()
+    //         let dir = path.dirname(join(root_dir, serialized.relativePath))
+    //         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+    //
+    //     }
+    // }
 
     private copyOut() {
 
@@ -185,22 +230,80 @@ export class ProjectManager {
         // .then(()=>{
 
         // })
+        let src = this.src
+        let _target = this.target
+        let cpy = require('cpy')
+        this.root.mkdirs(this.target)
+        // cpy(this.src, this.target, {
+        //     // parents: true,
+        //     filter: (file) => {
+        //
+        //
+        //     return _filter(file.path)
+        //     }
+        // }).then(() => {
+        //     this.writeAll(_target)
+        // }).then(()=>{
+        //     console.log("DONE!")
+        // }).catch(err => console.log(err))
 
-        // let x =
-        cpr(this.src, this.target, {confirm: false, overwrite: true,filter:function (testFile) {
-           let ext = path.extname(testFile)
+        //
+        cpr(this.src, this.target, {
+            confirm: false, filter: _filter
+            // function (testFile) {
+            //     let rel_proj_root = relative(src, testFile)
+            //     console.log(rel_proj_root)
+            //     if (dirname(testFile) === ".git") {
+            //         return false;
+            //     } else if (rel_proj_root.startsWith('.git')) {
+            //
+            //         return false;
+            //     }
+            //
+            //     // if (nodeMod.includes("node_modules")) {
+            //     //     return false;
+            //     // }
+            //     let ext = extname(testFile)
+            //
+            //     let js = ext === '.js'
+            //     let cjs = ext === '.cjs'
+            //     let pkg = basename(testFile) === 'package.json'
+            //
+            //     return !(pkg || js || cjs)
+            // }
+        }, () => {
 
-
-            return !( path.basename(testFile) === 'package.json'
-                    ||ext === '.js' ||ext === '.cjs')
-
-            }}, () => {
-            // this.removeAll(this.target)
-            this.writeAll(this.target)
+            this.writeAll(_target)
+            console.log("DONE!")
         })
+        let includeGit = this.includeGit;
+        let includeModules = this.includeNodeModules
 
+        function _filter(testFile) {
+            let rel_proj_root = relative(src, testFile)
+            if (dirname(testFile) === ".git" && includeGit) {
+                return false;
+            } else if (rel_proj_root.startsWith('.git') && includeGit) {
 
+                return false;
+            } else if (rel_proj_root.startsWith('node_modules') && includeModules) {
+                return false;
+            }
+
+            // join(src,testFile).includes("node_modules")
+            // if (nodeMod.includes("node_modules")) {
+            //     return false;
+            // }
+            let ext = extname(testFile)
+
+            let js = ext === '.js'
+            let cjs = ext === '.cjs'
+            let pkg = basename(testFile) === 'package.json'
+
+            return !(pkg || js || cjs)
+        }
     }
+
 
 //TODO DELETE ONCE FIXED JSONREQUIRE
     // /**
