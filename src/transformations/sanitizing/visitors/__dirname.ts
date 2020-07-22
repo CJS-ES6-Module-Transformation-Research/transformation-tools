@@ -144,8 +144,6 @@ function create__filename(url: string, import_meta_url: string): VariableDeclara
 
 
 function create__dirname(_path): VariableDeclaration {
-
-
     let _init: CallExpression =
 
         {
