@@ -46,7 +46,7 @@ export function accessReplace(js: JSFile) {
                         let require: Require = node as Require
                         let requireString: string = (require.arguments[0] as Literal).value.toString();
                         let tracked = requireTracker.getIfExists(requireString)
-                        let identifier:Identifier
+                        let identifier: Identifier
                         if (tracked) {
                             identifier = tracked.identifier
                         } else {
@@ -151,16 +151,18 @@ export function accessReplace(js: JSFile) {
     }
 
     let imports = runTraversal();
-    populateAccessDecls(imports, js.getAST().body)
+    populateAccessDecls(imports, js.getAST().body,js.getNamespace() )
 
 }
 
 
-function populateAccessDecls(reqStrMap: RequireAccessIDs, body: Node[]) {
+function populateAccessDecls(reqStrMap: RequireAccessIDs, body: Node[], names: Namespace) {
     let reverse: VariableDeclaration[] = []
     for (const reqStr in reqStrMap) {
         let vName: string = reqStrMap[reqStr];
         reverse[reqStr] = vName;
+        names.addToNamespace(vName)
+
         reverse.push(createRequireDecl(vName, reqStr, "const"))
     }
     reverse.reverse().forEach(e => {
@@ -282,3 +284,4 @@ function isARequire(node: Node): boolean {
         && node.callee.type === "Identifier"
         && node.callee.name === "require";
 }
+

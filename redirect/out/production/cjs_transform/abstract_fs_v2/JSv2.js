@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSFile = void 0;
-const Namespace_1 = require("abstract_fs_v2/Namespace");
+const Namespace_1 = require("abstract_representation/project_representation/javascript/Namespace");
 const path_1 = require("path");
 const fs_1 = require("fs");
 const shebang_regex_1 = __importDefault(require("shebang-regex"));
@@ -52,7 +52,7 @@ class JSFile extends Abstractions_1.AbstractDataFile {
     }
     spawnCJS(moduleID) {
         let parent = this.parent();
-        let parentDir = parent.getAbsolute();
+        let parentDir = parent.absolutePath();
         let base = path_1.basename(moduleID, ".json");
         let cjsName = `${base}.cjs`;
         if (fs_1.existsSync(path_1.join(parentDir, cjsName))) {

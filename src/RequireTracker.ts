@@ -1,8 +1,9 @@
-import {Identifier} from "estree";
+import {Identifier, VariableDeclaration, VariableDeclarator} from "estree";
 
 export class RequireTracker {
     private readonly fromVarIDMap: { [id: string]: requireDecl } = {}
     private readonly fromModuleMap: { [id: string]: requireDecl } = {}
+    private declList: VariableDeclaration[] = [] ;
 
     constructor() {
         this.fromModuleMap = {};
@@ -24,7 +25,7 @@ export class RequireTracker {
             module_identifier: module,
             computed: computed
         }
-
+        this.pushToDeclList(makeDecl(decl.identifier, decl.module_identifier ))
         this.fromVarIDMap[varName] = decl;
         this.fromModuleMap[module] = decl;
     }
@@ -44,10 +45,34 @@ export class RequireTracker {
         // }
         return JSON.stringify(this.fromModuleMap, null, val)
     }
+
+   private  pushToDeclList(varDecl: VariableDeclaration) {
+        this.declList.push(varDecl)
+
+    }
+
+    getList() {
+        return this.declList
+    }
 }
 
 interface requireDecl {
     module_identifier: string
     identifier: Identifier
     computed: boolean
+}
+function makeDecl(id:Identifier, mod_id:string):VariableDeclaration {
+     let variableDeclarator:VariableDeclarator = {
+        id: id ,
+        type: "VariableDeclarator",
+        init:{
+            type:"CallExpression",
+            arguments:[{type:"Literal",value:`${mod_id}`}],
+            callee:{type:"Identifier",name:"require"}
+        }
+    }
+  return  {
+        declarations: [variableDeclarator], kind: 'const' , type: "VariableDeclaration"
+
+    }
 }

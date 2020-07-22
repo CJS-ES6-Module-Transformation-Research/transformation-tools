@@ -2,7 +2,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Dir = void 0;
 const fs_1 = require("fs");
 const path_1 = require("path");
-const Abstractions_1 = require("./Abstractions");
+const Abstractions_1 = require("src/abstract_fs_v2/Abstractions");
 class Dir extends Abstractions_1.AbstractFile {
     constructor(path, b, parent, factory) {
         super(path, b, parent);

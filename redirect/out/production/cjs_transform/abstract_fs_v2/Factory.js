@@ -1,11 +1,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileFactory = void 0;
-const Dirv2_1 = require("./Dirv2");
+const Dirv2_1 = require("src/abstract_fs_v2/Dirv2");
 const path_1 = require("path");
-const interfaces_1 = require("./interfaces");
+const interfaces_1 = require("src/abstract_fs_v2/interfaces");
 const fs_1 = require("fs");
-const JSv2_1 = require("./JSv2");
-const PackageJSONv2_1 = require("./PackageJSONv2");
+const JSv2_1 = require("src/abstract_fs_v2/JSv2");
+const PackageJSONv2_1 = require("src/abstract_fs_v2/PackageJSONv2");
 class FileFactory {
     constructor(path, isModule, pm = null) {
         this.isModule = isModule;
@@ -30,7 +30,7 @@ class FileFactory {
         };
         let newestMember = new PackageJSONv2_1.CJSToJSON(resolved, metaData, data.dir, data.dataAsString);
         if (this.pm) {
-            this.pm.receiveFactoryUpdate(newestMember, interfaces_1.FileType.cjs, this);
+            this.pm.recieveFactoryUpdate(newestMember, interfaces_1.FileType.cjs, this);
         }
         return newestMember;
     }

@@ -1,6 +1,16 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
-import {Directive, ModuleDeclaration, Program, Statement} from "estree";
+import {traverse} from "estraverse";
+import {
+    ArrayPattern, AssignmentPattern,
+    Directive,
+    Identifier, MemberExpression,
+    ModuleDeclaration,
+    ObjectPattern,
+    Pattern,
+    Program, RestElement,
+    Statement
+} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import shebangRegex from "shebang-regex";
@@ -76,8 +86,7 @@ export class JSFile extends AbstractDataFile {
 
         this.r_tracker = new RequireTracker();
         this.removeStrict();
-        this.rebuildNamespace();
-
+        this.namespace = Namespace.create(this.ast)
     }
 
     public spawnCJS(moduleID: string): string {
@@ -118,10 +127,6 @@ export class JSFile extends AbstractDataFile {
         if (this.isStrict) {
             this.ast.body.splice(0, 1)
         }
-    }
-
-    public rebuildNamespace() {
-        this.namespace = Namespace.create(this.ast);
     }
 
 
@@ -251,7 +256,6 @@ export class JSFile extends AbstractDataFile {
      * gets the current object representing the namespace for the ast.
      */
     getNamespace(): Namespace {
-        this.rebuildNamespace();
         return this.namespace;
     }
 
@@ -302,3 +306,84 @@ export class JSFile extends AbstractDataFile {
         };
     }
 }
+
+
+
+
+
+
+
+
+class NS2 {
+
+    private names:{[key:string]:true}
+    constructor(ast:Program, starting_names:string[] = [] , old:NS2=null){
+        this.names = {}
+        if (starting_names){
+            starting_names.forEach(e=> this.names[e] = true)
+        }
+        if(old){
+            for (let key in old.names){
+                this.names[key] = true;
+            }
+
+        }
+
+
+        traverse(ast, {enter:(node,parent)=>{
+                switch (node.type){
+                    case "VariableDeclarator":
+                        switch(node.id.type){
+                            case "ObjectPattern":
+                                break
+                            case "ArrayPattern":
+                                break
+                            case "AssignmentPattern":
+                                node.id.left
+                                    break
+                        }
+                        break;
+
+                    case "AssignmentExpression":
+                        switch(node.left.type){
+                            case "ObjectPattern":
+                                node.left.properties.forEach(e=> {} )
+                                break
+                            case "ArrayPattern":
+                                break
+
+                        }
+                        //w/ pattern
+                        break
+                    case "FunctionExpression":
+                        node.id.name
+
+                        break
+                    case "FunctionDeclaration":
+                        node.id.name
+
+                        break
+                    case "ClassExpression":
+                        node.id.name
+                        break
+                    case "ClassDeclaration":
+                        node.id.name
+                        break
+                    case "Identifier":
+                        node.name
+
+                        break
+
+                }
+            }})
+
+    }
+}
+
+
+
+
+
+
+
+

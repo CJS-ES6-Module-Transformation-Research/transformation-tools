@@ -142,7 +142,7 @@ function transformImport(js) {
                             // node.expression.arguments[0].value.toString()
                             // data.push(tmpData)
                             js.getImportManager().createSideEffect(node.expression.arguments[0].value.toString());
-                            console.log('created ' + node.expression.arguments[0].value.toString());
+                            // console.log('created '+ node.expression.arguments[0].value.toString())
                             nodes.add(node);
                             return estraverse_1.VisitorOption.Remove;
                         }

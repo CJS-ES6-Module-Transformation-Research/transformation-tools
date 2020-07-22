@@ -13,6 +13,7 @@ var TransformableProject_1 = require("./abstract_representation/project_represen
 Object.defineProperty(exports, "TransformableProject", { enumerable: true, get: function () { return TransformableProject_1.TransformableProject; } });
 var FileProcessing_1 = require("./abstract_representation/project_representation/project/FileProcessing");
 Object.defineProperty(exports, "projectReader", { enumerable: true, get: function () { return FileProcessing_1.projectReader; } });
+Object.defineProperty(exports, "script_or_module", { enumerable: true, get: function () { return FileProcessing_1.script_or_module; } });
 var visitors_1 = require("./transformations/sanitizing/visitors");
 Object.defineProperty(exports, "accessReplace", { enumerable: true, get: function () { return visitors_1.accessReplace; } });
 Object.defineProperty(exports, "flattenDecls", { enumerable: true, get: function () { return visitors_1.flattenDecls; } });

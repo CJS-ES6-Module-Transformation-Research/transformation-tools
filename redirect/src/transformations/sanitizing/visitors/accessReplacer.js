@@ -12,6 +12,7 @@ const alphaNumericString = `${lower}${upper}${numeric}`;
  * @param js the JSFile to transform.
  */
 function accessReplace(js) {
+    let requireTracker = js.getRequireTracker();
     let runTraversal = function () {
         let imports = {};
         let visitor = {
@@ -19,8 +20,16 @@ function accessReplace(js) {
                 if (isARequire(node) && parent.type) {
                     let require = node;
                     let requireString = require.arguments[0].value.toString();
+                    let tracked = requireTracker.getIfExists(requireString);
+                    let identifier;
+                    if (tracked) {
+                        identifier = tracked.identifier;
+                    }
+                    else {
+                        identifier = extract(requireString, js.getNamespace());
+                        requireTracker.insertBlind(identifier.name, requireString, true);
+                    }
                     //gets the appropriate identifier for the require for a require string access variable.
-                    let identifier = extract(requireString, js.getNamespace());
                     //check is call expression and not single-identifier declarator
                     if ("CallExpression" === parent.type ||
                         "MemberExpression" === parent.type ||
@@ -110,14 +119,15 @@ function accessReplace(js) {
         return imports;
     };
     let imports = runTraversal();
-    populateAccessDecls(imports, js.getAST().body);
+    populateAccessDecls(imports, js.getAST().body, js.getNamespace());
 }
 exports.accessReplace = accessReplace;
-function populateAccessDecls(reqStrMap, body) {
+function populateAccessDecls(reqStrMap, body, names) {
     let reverse = [];
     for (const reqStr in reqStrMap) {
         let vName = reqStrMap[reqStr];
         reverse[reqStr] = vName;
+        names.addToNamespace(vName);
         reverse.push(astTools_1.createRequireDecl(vName, reqStr, "const"));
     }
     reverse.reverse().forEach(e => {

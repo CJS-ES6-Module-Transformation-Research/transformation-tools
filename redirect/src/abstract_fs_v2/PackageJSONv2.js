@@ -19,9 +19,6 @@ class PackageJSON extends Abstractions_1.AbstractDataFile {
     getMain() {
         return this.main;
     }
-    getBin() {
-        return this.bin;
-    }
     makeSerializable() {
         return { fileData: JSON.stringify(this.json, null, 4), relativePath: this.getRelative() };
     }

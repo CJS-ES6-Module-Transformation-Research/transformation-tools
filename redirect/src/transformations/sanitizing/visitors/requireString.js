@@ -1,6 +1,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireStringSanitizer = void 0;
 const requireStringTransformer_1 = require("../requireStringTransformer");
+// import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 const estraverse_1 = require("estraverse");
 const path_1 = require("path");
 /**
@@ -8,7 +9,7 @@ const path_1 = require("path");
  * @param js a JSFile
  */
 exports.requireStringSanitizer = function (js) {
-    let requireStringTF = new requireStringTransformer_1.RequireStringTransformer(path_1.dirname(path_1.join(js.getDir(), js.getRelative())));
+    let requireStringTF = new requireStringTransformer_1.RequireStringTransformer(path_1.dirname(js.getAbsolute()), js.getParent().getPackageJSON().getMain());
     let visitor = {
         enter: function (node) {
             if (node.type === "CallExpression"

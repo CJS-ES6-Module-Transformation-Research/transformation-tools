@@ -22,15 +22,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectManager = void 0;
-const Dirv2_1 = require("./Dirv2");
-const JSv2_1 = require("./JSv2");
-const PackageJSONv2_1 = require("./PackageJSONv2");
-const Factory_1 = require("./Factory");
-const Abstractions_1 = require("./Abstractions");
+const Dirv2_1 = require("src/abstract_fs_v2/Dirv2");
+const JSv2_1 = require("src/abstract_fs_v2/JSv2");
+const PackageJSONv2_1 = require("src/abstract_fs_v2/PackageJSONv2");
+const Factory_1 = require("src/abstract_fs_v2/Factory");
+const Abstractions_1 = require("src/abstract_fs_v2/Abstractions");
 const assert_1 = require("assert");
 const fs_1 = require("fs");
 const path_1 = __importStar(require("path"));
-const internals_1 = require("./internals");
+const internals_1 = require("src/abstract_fs_v2/internals");
 const cpr_1 = __importDefault(require("cpr"));
 class ProjectManager {
     constructor(path, opts) {
@@ -122,20 +122,20 @@ class ProjectManager {
     writeInPlace(allFiles, suffix = '') {
         if (suffix) {
             allFiles.forEach((file) => {
-                let absolute = path_1.join(this.root.getAbsolute(), file.getRelative());
+                let absolute = path_1.join(this.root.absolutePath(), file.getRelative());
                 fs_1.copyFileSync(absolute, absolute + suffix);
             });
         }
         this.removeAll(allFiles);
         this.writeAll(allFiles);
     }
-    removeAll(allFiles, root_dir = this.root.getAbsolute()) {
+    removeAll(allFiles, root_dir = this.root.absolutePath()) {
         allFiles.forEach((file) => {
             let toRemove = path_1.join(root_dir, file.getRelative());
             fs_1.unlinkSync(toRemove);
         });
     }
-    writeAll(allFiles, root_dir = this.root.getAbsolute()) {
+    writeAll(allFiles, root_dir = this.root.absolutePath()) {
         allFiles.forEach((file) => {
             let serialized = file.makeSerializable();
             let dir = path_1.default.dirname(path_1.join(root_dir, serialized.relativePath));

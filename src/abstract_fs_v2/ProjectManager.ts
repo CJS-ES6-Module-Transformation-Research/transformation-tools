@@ -315,13 +315,19 @@ export class ProjectManager {
     //     this.transform(tfFunc);
     // }
 
+    //
+    // /**
+    //  * Runs a namespace re-building on all javascript files in the project.
+    //  */
+    // rebuildNamespace() {
+    //     this.forEachSource((js: JSFile) => {
+    //         js.rebuildNamespace();
+    //     })
+    // }
 
-    /**
-     * Runs a namespace re-building on all javascript files in the project.
-     */
-    rebuildNamespace() {
-        this.forEachSource((js: JSFile) => {
-            js.rebuildNamespace();
+    forEachPackage(pkg: (PackageJSON)=>void) {
+        this.package_json.forEach(p=>{
+            pkg(p)
         })
     }
 }

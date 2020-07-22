@@ -1,11 +1,13 @@
 #!/usr/local/bin/ts-node
 Object.defineProperty(exports, "__esModule", { value: true });
-const Transformer_1 = require("../Transformer");
 const process_1 = require("process");
-const project_representation_1 = require("../../abstract_representation/project_representation");
+// import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 const fs_1 = require("fs");
 const path_1 = require("path");
 const exportTransformMain_1 = require("./visitors/exportTransformMain");
+const ProjectManager_1 = require("../../abstract_fs_v2/ProjectManager");
+const exec_transform_1 = require("../import_transformations/exec_transform");
+const sanitize_project_1 = require("../sanitizing/sanitize_project");
 process_1.argv.shift();
 process_1.argv.shift();
 const pwd = process.cwd(); // dirname(argv.shift());
@@ -51,13 +53,14 @@ switch (process_1.argv.length) {
         process.exit(1);
     }
 }
-let project = project_representation_1.projectReader(source);
-let transformer = Transformer_1.Transformer.ofProject(project);
-transformer.transform(exportTransformMain_1.transformBaseExports);
-if (inPlace) {
-    project.writeOutInPlace('.pre-transform');
-}
-else {
-    project.writeOutNewDir(dest);
-}
+let projectManager = new ProjectManager_1.ProjectManager(source, {
+    target_dir: dest,
+    suffix: '.bak',
+    isModule: false,
+    write_status: inPlace ? "in-place" : "copy"
+});
+sanitize_project_1.sanitize(projectManager);
+exec_transform_1.importTransforms(projectManager);
+projectManager.forEachSource(exportTransformMain_1.transformBaseExports);
+projectManager.writeOut();
 console.log("finished.");

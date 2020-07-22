@@ -17,7 +17,7 @@ class FileFactory {
         return this.root_dir;
     }
     createPackageCJSRequire(data) {
-        let resolved = path_1.normalize(path_1.join((data.dir.absolutePath()), data.cjsFileName));
+        let resolved = path_1.normalize(path_1.join((data.dir.getAbsolute()), data.cjsFileName));
         let metaData = {
             target_dir: this.target_dir,
             stat: null,
@@ -29,9 +29,10 @@ class FileFactory {
             path_relative: path_1.join(data.dir.getRelative(), data.cjsFileName)
         };
         let newestMember = new PackageJSONv2_1.CJSToJSON(resolved, metaData, data.dir, data.dataAsString);
-        if (this.pm) {
-            this.pm.receiveFactoryUpdate(newestMember, interfaces_1.FileType.cjs, this);
-        }
+        // if (this.pm) {
+        //     this.pm.receiveFactoryUpdate(newestMember, FileType.cjs, this)
+        // }
+        this.pm.addSource(newestMember);
         return newestMember;
     }
     createFile(path, parent) {
@@ -41,11 +42,10 @@ class FileFactory {
         data = this.getData(stat, resolved);
         let child = this.getFileFromType(path, data, parent);
         if (!child) {
-            console.log(`path ${path} was created as null: `);
             return;
         }
-        if (child.getParent()) {
-            child.getParent().addChild(child);
+        if (parent) {
+            parent.addChild(child);
         }
         return child;
     }

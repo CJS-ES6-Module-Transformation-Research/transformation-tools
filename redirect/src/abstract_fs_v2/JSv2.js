@@ -3,13 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSFile = void 0;
-const Namespace_1 = require("abstract_fs_v2/Namespace");
-const path_1 = require("path");
-const fs_1 = require("fs");
-const shebang_regex_1 = __importDefault(require("shebang-regex"));
-const esprima_1 = require("esprima");
 const escodegen_1 = require("escodegen");
+const esprima_1 = require("esprima");
+const estraverse_1 = require("estraverse");
+const fs_1 = require("fs");
+const path_1 = require("path");
+const shebang_regex_1 = __importDefault(require("shebang-regex"));
+const RequireTracker_1 = require("../RequireTracker");
+const ExportsBuilder_1 = require("../transformations/export_transformations/ExportsBuilder");
+const ImportManager_1 = require("../transformations/import_transformations/ImportManager");
 const Abstractions_1 = require("./Abstractions");
+const Namespace_1 = require("./Namespace");
 // export interface JSFile {
 //     rebuildNamespace(): void;
 //
@@ -47,8 +51,12 @@ class JSFile extends Abstractions_1.AbstractDataFile {
         this.replacer = (s) => s;
         this.moduleType = isModule ? "module" : "script"; //TODO delete or find purpose
         this.ast = this.parseProgram(this.data, isModule);
+        this.r_tracker = new RequireTracker_1.RequireTracker();
         this.removeStrict();
-        this.rebuildNamespace();
+        this.namespace = Namespace_1.Namespace.create(this.ast);
+    }
+    getRequireTracker() {
+        return this.r_tracker;
     }
     spawnCJS(moduleID) {
         let parent = this.parent();
@@ -63,12 +71,17 @@ class JSFile extends Abstractions_1.AbstractDataFile {
                 i++;
             }
         }
-        let text = this.parent().spawnCJS({
-            cjsFileName: cjsName,
-            jsonFileName: moduleID,
-            dataAsString: `module.exports = require('${moduleID}');`,
+        let json = path_1.join(this.path_abs, moduleID);
+        let relativeToRoot = path_1.relative(this.parent().getRootDirPath(), json);
+        let dirRelativeToRoot = path_1.dirname(relativeToRoot);
+        let builder = {
+            cjsFileName: `${dirRelativeToRoot}/${path_1.basename(json)}.cjs`,
+            jsonFileName: path_1.relative(this.parent().getRootDirPath(), json),
+            dataAsString: `module.exports = require('./${path_1.basename(moduleID)}');`,
             dir: parent
-        });
+        };
+        let spawn = this.parent().spawnCJS(builder);
+        return path_1.join(path_1.dirname(moduleID), path_1.basename(spawn));
     }
     removeStrict() {
         this.isStrict = this.ast.body.length !== 0
@@ -76,9 +89,6 @@ class JSFile extends Abstractions_1.AbstractDataFile {
         if (this.isStrict) {
             this.ast.body.splice(0, 1);
         }
-    }
-    rebuildNamespace() {
-        this.namespace = Namespace_1.Namespace.create(this.ast);
     }
     addToTop(toAdd) {
         this.toAddToTop.push(toAdd);
@@ -113,6 +123,13 @@ class JSFile extends Abstractions_1.AbstractDataFile {
         addToBottom.reverse().forEach((e) => {
             body.push(e);
         });
+        if (this.moduleType === "module") {
+            this.makeExportsArray(newAST.body);
+        }
+        this.getImportManager().buildDeclList().forEach(e => {
+            newAST.body.splice(0, 0, e);
+        });
+        //MUST BE LAST
         if (this.isStrict && this.ast.sourceType !== "module") {
             this.ast.body.splice(0, 0, JSFile.useStrict);
         }
@@ -149,8 +166,7 @@ class JSFile extends Abstractions_1.AbstractDataFile {
             return (isModule ? esprima_1.parseModule : esprima_1.parseScript)(program);
         }
         catch (e) {
-            // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
-            throw e;
+            throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`);
         }
     }
     /**
@@ -163,16 +179,21 @@ class JSFile extends Abstractions_1.AbstractDataFile {
      * gets the current object representing the namespace for the ast.
      */
     getNamespace() {
-        this.rebuildNamespace();
         return this.namespace;
     }
     /**
      * gets the JSFiles ImportManager.
      */
     getImportManager() {
+        if (!this.imports) {
+            this.imports = new ImportManager_1.ImportManager();
+        }
         return this.imports;
     }
     getExportBuilder() {
+        if (!this.exports) {
+            this.exports = new ExportsBuilder_1.ExportBuilder();
+        }
         return this.exports;
     }
     makeSerializable() {
@@ -209,3 +230,56 @@ JSFile.useStrict = {
     },
     "directive": "use strict"
 };
+class NS2 {
+    constructor(ast, starting_names = [], old = null) {
+        this.names = {};
+        if (starting_names) {
+            starting_names.forEach(e => this.names[e] = true);
+        }
+        if (old) {
+            for (let key in old.names) {
+                this.names[key] = true;
+            }
+        }
+        estraverse_1.traverse(ast, { enter: (node, parent) => {
+                switch (node.type) {
+                    case "VariableDeclarator":
+                        switch (node.id.type) {
+                            case "ObjectPattern":
+                                break;
+                            case "ArrayPattern":
+                                break;
+                            case "AssignmentPattern":
+                                node.id.left;
+                                break;
+                        }
+                        break;
+                    case "AssignmentExpression":
+                        switch (node.left.type) {
+                            case "ObjectPattern":
+                                node.left.properties.forEach(e => { });
+                                break;
+                            case "ArrayPattern":
+                                break;
+                        }
+                        //w/ pattern
+                        break;
+                    case "FunctionExpression":
+                        node.id.name;
+                        break;
+                    case "FunctionDeclaration":
+                        node.id.name;
+                        break;
+                    case "ClassExpression":
+                        node.id.name;
+                        break;
+                    case "ClassDeclaration":
+                        node.id.name;
+                        break;
+                    case "Identifier":
+                        node.name;
+                        break;
+                }
+            } });
+    }
+}

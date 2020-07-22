@@ -25,7 +25,7 @@ class AbstractFile {
     getParent() {
         return this.isRoot ? null : this.parent();
     }
-    absolutePath() {
+    getAbsolute() {
         return this.path_abs;
     }
     getRelative() {

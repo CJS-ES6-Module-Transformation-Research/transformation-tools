@@ -1,5 +1,5 @@
 // #!/usr/local/bin/ts-node
-import {Directive, Program} from 'estree'
+import {Directive, Program, VariableDeclaration} from 'estree'
 import {parseScript} from "esprima";
 import {generate} from "escodegen";
 
@@ -350,25 +350,35 @@ let ast: Program;
 //     console.log(e.index)
 // }
 import path from 'path'
-let args = process.argv
+// let args = process.argv
+//
+// console.log(process.cwd())
+// args.shift()
+// args.shift()
+// let {join,normalize,dirname} = path
+// const pwd = process.cwd();
+// let level = args[0]
+// args.shift()
+// // console.log(level)
+// console.log(join(pwd,level))
+//
+//
+// let upOne = args[0]
+// args.shift()
+// console.log(join(pwd,upOne))
+//
+// let upOneDown2 = args[0]
+// args.shift()
+// console.log(join (pwd,upOneDown2))
+//
+//
 
-console.log(process.cwd())
-args.shift()
-args.shift()
-let {join,normalize,dirname} = path
-const pwd = process.cwd();
-let level = args[0]
-args.shift()
-// console.log(level)
-console.log(join(pwd,level))
+ast = parseScript(`
+var __filename = url.fileURLToPath(import_meta)
+`)
+let disp = ast.body[0] as VariableDeclaration
+console.log(JSON.stringify(disp.declarations,null,3))
 
 
-let upOne = args[0]
-args.shift()
-console.log(join(pwd,upOne))
-
-let upOneDown2 = args[0]
-args.shift()
-console.log(join (pwd,upOneDown2))
 
 

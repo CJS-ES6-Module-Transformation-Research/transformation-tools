@@ -1,4 +1,4 @@
-import {traverse, Visitor} from "estraverse";
+import {traverse, Visitor, VisitorOption} from "estraverse";
 import {VariableDeclarator} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {RequireTracker} from "../../../RequireTracker";
@@ -18,6 +18,7 @@ export const requireRegistration = (js: JSFile) => {
                     let declarator: VariableDeclarator = node.declarations[0]
                     let init = declarator.init
                     if (declarator.id.type === "Identifier"
+                        && init
                         && init.type === "CallExpression"
                         && init.callee.type === "Identifier"
                         && init.callee.name === "require"
@@ -34,6 +35,7 @@ export const requireRegistration = (js: JSFile) => {
                             //should only get here if the code is bad
                            console.log (`Saw ${requireMgr.getIfExists(require_string)} in addition to identifier ${declarator.id.name} for the same module id.`)
                        }
+                       return VisitorOption.Remove
                     }
                 }
             }
