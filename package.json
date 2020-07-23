@@ -6,13 +6,11 @@
   "scripts": {
     "start": "node index.js ",
     "test": "ts-mocha test/*.ts",
-    "clean-js": "sh clean",
-    "nyc": "nyc --exclude node_modules --exclude test/res ts-mocha test/*.ts"
+    "clean-js": "sh clean"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/argparse": "^1.0.38",
     "@types/escodegen": "0.0.6",
     "@types/esprima": "^4.0.2",
     "@types/estraverse": "0.0.6",
@@ -29,23 +27,17 @@
     "esprima": "^4.0.1",
     "fs": "0.0.1-security",
     "has-shebang": "^1.0.1",
-    "isobject": "^4.0.0",
-    "lodash": "^4.17.15",
     "mocha": "^7.1.0",
-    "mocha-typescript": "^1.1.17",
     "ncp": "^2.0.0",
     "relative": "^3.0.2",
     "shebang-regex": "^3.0.0",
-    "ts-es5-istanbul-coverage": "^1.0.6",
     "ts-mocha": "^7.0.0",
     "typings": "^2.1.1",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "nyc": "^15.0.0",
     "source-map-support": "^0.5.16",
     "ts-node-register": "^1.0.0",
     "typescript": "^3.9.6"

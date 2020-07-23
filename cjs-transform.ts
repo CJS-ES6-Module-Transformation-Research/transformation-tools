@@ -1,7 +1,7 @@
 #!/usr/local/bin/ts-node
 import * as yargs from "yargs";
 import {Arguments, Argv, CommandModule} from "yargs";
-import {isAbsolute, join} from "path";
+import path, {isAbsolute, join} from "path";
 import {write_status} from "./src/abstract_fs_v2/interfaces";
 import {ProjConstructionOpts, ProjectManager} from "./src/abstract_fs_v2/ProjectManager";
 import {transformBaseExports} from "./src/transformations/export_transformations/visitors/exportTransformMain";
@@ -18,8 +18,8 @@ import {requireRegistration} from "./src/transformations/sanitizing/visitors/req
 
 const cwd = process.cwd()
 
-let assert = require('assert')
-let path = require('path')
+import assert from 'assert'
+// import path from 'path'
 
 const copyCommandModule: CommandModule<ProgramArgs, ProgramArgs> = {
     command: "tf-copy <source> <dest>",
@@ -72,6 +72,8 @@ interface ProgramArgs{
 const tf_args:Arguments<ProgramArgs>  = yargs
     .command(copyCommandModule)
     .command(inPlaceCommandModule)
+    .demandCommand()
+    .strict()
     .argv;
 let input: string = tf_args.source;
 let output = '';
