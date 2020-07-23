@@ -1,22 +1,21 @@
 #!/usr/local/bin/ts-node
 import * as yargs from "yargs";
 import {Arguments, Argv, CommandModule} from "yargs";
-import {PackageJSON} from "../src/abstract_fs_v2/PackageJSONv2";
-import {ProjConstructionOpts, ProjectManager} from "../src/abstract_fs_v2/ProjectManager";
 import {isAbsolute, join} from "path";
-import {write_status} from "../src/abstract_fs_v2/interfaces";
-import {transformBaseExports} from "../src/transformations/export_transformations/visitors/exportTransformMain";
-import {addLocationVariables, req_filler} from "../src/transformations/sanitizing/visitors/__dirname";
-import {transformImport} from "../src/transformations/import_transformations/visitors/import_replacement";
-import {sanitize} from "../src/transformations/sanitizing/sanitize_project";
-import {importTransforms} from "../src/transformations/import_transformations/exec_transform";
+import {write_status} from "./src/abstract_fs_v2/interfaces";
+import {ProjConstructionOpts, ProjectManager} from "./src/abstract_fs_v2/ProjectManager";
+import {transformBaseExports} from "./src/transformations/export_transformations/visitors/exportTransformMain";
+import {transformImport} from "./src/transformations/import_transformations/visitors/import_replacement";
 import {
     accessReplace, collectDefaultObjectAssignments,
     flattenDecls,
     jsonRequire,
     requireStringSanitizer
-} from "../src/transformations/sanitizing/visitors";
-import {requireRegistration} from "../src/transformations/sanitizing/visitors/requireRegistration";
+} from "./src/transformations/sanitizing/visitors";
+import {addLocationVariables, req_filler} from "./src/transformations/sanitizing/visitors/__dirname";
+import {requireRegistration} from "./src/transformations/sanitizing/visitors/requireRegistration";
+
+
 const cwd = process.cwd()
 
 let assert = require('assert')
@@ -117,21 +116,27 @@ let projectManager = new ProjectManager(input, opts)
 let rootabs = input
 
 
-
+//require strings x2
 projectManager.forEachSource(requireStringSanitizer)
 projectManager.forEachSource(jsonRequire)
+
+//location of require call to varaible declarations
 projectManager.forEachSource(flattenDecls)
+
+//get all requires already declared
 projectManager.forEachSource(requireRegistration)
+
+//declare undeclared requires
 projectManager.forEachSource(accessReplace)
 
 
-//dirname
+//__dirname
 projectManager.forEachSource(addLocationVariables)
 
-//push all requires
+//push all requires back to ast
 projectManager.forEachSource(req_filler)
 
-//exports sanitize
+//exports sanitize, flatten object literal assignment
 projectManager.forEachSource(collectDefaultObjectAssignments)
 
 
