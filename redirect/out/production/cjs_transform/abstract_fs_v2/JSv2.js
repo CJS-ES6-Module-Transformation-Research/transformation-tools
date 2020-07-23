@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSFile = void 0;
-const Namespace_1 = require("abstract_representation/project_representation/javascript/Namespace");
+const Namespace_1 = require("./Namespace");
 const path_1 = require("path");
 const fs_1 = require("fs");
 const shebang_regex_1 = __importDefault(require("shebang-regex"));
@@ -52,7 +52,7 @@ class JSFile extends Abstractions_1.AbstractDataFile {
     }
     spawnCJS(moduleID) {
         let parent = this.parent();
-        let parentDir = parent.absolutePath();
+        let parentDir = parent.getAbsolute();
         let base = path_1.basename(moduleID, ".json");
         let cjsName = `${base}.cjs`;
         if (fs_1.existsSync(path_1.join(parentDir, cjsName))) {
@@ -63,12 +63,17 @@ class JSFile extends Abstractions_1.AbstractDataFile {
                 i++;
             }
         }
-        let text = this.parent().spawnCJS({
-            cjsFileName: cjsName,
-            jsonFileName: moduleID,
-            dataAsString: `module.exports = require('${moduleID}');`,
+        let json = path_1.join(this.path_abs, moduleID);
+        let relativeToRoot = path_1.relative(this.parent().getRootDirPath(), json);
+        let dirRelativeToRoot = path_1.dirname(relativeToRoot);
+        let builder = {
+            cjsFileName: `${dirRelativeToRoot}/${path_1.basename(json)}.cjs`,
+            jsonFileName: path_1.relative(this.parent().getRootDirPath(), json),
+            dataAsString: `module.exports = require('./${path_1.basename(moduleID)}');`,
             dir: parent
-        });
+        };
+        let spawn = this.parent().spawnCJS(builder);
+        return path_1.join(path_1.dirname(moduleID), path_1.basename(spawn));
     }
     removeStrict() {
         this.isStrict = this.ast.body.length !== 0
@@ -149,8 +154,7 @@ class JSFile extends Abstractions_1.AbstractDataFile {
             return (isModule ? esprima_1.parseModule : esprima_1.parseScript)(program);
         }
         catch (e) {
-            // console.log(`${rel} has error:  ${e} with text: \n ${this.text}`);
-            throw e;
+            throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`);
         }
     }
     /**

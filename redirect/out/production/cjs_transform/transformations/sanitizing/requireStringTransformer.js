@@ -12,8 +12,9 @@ const _JSON = ".json";
  * Require String object transformer that generates the expected ES6 version of the require string.
  */
 class RequireStringTransformer {
-    constructor(dirname) {
+    constructor(dirname, main) {
         this.dirname = dirname;
+        this.main = main;
     }
     absPath(path) {
         return path_1.resolve(this.dirname, path);
@@ -41,7 +42,7 @@ class RequireStringTransformer {
             }
         }
         else { //directory
-            computedPath = absolute + "/index.js";
+            computedPath = `${absolute}/${this.main ? this.main : 'index.js'}`;
         }
         let relativized = relative_1.default(this.dirname, computedPath, null);
         if (!(relativized.charAt(0) === '.') && !(relativized.charAt(0) === '/')) {

@@ -17,20 +17,29 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectManager = void 0;
-const Dirv2_1 = require("src/abstract_fs_v2/Dirv2");
-const JSv2_1 = require("src/abstract_fs_v2/JSv2");
-const PackageJSONv2_1 = require("src/abstract_fs_v2/PackageJSONv2");
-const Factory_1 = require("src/abstract_fs_v2/Factory");
-const Abstractions_1 = require("src/abstract_fs_v2/Abstractions");
+const Dirv2_1 = require("./Dirv2");
+const JSv2_1 = require("./JSv2");
+const PackageJSONv2_1 = require("./PackageJSONv2");
+const Factory_1 = require("./Factory");
+const Abstractions_1 = require("./Abstractions");
 const assert_1 = require("assert");
 const fs_1 = require("fs");
 const path_1 = __importStar(require("path"));
-const internals_1 = require("src/abstract_fs_v2/internals");
+const interfaces_1 = require("./interfaces");
 const cpr_1 = __importDefault(require("cpr"));
 class ProjectManager {
     constructor(path, opts) {
@@ -41,9 +50,12 @@ class ProjectManager {
         this.package_json = [];
         this.allFiles = [];
         this.dataFiles = [];
+        this.additions = {}; //AbstractDataFile[] = []
+        this.suffixFsData = {};
         this.src = path;
         this.write_status = opts.write_status;
         this.suffix = opts.suffix;
+        console.log(JSON.stringify(opts, null, 3));
         assert_1.ok(fs_1.lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`);
         this.factory = new Factory_1.FileFactory(path, opts.isModule, this);
         this.root = this.factory.getRoot();
@@ -58,11 +70,20 @@ class ProjectManager {
             }
         }
         this.loadFileClassLists();
+        if (this.write_status === "in-place" && this.suffix) {
+            this.dataFiles.forEach(e => {
+                let ser = e.makeSerializable();
+                this.suffixFsData[ser.relativePath + this.suffix] = ser.fileData;
+            });
+        }
     }
-    recieveFactoryUpdate(file, type, factory) {
+    addSource(newestMember) {
+        this.additions[newestMember.getRelative()] = newestMember;
+    }
+    receiveFactoryUpdate(file, type, factory) {
         if (this.factory === factory) {
             switch (type) {
-                case internals_1.FileType.cjs:
+                case interfaces_1.FileType.cjs:
                     this.allFiles.push(file);
                     break;
                 default:
@@ -98,57 +119,111 @@ class ProjectManager {
     ;
     writeOut() {
         if (this.write_status === "in-place") {
-            if (this.suffix) {
-                this.appendSuffix(this.dataFiles, this.suffix);
-            }
-            this.writeInPlace(this.dataFiles, this.suffix);
+            this.writeInPlace();
         }
         else if (this.write_status === "copy") {
-            this.copyOut(this.dataFiles);
+            this.copyOut();
         }
         else {
             throw new Error('write status not set!');
         }
     }
-    appendSuffix(allFiles, suffix) {
-        allFiles.map(e => {
-            let relative = e.getRelative();
-            return {
-                orig: relative,
-                suffix: relative + suffix
-            };
-        });
-    }
-    writeInPlace(allFiles, suffix = '') {
-        if (suffix) {
-            allFiles.forEach((file) => {
-                let absolute = path_1.join(this.root.absolutePath(), file.getRelative());
-                fs_1.copyFileSync(absolute, absolute + suffix);
-            });
+    writeInPlace() {
+        // if (suffix) {
+        //     allFiles.forEach((file: AbstractDataFile) => {
+        //         let absolute = join(this.root.getAbsolute(), file.getRelative())
+        //         console.log(`absolute: ${absolute}`)
+        //         console.log(`root : ${this.root.getAbsolute()}`)
+        //         console.log(`relaritve : ${file.getRelative()}`)
+        //
+        //         // copyFileSync(absolute, absolute + suffix)
+        //     });
+        //         // }
+        for (let relative in this.suffixFsData) {
+            let data = this.suffixFsData[relative];
+            fs_1.writeFileSync(path_1.join(this.root.getAbsolute(), relative), data);
         }
-        this.removeAll(allFiles);
-        this.writeAll(allFiles);
+        this.removeAll();
+        this.writeAll();
     }
-    removeAll(allFiles, root_dir = this.root.absolutePath()) {
-        allFiles.forEach((file) => {
-            let toRemove = path_1.join(root_dir, file.getRelative());
-            fs_1.unlinkSync(toRemove);
+    removeAll(root_dir = this.root.getAbsolute()) {
+        let unlinkAsyncFunc = (file) => __awaiter(this, void 0, void 0, function* () {
+            return fs_1.unlink(file, (err) => {
+                if (err) {
+                    console.log('error deleting old files: ' + err);
+                }
+            });
         });
+        this.dataFiles.forEach((file) => {
+            path_1.join(root_dir, file.getRelative());
+            unlinkAsyncFunc(path_1.join(root_dir, file.getRelative()));
+        });
+        // this.dataFiles.forEach((file: AbstractDataFile) => {
+        //     let toRemove: string = join(root_dir, file.getRelative());
+        //     unlinkSync(toRemove)
+        // });
     }
-    writeAll(allFiles, root_dir = this.root.absolutePath()) {
-        allFiles.forEach((file) => {
-            let serialized = file.makeSerializable();
-            let dir = path_1.default.dirname(path_1.join(root_dir, serialized.relativePath));
-            if (!fs_1.existsSync(dir)) {
-                fs_1.mkdirSync(dir, { recursive: true });
+    writeAll(root_dir = this.root.getAbsolute()) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.dataFiles.map((file) => {
+                return file.makeSerializable();
+            }).forEach(serialized => {
+                fs_1.writeFile(path_1.join(root_dir, serialized.relativePath), serialized.fileData, (err) => {
+                    if (err) {
+                        console.log('error occurred: ' + err);
+                    }
+                });
+            });
+            // writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+            for (let filename in this.additions) {
+                let serialized = this.additions[filename].makeSerializable();
+                fs_1.writeFile(path_1.join(root_dir, serialized.relativePath), serialized.fileData, (err) => {
+                    if (err) {
+                        console.log('error occurred: ' + err);
+                    }
+                });
+                // let dir = path.dirname(join(root_dir, serialized.relativePath))
+                // writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
             }
-            fs_1.appendFileSync(path_1.join(root_dir, serialized.relativePath), serialized.fileData);
         });
     }
-    copyOut(allFiles) {
-        cpr_1.default(this.src, this.target, { confirm: false, deleteFirst: true, overwrite: true }, () => {
-            this.removeAll(allFiles, this.target);
-            this.writeAll(allFiles, this.target);
+    //
+    // private writeAll(root_dir: string = this.root.getAbsolute()) {
+    //     this.dataFiles.forEach((file: AbstractDataFile) => {
+    //         let serialized: SerializedJSData = file.makeSerializable()
+    //         let dir = path.dirname(join(root_dir, serialized.relativePath))
+    //         if (!existsSync(dir)) {
+    //             mkdirSync(dir, {recursive: true})
+    //         }
+    //         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+    //     })
+    //     for (let filename in this.additions) {
+    //         let file = this.additions[filename]
+    //         let serialized: SerializedJSData = file.makeSerializable()
+    //         let dir = path.dirname(join(root_dir, serialized.relativePath))
+    //         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
+    //
+    //     }
+    // }
+    copyOut() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // require('ncp')(this.src, this.target, {}, () => {
+            //     this.removeAll(allFiles, this.target);
+            //     this.writeAll(allFiles, this.target);
+            // })
+            // .then(()=>{
+            // })
+            yield cpr_1.default(this.src, this.target, {
+                confirm: false, filter: function (testFile) {
+                    let ext = path_1.default.extname(testFile);
+                    let js = ext === '.js';
+                    let cjs = ext === '.cjs';
+                    let pkg = path_1.default.basename(testFile) === 'package.json';
+                    return !(pkg || js || cjs);
+                }
+            }, () => {
+            });
+            yield this.writeAll(this.target);
         });
     }
     //TODO DELETE ONCE FIXED JSONREQUIRE
@@ -160,16 +235,6 @@ class ProjectManager {
     //     let tfFunc: TransformFunction = projTransformFunc(this);
     //     this.transform(tfFunc);
     // }
-    setSourceAsModule() {
-        this.root.visit(e => {
-            if (e instanceof PackageJSONv2_1.PackageJSON) {
-                e.makeModule();
-            }
-            else if (e instanceof JSv2_1.JSFile) {
-                e.setAsModule();
-            }
-        });
-    }
     /**
      * Runs a namespace re-building on all javascript files in the project.
      */

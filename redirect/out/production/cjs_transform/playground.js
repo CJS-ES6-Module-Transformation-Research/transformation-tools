@@ -1,6 +1,7 @@
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const esprima_1 = require("esprima");
-const escodegen_1 = require("escodegen");
 // try {
 //     // console.log(JSON.stringify(parseModule('import "hello"\n'), null, 5))
 //
@@ -326,18 +327,30 @@ let ast;
 // })
 // // transformer.transform(js=>js.setAsModule() )
 //
-function testIt(ast) {
-    if (ast.body.length !== 0
-        // && ast.body[0].type === "ExpressionStatement"
-        // && ast.body[0]['directive']
-        && (ast.body[0]['directive'] === "use strict")) {
-        return true;
-    }
-    return false;
-}
-ast = esprima_1.parseScript(`"use strict"\n`);
-console.log(testIt(ast));
-console.log(escodegen_1.generate(ast));
-ast = esprima_1.parseScript(`x\n`);
-console.log(testIt(ast));
-console.log(escodegen_1.generate(ast));
+// try {
+//     ast = parseScript(`
+// var x = 3;
+// x++
+// -x-
+// let y = 3
+// `)
+// }catch (e) {
+//     console.log(e.index)
+// }
+const path_1 = __importDefault(require("path"));
+let args = process.argv;
+console.log(process.cwd());
+args.shift();
+args.shift();
+let { join, normalize, dirname } = path_1.default;
+const pwd = process.cwd();
+let level = args[0];
+args.shift();
+// console.log(level)
+console.log(join(pwd, level));
+let upOne = args[0];
+args.shift();
+console.log(join(pwd, upOne));
+let upOneDown2 = args[0];
+args.shift();
+console.log(join(pwd, upOneDown2));

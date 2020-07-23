@@ -1,19 +1,18 @@
 #!/usr/local/bin/ts-node
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sanitize = void 0;
-const Transformer_1 = require("../Transformer");
 const visitors_1 = require("./visitors");
 const process_1 = require("process");
-const project_representation_1 = require("../../abstract_representation/project_representation");
+// import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 const fs_1 = require("fs");
 const path_1 = require("path");
-function sanitize(transformer) {
-    transformer.transform(visitors_1.requireStringSanitizer);
-    transformer.transformWithProject(visitors_1.jsonRequire);
-    transformer.transform(visitors_1.flattenDecls);
-    transformer.transform(visitors_1.accessReplace);
-    transformer.rebuildNamespace();
-    transformer.transform(visitors_1.collectDefaultObjectAssignments);
+function sanitize(projectManager) {
+    projectManager.forEachSource(visitors_1.requireStringSanitizer);
+    projectManager.forEachSource(visitors_1.jsonRequire);
+    projectManager.forEachSource(visitors_1.flattenDecls);
+    projectManager.forEachSource(visitors_1.accessReplace);
+    projectManager.rebuildNamespace();
+    projectManager.forEachSource(visitors_1.collectDefaultObjectAssignments);
 }
 exports.sanitize = sanitize;
 process_1.argv.shift();
@@ -63,14 +62,3 @@ switch (process_1.argv.length) {
         process.exit(1);
     }
 }
-let project = project_representation_1.projectReader(source);
-let transformer = Transformer_1.Transformer.ofProject(project);
-sanitize(transformer);
-// transformer.transform(transformImport)
-if (inPlace) {
-    project.writeOutInPlace('.pre-transform');
-}
-else {
-    project.writeOutNewDir(dest);
-}
-console.log("finished.");
