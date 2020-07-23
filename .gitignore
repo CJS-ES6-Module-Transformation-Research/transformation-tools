@@ -14,3 +14,14 @@ test/*.js
 
 dev_util_data
 dev_util_data/*
+
+redirect
+redirect/*
+repos-test
+repos-test/*
+repos-test/**/*
+
+
+
+
+
