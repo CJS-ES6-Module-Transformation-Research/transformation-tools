@@ -14,6 +14,7 @@ import {
 } from "./src/transformations/sanitizing/visitors";
 import {addLocationVariables, req_filler} from "./src/transformations/sanitizing/visitors/__dirname";
 import {requireRegistration} from "./src/transformations/sanitizing/visitors/requireRegistration";
+import {reqPropertyInfoGather} from './src/ReqPropInfo';
 
 
 const cwd = process.cwd()
@@ -141,12 +142,16 @@ projectManager.forEachSource(req_filler)
 //exports sanitize, flatten object literal assignment
 projectManager.forEachSource(collectDefaultObjectAssignments)
 
+// init the list of properties accessed, and definitely not primitives
+// for each require
+projectManager.forEachSource(reqPropertyInfoGather)
+
 
 projectManager.forEachSource(js=>{js.setAsModule()})
 // importTransforms(projectManager)
 projectManager.forEachPackage(pkg=>pkg.makeModule())
 projectManager.forEachSource(transformImport);
-;
+
 
 projectManager.forEachSource(transformBaseExports)
 
