@@ -1,8 +1,8 @@
 import {expect} from 'chai';
-import {describe, it} from "mocha";
+// import {describe, it} from "mocha";
 import {readdirSync} from 'fs'
-import {projectReader} from "../../src/abstract_representation/project_representation";
-import {Transformer} from "../../src/transformations/Transformer";
+import {ProjConstructionOpts, ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
+
 import {accessReplace} from "../../src/transformations/sanitizing/visitors";
 
 const testFile_dir = "/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/sanitize/qccess_replace";
@@ -13,6 +13,21 @@ const expectedDir = `${testFile_dir}/expected`
 let files_in_dir = readdirSync(`${testFile_dir}/js_files`)
 
 
+function createOptions(dest:string='') :ProjConstructionOpts {
+    return {
+        suffix: "",
+        write_status: dest? "copy":"in-place",
+        copy_node_modules: false,
+        isModule: false,
+        target_dir: dest? dest:''
+    }
+}
+
+
+function projectReader(src:string , dest:string=''){
+    return new ProjectManager(src, createOptions(dest) )
+}
+
 describe('Sanitize: 3 Access Replace Test Files', () => {
 
 
@@ -20,12 +35,12 @@ describe('Sanitize: 3 Access Replace Test Files', () => {
         files_in_dir.forEach((proj: string) => {
             let eProj = projectReader(`${expectedDir}/${proj}`)
             let aProj = projectReader(`${actualDir}/${proj}`)
-            let transformer = Transformer.ofProject(aProj);
-            transformer.transform(accessReplace);
+             aProj.forEachSource(accessReplace)
 
             aProj.forEachSource((e) => {
-                let actual = e.makeString();
-                let expected = eProj.getJS(e.getRelative()).makeString();
+                let actual = e.makeSerializable().fileData;
+                let expected = eProj.getJS(e.getRelative())
+                    .makeSerializable().fileData;
                 expect(actual).to.be.equal(expected);
             });
         });

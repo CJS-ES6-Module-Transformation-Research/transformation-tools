@@ -1,9 +1,7 @@
 import {describe, it} from "mocha";
 import {expect} from 'chai'
-import {projectReader, TransformableProject} from "../../src/abstract_representation/project_representation";
-import {test_root} from "../index";
-import {Transformer} from "../../src/transformations/Transformer";
-import {jsonRequire} from "../../src/transformations/sanitizing/visitors";
+ import {test_root} from "../index";
+ import {jsonRequire} from "../../src/transformations/sanitizing/visitors";
 
 
 const data_dir = `${test_root}/sanitize/json_creator/`;

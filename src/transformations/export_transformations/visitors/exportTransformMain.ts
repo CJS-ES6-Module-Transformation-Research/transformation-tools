@@ -37,8 +37,8 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
     function extractFromNamespace(name: string, rhs: Expression): TypeSafeReturn {
         if (rhs.type === "Identifier") {
             exportBuilder.registerName({
-                    name: name,
-                    alias: rhs.name
+                    exported_name: name,
+                    local_alias: rhs.name
                 }
             )
             return {option: VisitorOption.Remove};
@@ -60,8 +60,8 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
 
                 namespace.addToNamespace(best);
                 exportBuilder.registerName({
-                        name: name,
-                        alias: best
+                        exported_name: name,
+                        local_alias: best
                     }
                 )
                 return createVarDeclFromNameVal(best, rhs);
@@ -102,7 +102,7 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
                                 generator: short.generator
                             };
                             name = assignmentNode.right.id.name
-                            exportBuilder.registerName({name: name, alias: name})
+                            exportBuilder.registerName({exported_name: name, local_alias: name})
                             exportBuilder.registerDefault({name: name, type: "Identifier"})
                             return {node: FD}
                         }
@@ -115,7 +115,7 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
                             superClass: assignmentNode.right.superClass
                         };
                         name = assignmentNode.right.id.name
-                        exportBuilder.registerName({name: name, alias: name})
+                        exportBuilder.registerName({exported_name: name, local_alias: name})
                         exportBuilder.registerDefault({name: name, type: "Identifier"})
 
                         return {node: decl}// {type:"ExpressionStatement", expression:assignmentNode.right} ;

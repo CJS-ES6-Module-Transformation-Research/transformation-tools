@@ -2,11 +2,6 @@ import {ImportManager} from "../../src/transformations/import_transformations/Im
 import {expect} from 'chai'
 import {generate} from "escodegen";
 import {parseModule} from "esprima";
-import {beforeEach, it, describe} from 'mocha'
-import {
-    TransformableProject,
-} from '../../src/abstract_representation/project_representation'
-
 
 // new JSFile(path,)
 

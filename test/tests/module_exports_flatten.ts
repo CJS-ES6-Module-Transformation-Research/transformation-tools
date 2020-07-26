@@ -1,8 +1,7 @@
 import {expect} from 'chai';
 import {describe, it} from "mocha";
 import {readdirSync} from 'fs'
-import {projectReader, TransformableProject} from "../../src/abstract_representation/project_representation";
-import {Transformer} from "../../src/transformations/Transformer";
+
 import {accessReplace, collectDefaultObjectAssignments} from "../../src/transformations/sanitizing/visitors";
 
 const testFile_dir = "/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/sanitize/module_exports_obj_assign";

@@ -4,9 +4,6 @@ import {expect} from 'chai'
 import {readdirSync, readFileSync} from "fs";
 
 
-import {projectReader, TransformableProject} from "../../src/abstract_representation/project_representation";
-import {Transformer} from "../../src/transformations/Transformer";
- import {transformBaseExports} from "transformations/export_transformations/visitors/exportTransformMain";
 
 
 

@@ -1,7 +1,5 @@
-import {describe, it} from 'mocha';
 import {readFileSync} from 'fs';
-import {TransformableProject, projectReader, JSFile} from "../../src/abstract_representation/project_representation";
-import {expect} from 'chai';
+ import {expect} from 'chai';
 import {parseScript, Program} from "esprima";
 import {generate} from "escodegen";
 import {requireStringSanitizer} from '../../src/transformations/sanitizing/visitors';

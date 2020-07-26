@@ -1,11 +1,8 @@
 import {it} from 'mocha'
 import {expect} from 'chai'
 import shebangRegex from "shebang-regex";
-import {Transformer} from "../../src/transformations/Transformer";
-import {
-    TransformableProject,
-    projectReader,
-    JSFile,
+ import {
+
     requireStringSanitizer,
     flattenDecls,
     accessReplace,

@@ -29,7 +29,7 @@ const namedVisitor: Visitor = {
             ) {
                 let identifier = `${getName(asgmt_node, child)}`;
                 let alias = ` ${identifier}_namedExport`
-                exportBuilder.registerName({name:identifier,alias:alias }, asgmt_node.right,  )
+                exportBuilder.registerName({exported_name:identifier,local_alias:alias }, asgmt_node.right,  )
 
                 return {
                     type: "VariableDeclaration",

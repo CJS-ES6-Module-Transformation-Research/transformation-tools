@@ -1,9 +1,9 @@
 import {it} from "mocha";
 import {expect} from "chai";
 import {readFileSync} from 'fs'
+import {Namespace} from "../../src/abstract_fs_v2/Namespace";
 import {test_root} from "../index";
 import {parseScript, Program} from "esprima";
-import {Namespace} from "src/abstract_fs_v2/Namespace";
 
 const testDir = `${test_root}/res/namespace_test_files`
 

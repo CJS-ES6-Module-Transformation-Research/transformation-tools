@@ -1,5 +1,5 @@
 import {ExportBuilder, ExportTypes, exportNaming} from '../../src/transformations/export_transformations/ExportsBuilder'
-import {describe, it} from "mocha";
+// import {describe, it} from "mocha";
 import {expect} from 'chai'
 import {
     AssignmentProperty, BlockStatement, Declaration, Directive, EmptyStatement, Expression, FunctionDeclaration,
@@ -35,7 +35,7 @@ function makeExpected(code: string, index: number = 0): string {
 }
 
 function createExNames(name: string, alias: string = name): exportNaming {
-    return {name: name, alias: alias}
+    return {exported_name: name, local_alias: alias}
 }
 
 function id(idString: string): Identifier {
@@ -53,7 +53,8 @@ describe('ExportBuilder Testing Without Code', () => {
     });
 
     it('one named', () => {
-        builder.registerName(createExNames('hello'), {type: "Identifier", name: "one named"});
+        let a:Identifier  = {type: "Identifier", name: "one named"}
+        builder.registerName(createExNames('hello'), );
         built = builder.build()
 
         expect(built.default_exports.type).to.be.eq("ExportDefaultDeclaration")
@@ -70,7 +71,7 @@ describe('ExportBuilder Testing Without Code', () => {
 
     it('one named with alias', () => {
         builder = new ExportBuilder()
-        builder.registerName(createExNames('hello', 'hello1'), {type: "Identifier", name: "one named"});
+        builder.registerName(createExNames('hello', 'hello1'));//, {type: "Identifier", name: "one named"}
         built = builder.build()
 
 
@@ -81,8 +82,10 @@ describe('ExportBuilder Testing Without Code', () => {
     });
     it('one namedwith one alias, one regular', () => {
         builder = new ExportBuilder()
-        builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
-        builder.registerName(createExNames('propname0'), id('2named'));
+        // builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        // builder.registerName(createExNames('propname0'), id('2named'));
+        builder.registerName(createExNames('propname1' )) ;
+        builder.registerName(createExNames('propname0') );
         built = builder.build()
         let defaultExport = built.default_exports
         expect(generate(built.default_exports)).to.be.equal((makeExpected('export default {propname1:alias1, propname0}')))
@@ -92,9 +95,12 @@ describe('ExportBuilder Testing Without Code', () => {
 
     it('one namedaliasMix', () => {
         builder = new ExportBuilder()
-        builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
-        builder.registerName(createExNames('propname0'), id('2named'));
-        builder.registerName(createExNames('propname2'), id('3named'));
+        // builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        // builder.registerName(createExNames('propname0'), id('2named'));
+        // builder.registerName(createExNames('propname2'), id('3named'));
+        builder.registerName(createExNames('propname1', 'alias1')  );
+        builder.registerName(createExNames('propname0'));
+        builder.registerName(createExNames('propname2'));
         built = builder.build()
         expect(generate(built.default_exports)).to.be.equal(makeExpected('export default {propname1:alias1, propname0, propname2}', 0))
 
@@ -116,7 +122,8 @@ describe('ExportBuilder Testing Without Code', () => {
             type: "FunctionDeclaration"
         }
 
-        builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        // builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        builder.registerName(createExNames('propname1', 'alias1'));
         builder.registerDefault(id('defaultExport'))
 
         built = builder.build()
@@ -140,7 +147,8 @@ describe('ExportBuilder Testing Without Code', () => {
             type: "FunctionDeclaration"
         }
 
-        builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        // builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        builder.registerName(createExNames('propname1', 'alias1') );
         builder.registerDefault(id('defaultExport'))
 
         built = builder.build()
@@ -204,7 +212,8 @@ describe('ExportBuilder Testing Without Code', () => {
             type: "FunctionDeclaration"
         }
 
-        builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        // builder.registerName(createExNames('propname1', 'alias1'), id("one named"));
+        builder.registerName(createExNames('propname1', 'alias1') );
         builder.registerDefault(id('defaultExport'))
 
         built = builder.build()

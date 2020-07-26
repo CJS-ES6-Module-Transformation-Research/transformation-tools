@@ -1,383 +1,127 @@
 // #!/usr/local/bin/ts-node
-import {Directive, Program, VariableDeclaration} from 'estree'
-import {parseScript} from "esprima";
-import {generate} from "escodegen";
+import {parseScript, Syntax} from "esprima";
+import {traverse} from "estraverse";
+import {BaseNode, BaseNodeWithoutComments, Comment, Expression, MemberExpression, Node, Program} from 'estree'
 
-// try {
-//     // console.log(JSON.stringify(parseModule('import "hello"\n'), null, 5))
-//
-// } catch (e) {
-//     console.log(e)
-// }
-// let is: ImportSpecifier = {
-//     type: "ImportSpecifier",
-//     imported: {
-//         name: "importSpecifier",
-//         type: "Identifier"
-//     },
-//     local: {
-//         name: "localSpecifier",
-//         type: "Identifier"
-//     }
-// }
-// let is2: ImportSpecifier = {
-//     type: "ImportSpecifier",
-//     imported: {
-//         name: "importSpecifier",
-//         type: "Identifier"
-//     },
-//     local: {
-//         name: "localSpecifier",
-//         type: "Identifier"
-//     }
-// }
-// let ids: ImportDefaultSpecifier = {
-//     type: "ImportDefaultSpecifier",
-//     local: {
-//         name: "defaultSpecifier",
-//         type: "Identifier"
-//     }
-// }
-// let ins: ImportNamespaceSpecifier = {
-//     type: "ImportNamespaceSpecifier",
-//     local: {
-//         name: "namespaceSpecifier",
-//         type: "Identifier"
-//     }
-// }
-// let x: ImportDeclaration = {
-//     type: "ImportDeclaration",
-//     specifiers: [is, is2, ids, ins],
-//     source: {
-//         type: "Literal",
-//         value: "chai"
-//     }
-// }
-//
-//
-// let ex1: CallExpression = {
-//     type: "CallExpression",
-//     callee: {type: "Identifier", name: "key"},
-//     arguments: []
-// }
-// let ap: Property = {
-//     type: "Property",
-//     key: {
-//         type: "Literal",
-//         value: 3
-//     },
-//
-//     shorthand: false,
-//     computed: false,
-//     value: {type: "Identifier", name: "value"},
-//     kind: "init",
-//     method: false
-// }
-// const proj_dir = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform`;
-// const test_root = `${proj_dir}/test/res/fixtures/test_proj`;
-//
-// const files: string[] = [
-//     'index.js',
-//     'lib.js',
-//     'lib/index.js',
-//     'src/index.js',
-//     'test/default.test.js',
-//     'test/fixt/parcel.js',
-//     'package.json'
-// ];
-//
-// let relativeRequirePath = {};
-// relativeRequirePath['index.js'] = './test/test_dat.json';
-// relativeRequirePath['lib.js'] = './test/test_dat.json';
-// relativeRequirePath ['lib/index.js'] = '../test/test_dat.json';
-// relativeRequirePath ['src/index.js'] = '../test/test_dat.json';
-// relativeRequirePath['test/default.test.js'] = './test_dat.json';
-// relativeRequirePath['test/fixt/parcel.js'] = '../test_dat.json';
-// relativeRequirePath['package.json'] = './test/test_dat.json';
-//
-// relativeRequirePath['index.js'] = './package.json';
-// relativeRequirePath['lib.js'] = './package.json';
-// relativeRequirePath ['lib/index.js'] = '../package.json';
-// relativeRequirePath ['src/index.js'] = '../package.json';
-// relativeRequirePath['test/default.test.js'] = '../package.json';
-// relativeRequirePath['test/fixt/parcel.js'] = '../../package.json';
-// relativeRequirePath['package.json'] = './package.json';
+let ast:Program
 
-// for (let x in relativeRequirePath){
-//     let file = join(test_root, x);
-//     let dir = dirname(file);
-//     let pkg :string = relativeRequirePath[x];
-//     let withPackage = dir +'/'+pkg;
-//     let withJoinPackage = join(dir, pkg)
-//     console.log(`WORKING ON FILE ${x}`);
-//     console.log(`\twith join" ${withJoinPackage}`);
-//
-//     console.log(`\twith join" ${ relative(test_root, withJoinPackage,null)}\n\n\n`);
-//     //existsSync()
-// }
-// let re:RegExp = new RegExp('.+\.json$');
-
-// const files : string[]= ['index.js','lib.js','lib/index.js','src/index.js','test/default.test.js','test/fixt/parcel.js','package.json']
-// let pathToPackage: string = `${process.cwd()}/package.json`;
-// console.log(pathToPackage)
-// let package_JSON = `  ${readFileSync(pathToPackage).toString()}`;
-// let parsed = JSON.parse(package_JSON)
-// parsed.type = "module"
-// for (let key in parsed){
-//     console.log(`${key} : ${JSON.stringify(parsed[key],null,3)}`)
-// }
-// let parsedJSON = ((parseScript(package_JSON).body[0] as VariableDeclaration).declarations[0].init as ObjectExpression);
-// let propMap: object = {}
-// let map = parsedJSON.properties
-// // map.forEach((e: Property) => {
-//     let key = e.key;
-//     let val = e.value;
-//     let keyString:string, valString:string
-//     if (key.type === 'Literal'){
-//         keyString = key.value.toString()
-//     }else{
-//         keyString = `NOT LITERAL--TYPE: ${key.type}`
-//     }
-//
-//     switch (val.type){
-//         case "Literal":
-//             valString = val.value.toString()
-//             break;
-//         case "Identifier":
-//             valString = val.name;
-//             break;
-//         case "ArrayPattern":
-//             valString = val.elements.map((p:Pattern) => JSON.stringify(p,null,2)).reduce((prev, curr) => prev + curr)
-//             break;
-//         case "ObjectPattern":
-//             valString = JSON.stringify(val,null,2)
-//             break;
-//         default:
-//             valString = generate(val);
-//             break;
-//     }
-//
-//
-//     //
-//     // let lit = (e.key as Literal)
-//     // let val = lit.value.toString()
-//     // console.log(`${val}`)
-//     propMap[keyString] = valString;//`${e.value} =>  ${e.value.type} `
-// })
-// for (let key in map) {
-//     console.log(`${key}  :   ${map[key]}`)
-// }
-// console.log(parsedJSON.type)
-// console.log(package_JSON)
-
-//
-// interface $ExportSpecifier extends BaseModuleSpecifier {
-//     type: "ExportSpecifier";
-//     exported: Identifier;
-// }
-//
-// interface $ExportNamedDeclaration extends BaseModuleDeclaration {
-//     type: "ExportNamedDeclaration";
-//     declaration?: Declaration | null;
-//     specifiers: Array<ExportSpecifier>;
-//     source?: Literal | null;
-// }
-//
-// interface $ExportSpecifier extends BaseModuleSpecifier {
-//     type: "ExportSpecifier";
-//     exported: Identifier;
-// }
-//
-// interface $ExportDefaultDeclaration extends BaseModuleDeclaration {
-//     type: "ExportDefaultDeclaration";
-//     declaration: Declaration | Expression;
-// }
-//
-// interface $ExportAllDeclaration extends BaseModuleDeclaration {
-//     type: "ExportAllDeclaration";
-//     source: Literal;
-// }
-
-//
-// function tester(e: any): boolean {
-//     return (e as Directive).directive && true;
-// }
-//
-// let id1: Identifier = {name: "id__1", type: "Identifier"}
-// let id2: Identifier = {name: "id__2", type: "Identifier"}
-// let id3: Identifier = {name: "id__3", type: "Identifier"}
-//
-// let lit1: Literal = {type: "Literal", value: "LIT_1"}
-// let lit2: Literal = {type: "Literal", value: "LIT_2"}
-//
-// let decl1: VariableDeclaration = {
-//     type: "VariableDeclaration",
-//     kind: "const",
-//     declarations: [{init: lit1, id: id1, type: "VariableDeclarator"}]
-// }
-// let exportAll: ExportAllDeclaration, exportSpec: ExportSpecifier, exportNamedDecl: ExportNamedDeclaration,
-//     exportDefaultDeclaration: ExportDefaultDeclaration
-//
-// function id(ident: string): Identifier {
-//     return {type: "Identifier", name: ident}
-// };
-//
-// function lit(ident: string): Literal {
-//     return {type: "Literal", value: ident}
-// };
-// exportAll = {type: "ExportAllDeclaration", source: lit2};
-// exportSpec = {type: "ExportSpecifier", local: id('local'), exported: id('exported')};
-// exportNamedDecl = {type: "ExportNamedDeclaration", specifiers: [exportSpec], source: lit('source')};
-// exportNamedDecl = {type: "ExportNamedDeclaration", specifiers: [exportSpec]};
-// exportDefaultDeclaration = {type: "ExportDefaultDeclaration", declaration: decl1};
-//
-// console.log(`\n\n\n`)
-// console.log(generate(exportSpec))
-// console.log(`\n\n\n`)
-// console.log(generate(exportAll))
-// console.log(`\n\n\n`)
-// console.log(generate(exportNamedDecl))
-// console.log(`\n\n\n`)
-// console.log(generate(exportDefaultDeclaration))
-//
-//
-// // console.log(JSON.stringify((parseModule(`
-// // let i, j, k;
-// // export default {i,j,k:w}
-// // `).body[1] as ExportDefaultDeclaration).declaration as ObjectExpression,null,4))
-// let count = 0;
-let ast: Program;
-// ast = parseScript(`
-//
-// module.exports = "hello"
-// console.log("hello")
-// if(isTrue()){
-//     console.log("true")
-// }
-//
-// `)
-// let visitor: Visitor = {
-//     enter: (node, parentNode) => {
-//         if (parentNode===null  ){
-//             console.log(node)
-//             count++
-//             return VisitorOption.Skip
-//         }
-//     },
-//     leave: (node, parentNode) => {
-//         // console.log(node)
-//         // count++
-//     }
-//
-// }
-
-
-//
-// ast.body.forEach(e=> {
-//     traverse(e,visitor)
-// });
-
-
-// console.log(count )
-
-
-//
-//  let filesinExportsTests =   [ `obj_to_name`,
-//     `primitiive_to_name`,
-// `anon_default_arrow`,
-// `anon_default_func`,
-// `assign_arrow_to_default_then_assign_name`,
-// `assign_func_to_default_obj_then_add_name_with_func_name`,
-// `assign_func_to_default_then_add_name_with_func_anon`,
-// `class_default_assign`,
-// `class_named_assign`,
-// `identifier_soup_1`,
-// `mixed_mnames`,
-// `multiple_names_assigned_prim`,
-// `multiple_names_objs`,
-// `name_collision_on_declared_func_name`,
-// `name_collision_onpredeclared_anon_func`]
-//
-// let projectStr =`/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/export/export_test_files/simple_suite`
-//
-// import { transformBaseExports as transformBaseExports} from './transformations/export_transformations/visitors/exportTransformMain';
-//
-// import { Transformer,ProjectTransformFunction} from './transformations/Transformer';
-// import {projectReader,JSFile,TransformableProject,script_or_module } from './abstract_representation/project_representation/index';
-// function getFileInExTest(index:number=0 ){
-//     let x =  filesinExportsTests[index ];
-//     return `${projectStr}/${x}/${x}.js`
-// }
-//
-// // projectReader(getFileInExTest(0)
-// let project =
-//     projectReader(`/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/export/export_test_files/simple_suite/obj_to_name/`);
-// let transformer = Transformer.ofProject(project)
-// project.forEachSource(js=>{
-//     // console.log(`${generate(js.getAST())}\n\n\n`)
-//     // console.log(js.getAST().body.length)
-// js.getAST().body.forEach(e=>{
-//
-//     if (e.type === "ExpressionStatement"){
-//         console.log(`${e.type} =====  ${e.expression.type}`)
-//     }
-//     console.log(generate (e))
-//
-//     console.log('\n' )
-// })
-//
-// })
-// transformer.transform(transformBaseExports)
-// transformer.transform(js=>{
-//     console.log('making string'  )
-//     console.log(js.makeString() )
-// });
-//
-// project.forEachSource(js=>{
-//     console.log(``${generate(js.getAST())} `)
-// })
-// // transformer.transform(js=>js.setAsModule() )
-//
-
-// try {
-//     ast = parseScript(`
-// var x = 3;
-// x++
-// -x-
-// let y = 3
-// `)
-// }catch (e) {
-//     console.log(e.index)
-// }
-import path from 'path'
-// let args = process.argv
-//
-// console.log(process.cwd())
-// args.shift()
-// args.shift()
-// let {join,normalize,dirname} = path
-// const pwd = process.cwd();
-// let level = args[0]
-// args.shift()
-// // console.log(level)
-// console.log(join(pwd,level))
-//
-//
-// let upOne = args[0]
-// args.shift()
-// console.log(join(pwd,upOne))
-//
-// let upOneDown2 = args[0]
-// args.shift()
-// console.log(join (pwd,upOneDown2))
-//
-//
 
 ast = parseScript(`
+
+//one thing
+console.log('hello world')
+/**
+* javadoc. 
+*/
 var __filename = url.fileURLToPath(import_meta)
-`)
-let disp = ast.body[0] as VariableDeclaration
-console.log(JSON.stringify(disp.declarations,null,3))
+
+//EOF
+`, {loc: true, comment: true, range: true}, (n: BaseNodeWithoutComments | BaseNode | Node, meta) => {
+    // console.log(`meta: ${JSON.stringify(meta,null,3)}\n\n`)
+    try {
+        let x = (n as Comment)
+        // console.log((x ))
+    } catch (e) {
+        // console.log(n )
+    }
+
+// let x = n.type=== "Line"
+})
+//
+// import {parse, parseFile,SM } from 'spidermonkey'
+// var sm = new SM({ shell: "js" });
+traverse(ast, {
+    leave: (node: Node | BaseNodeWithoutComments, parentNode) => {
+        try {
+            let z = node as Comment
+            // console.log(z)
+        } catch (e) {
+
+        }
+
+    }
+})
+// console.log(generate(ast,{comment:true}))
+
+ast = parseScript(
+    ` 
+//hello  
+//attach? 
+module.exports.x = 3 
+
+// module.exports.y = {}
+// if(true){
+// module.exports = 33 
+// }
+
+`, {comment: true, loc: true}
+)
+// console.log(JSON.stringify(ast ,null,3))
+traverse(ast, {
+    enter: (node, parentNode) => {
+        console.log(`type:${node.type}\t${node.leadingComments} > || > ${node.trailingComments }`)
+
+        node.trailingComments= [{type:"Line",value: "hello ",}]
+    }, leave: ( node, parentNode) => {
+
+    }
+})
+traverse(ast, {
+    enter: (node, parentNode) => {
+        console.log(`type:${node.type}\t${node.leadingComments} > || > ${node.trailingComments }`)
+    }, leave: ( node, parentNode) => {
+
+    }
+})
+// let data_ = sm.parse(data)
+// console.log(data_ )
+// let q = (((((ast.body[0] as ExpressionStatement).expression)as AssignmentExpression).left)as MemberExpression)
+// q.computed = true
+// console.log(ast )
+
+
+const MODULE_EXPORTS: MemberExpression = {
+    type: "MemberExpression",
+    object: {
+        type: Syntax.Identifier,
+        name: "module"
+    },
+    property: {
+        type: Syntax.Identifier,
+        name: "exports"
+    },
+    computed: false
+}
+
+function EXPORTS_DOT(expr: Expression | string): MemberExpression {
+    let _expr
+    if (typeof expr === 'string') {
+        _expr = {
+            type: Syntax.Identifier,
+            name: expr
+        }
+    } else {
+        _expr = expr
+    }
+    return {
+        type: "MemberExpression",
+        object: {
+            type: Syntax.Identifier,
+            name: "exports"
+        },
+        property: _expr,
+        computed: false
+    };
+}
+
+let expr: Expression | string
+// console.log(typeof expr)
+
+
+// console.log(ast.comments)
+// console.log(JSON.stringify(ast,null,3))
+// let disp = ast.body[0] as VariableDeclaration
+// console.log(JSON.stringify(disp.declarations,null,3))
 
 
 
