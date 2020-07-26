@@ -1,9 +1,11 @@
 import {Identifier, VariableDeclaration, VariableDeclarator} from "estree";
+import {ReqPropInfo} from './ReqPropInfo'
 
 export class RequireTracker {
     private readonly fromVarIDMap: { [id: string]: requireDecl } = {}
     private readonly fromModuleMap: { [id: string]: requireDecl } = {}
     private declList: VariableDeclaration[] = [] ;
+    private reqPropsAccessedMap: { [id: string]: ReqPropInfo } = {}
 
     constructor() {
         this.fromModuleMap = {};
@@ -53,6 +55,14 @@ export class RequireTracker {
 
     getList() {
         return this.declList
+    }
+
+    getReqPropsAccessedMap(): { [id: string]: ReqPropInfo } { 
+        return this.reqPropsAccessedMap; 
+    }
+
+    setReqPropsAccessedMap( reqPropsAccessedMap: { [id: string]: ReqPropInfo }) {
+        this.reqPropsAccessedMap = reqPropsAccessedMap;
     }
 }
 
