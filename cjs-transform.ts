@@ -5,6 +5,7 @@ import path, {isAbsolute, join} from "path";
 import {write_status} from "./src/abstract_fs_v2/interfaces";
 import {ProjConstructionOpts, ProjectManager} from "./src/abstract_fs_v2/ProjectManager";
 import {transformBaseExports} from "./src/transformations/export_transformations/visitors/exportTransformMain";
+import {hacker_defaults} from "./src/transformations/import_transformations/visitors/hack";
 import {transformImport} from "./src/transformations/import_transformations/visitors/import_replacement";
 import {
     accessReplace, collectDefaultObjectAssignments,
@@ -145,6 +146,9 @@ projectManager.forEachSource(collectDefaultObjectAssignments)
 // init the list of properties accessed, and definitely not primitives
 // for each require
 projectManager.forEachSource(reqPropertyInfoGather)
+
+
+projectManager.forEachSource(hacker_defaults)
 
 
 projectManager.forEachSource(js=>{js.setAsModule()})
