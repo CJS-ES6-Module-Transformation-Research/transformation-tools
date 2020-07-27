@@ -9,12 +9,11 @@ import {
     ObjectPattern,
     Pattern,
     Program, RestElement,
-    Statement
+    Statement, VariableDeclaration
 } from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
-import shebangRegex from "shebang-regex";
-import {RequireTracker} from "../RequireTracker";
+import {RequireTracker}  from "../RequireTracker";
 import {ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
 import {ImportManager} from "../transformations/import_transformations/ImportManager";
 import {AbstractDataFile} from './Abstractions'
@@ -64,7 +63,7 @@ export class JSFile extends AbstractDataFile {
     private readonly ast: Program;
     private shebang: string;
     private isStrict: boolean = false;//TODO might be unnnecssary--find purposes
-
+    private potentialPrims:VariableDeclaration[] = []
     private toAddToTop: (Directive | Statement | ModuleDeclaration)[] = []
     private toAddToBottom: (Directive | Statement | ModuleDeclaration)[] = []
 
@@ -76,6 +75,8 @@ export class JSFile extends AbstractDataFile {
 
     private namespace: Namespace
     private moduleType: script_or_module;
+
+    private isShebang:RegExp =/^#!.*/
 
     constructor(path: string, b: MetaData, parent: Dir, isModule: boolean) {
         super(path, b, parent);
@@ -150,12 +151,15 @@ export class JSFile extends AbstractDataFile {
         return this.shebang;
     }
 
+    setPotentialPrims(decls:VariableDeclaration[]){
+        this.potentialPrims = decls
+    }
+
 
     public registerReplace(replace: string, value: string): void {
         // this.stringReplace.set(replace, value);
         this.stringReplace[replace] = value
     }
-
 
     private buildProgram(): Program {
         let addToTop: (Directive | Statement | ModuleDeclaration)[] = []
@@ -180,6 +184,11 @@ export class JSFile extends AbstractDataFile {
         if (this.moduleType === "module") {
             this.makeExportsArray(newAST.body)
         }
+
+        this.potentialPrims.reverse().forEach((e) => {
+            body.splice(0, 0, e)
+        })
+
         this.getImportManager().buildDeclList().forEach(e => {
             newAST.body.splice(0, 0, e)
         })
@@ -229,8 +238,9 @@ export class JSFile extends AbstractDataFile {
     }
 
     private parseProgram(program: string, isModule): Program {
-        if (shebangRegex.test(this.data)) {
-            this.shebang = shebangRegex.exec(this.data)[0].toString()
+
+        if ((this.isShebang as RegExp).test(this.data)) {
+            this.shebang = this.isShebang.exec(this.data)[0].toString()
             program = program.replace(this.shebang, '');
 
         } else {

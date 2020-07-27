@@ -1,4 +1,3 @@
- import {namedTypes} from "ast-types";
  import {Identifier, Node, CallExpression} from "estree";
 import {RequireStringTransformer} from "../requireStringTransformer";
 // import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
@@ -6,9 +5,8 @@ import {Visitor,traverse} from "estraverse";
 import {dirname,join} from 'path'
  import {JSFile} from "../../../abstract_fs_v2/JSv2";
  import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
- import MemberExpression = namedTypes.MemberExpression;
 
-MemberExpression
+
  /**
   * Require string sanitizer visitor. Type of TransformFunction.
   * @param js a JSFile

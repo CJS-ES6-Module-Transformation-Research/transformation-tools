@@ -19,7 +19,6 @@ export const addLocationVariables: TransformFunction = (js: JSFile) => {
         console.log('dirname+*')
 
     } else {
-        console.log('n/a supposedly ')
 
         return;
     }
