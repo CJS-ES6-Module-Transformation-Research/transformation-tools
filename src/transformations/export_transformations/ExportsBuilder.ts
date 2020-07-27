@@ -17,8 +17,9 @@ interface ExportMap {
 }
 
 export interface ExportTypes {
-    default_exports: ExportDefaultDeclaration
-    named_exports: ExportNamedDeclaration
+    type:"default"|"named"|"synthetic"|"none"
+    default_exports?: ExportDefaultDeclaration
+    named_exports?: ExportNamedDeclaration
 }
 
 
@@ -86,25 +87,29 @@ export class ExportBuilder {
 
 
 
-        let exports: ExportTypes = {named_exports: null, default_exports: null};
-        //unset
+        let exports: ExportTypes = {type:"none"};
+
+        // no exports
         if (!this.defaultExport && !this.exportList.length) {
             return exports;
         }
+
+        //no preferred api type
         if (!this.api_type) {
             this.api_type = this.defaultExport ? API_TYPE.default_only : API_TYPE.named_only
-
         }
+
+        //creater api
         this.api = {exports: [], type: this.api_type}
 
-
+        //create empty specifier and default
         let specifier_names: ExportSpecifier[] = [];
         let default_object: ObjectExpression = {type: "ObjectExpression", properties: []}
 
 
         this.populateNames(specifier_names, default_object)
 
-
+        //use specified api type to export specified names
         switch (this.api.type) {
             case API_TYPE.default_only:
                 this.api.exports.push('default')
@@ -122,29 +127,26 @@ export class ExportBuilder {
         }
 
 
-        exports.named_exports = {
-            type: "ExportNamedDeclaration",
-            specifiers: specifier_names,
-            declaration: null,
-            source: null
-        };//todo
 
+        switch (this.api_type){
+            case API_TYPE.named_only:
+                exports.named_exports =  {
+                    type: "ExportNamedDeclaration",
+                    specifiers: specifier_names,
+                    declaration: null,
+                    source: null
+                };
+                break;
+            case API_TYPE.default_only:
+                exports.default_exports =  {
+                    type: "ExportDefaultDeclaration",
+                    declaration:
+                        this.defaultExport ? this.defaultExport : default_object
+                }
 
-        exports.default_exports = {
-            type: "ExportDefaultDeclaration",
-            declaration:
-                this.defaultExport ? this.defaultExport : default_object
+                break;
         }
-        //named-only case... no default
-        // if (!this.defaultExport) {
-        //
-        //     };
-        // } else {
-        //     exports.default_exports = {
-        //         type: "ExportDefaultDeclaration",
-        //         declaration: {type: "Identifier", name: this.defaultExport.name}
-        //     }
-        // }
+
         return exports;
     }
 

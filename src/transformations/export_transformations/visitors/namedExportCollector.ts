@@ -2,7 +2,6 @@ import {replace, Visitor, VisitorOption} from "estraverse";
 import {AssignmentExpression, MemberExpression, Node} from "estree";
 import {parseScript} from "esprima";
 import {ExportBuilder} from "../../export_transformations/ExportsBuilder";
-import {generate} from "escodegen";
 
 
 let exportBuilder: ExportBuilder = new ExportBuilder();
@@ -29,7 +28,7 @@ const namedVisitor: Visitor = {
             ) {
                 let identifier = `${getName(asgmt_node, child)}`;
                 let alias = ` ${identifier}_namedExport`
-                exportBuilder.registerName({exported_name:identifier,local_alias:alias }, asgmt_node.right,  )
+                exportBuilder.registerName(   {exported_name:identifier,local_alias:alias } )
 
                 return {
                     type: "VariableDeclaration",
