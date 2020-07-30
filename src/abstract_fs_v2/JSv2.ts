@@ -14,6 +14,7 @@ import {
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {RequireTracker}  from "../RequireTracker";
+import {API} from "../transformations/export_transformations/API.js";
 import {ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
 import {ImportManager} from "../transformations/import_transformations/ImportManager";
 import {AbstractDataFile} from './Abstractions'
@@ -21,45 +22,17 @@ import {Dir} from './Dirv2'
 import {MetaData, SerializedJSData} from "./interfaces";
 import {Namespace} from "./Namespace";
 
-// import {script_or_module} from "./interfaces";
 type script_or_module = "script" | "module"
 
 
-// export interface JSFile {
-//     rebuildNamespace(): void;
-//
-//     addToTop(toAdd: Directive | Statement | ModuleDeclaration): void;
-//
-//     addToBottom(toAdd: Directive | Statement | ModuleDeclaration): void;
-//
-//     setAsModule(): void;
-//
-//     getAST(): Program;
-//
-//     getSheBang(): string;
-//
-//     registerReplace(replace: string, value: string): void;
-//
-//     namespaceContains(identifier: string): boolean;
-//
-//     getNamespace(): Namespace;
-//
-//     getImportManager(): ImportManager;
-//
-//     getExportBuilder(): ExportBuilder;
-// }
-//
-// export function create(){
-//
-// }
-
 
 export class JSFile extends AbstractDataFile {
+    private api: API;
     getRequireTracker(): RequireTracker {
         return this.r_tracker;
     }
 
-    private r_tracker: RequireTracker;
+    private readonly r_tracker: RequireTracker;
     private readonly ast: Program;
     private shebang: string;
     private isStrict: boolean = false;//TODO might be unnnecssary--find purposes
@@ -214,7 +187,7 @@ export class JSFile extends AbstractDataFile {
 
     private makeExportsArray(body: (Directive | ModuleDeclaration | Statement)[]) {
 
-        let exports = this.exports.build();
+        let exports = this.exports.getBuilt();
 
         if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
             body.push(exports.named_exports)
@@ -254,6 +227,11 @@ export class JSFile extends AbstractDataFile {
         }
     }
 
+    requireResolve(moduleIdentifier:string):string {
+        let dirnameOf = dirname(this.path_relative)
+        return  join (dirnameOf, moduleIdentifier )
+    }
+
 
     /**
      * returns true if identifier is in the namespace.
@@ -270,12 +248,15 @@ export class JSFile extends AbstractDataFile {
     }
 
 
+
+
+
     /**
      * gets the JSFiles ImportManager.
      */
     getImportManager(): ImportManager {
         if (!this.imports) {
-            this.imports = new ImportManager();
+            this.imports = new ImportManager(this);
         }
         return this.imports;
     }
@@ -314,5 +295,17 @@ export class JSFile extends AbstractDataFile {
             relativePath: this.path_relative,
             fileData: program
         };
+    }
+
+    registerAPI() {
+        this.exports.build()
+        this.api = this.exports.getAPI()
+       this.getParent().registerModuleAPI(this, this.api)
+    }
+    getAPIFromRelativePath(moduleSpecifier:string):API{
+        let joined = join(this.parent().getAbsolute(), moduleSpecifier)
+
+        return this.getParent().getAbsoluteModule(joined)
+
     }
 }

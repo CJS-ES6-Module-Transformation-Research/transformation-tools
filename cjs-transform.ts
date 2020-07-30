@@ -147,6 +147,7 @@ projectManager.forEachSource(collectDefaultObjectAssignments)
 // for each require
 projectManager.forEachSource(reqPropertyInfoGather)
 
+projectManager.forEachSource(transformBaseExports)
 
 projectManager.forEachSource(hacker_defaults)
 
@@ -157,7 +158,6 @@ projectManager.forEachPackage(pkg=>pkg.makeModule())
 projectManager.forEachSource(transformImport);
 
 
-projectManager.forEachSource(transformBaseExports)
 
 
 projectManager.writeOut()

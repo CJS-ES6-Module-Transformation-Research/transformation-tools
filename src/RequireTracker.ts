@@ -88,6 +88,7 @@ export class RequireTracker {
 	getList() {
 		return this.declList
 	}
+
 }
 
 interface requireDecl {

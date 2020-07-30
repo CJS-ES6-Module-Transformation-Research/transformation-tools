@@ -6,6 +6,7 @@ import {IdAndMemex} from "../../../RequireTracker.js";
 
 
 export let hacker_defaults = (js: JSFile) => {
+
 	let hacker: Hacker = new Hacker();
 	let requireTracker = js.getRequireTracker()
 	let prims = requireTracker.getMaybePrims()
@@ -49,6 +50,8 @@ export let hacker_defaults = (js: JSFile) => {
 		importPropSets[mod].forEach((prop: string) => {
 			// console.log("fech")
 			// console.log(id+"\t"+memex)
+			let requireString = requireTracker.getFromVar(mod)
+
 			hacker.addIdentifierValuePair({type: "Identifier", name: prop}, {
 				type: "MemberExpression" ,
 				object: {type: "Identifier", name: mod},

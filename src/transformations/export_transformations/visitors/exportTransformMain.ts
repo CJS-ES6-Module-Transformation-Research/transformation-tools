@@ -180,6 +180,10 @@ export const transformBaseExports: TransformFunction = (js: JSFile) => {
     toDelete.forEach(e => {
         body.splice(body.indexOf(e), 1)
     });
+
+
+
+    js.registerAPI()
 }
 
 interface TypeSafeReturn {
