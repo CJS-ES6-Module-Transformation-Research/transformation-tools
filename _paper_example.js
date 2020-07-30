@@ -8,19 +8,13 @@ function mult(a, b){
 	return a*b
 }
 
-module.exports  = mult;
+module.exports = mult;
 
 function doSomething(something){
-	module.exports.x = something
+	console.log(something);
 }
 
 module.exports.doSomething = doSomething
-
-var theTruth = module.exports.x ?  true:false;
-
-if(theTruth){
-	module.exports.y = 'it was true!'
-}
 
  //-------------------------------------------
 import path from 'path'
