@@ -1,8 +1,8 @@
 
-var path = require('path')
-var pf_url = require('url').pathFileToURL
-const version = require('./package').version
-var dir_url = pf_url(__dirname)
+var path = require('path') //basic transform
+var pf_url = require('url').pathFileToURL //property access of url
+const version = require('./package').version //package.json.cjs 
+console.log(__dirname) // demo of __dirname sanitize
 
 function mult(a, b){
 	return a*b
@@ -10,17 +10,18 @@ function mult(a, b){
 
 module.exports  = mult;
 
- function doSomething(something){
+function doSomething(something){
 	module.exports.x = something
- }
+}
 
 module.exports.doSomething = doSomething
 
- var theTruth = module.exports.x ?  true:false;
+var theTruth = module.exports.x ?  true:false;
 
- if(theTruth){
- 	module.exports.y = 'it was true!'
- }
+if(theTruth){
+	module.exports.y = 'it was true!'
+}
+
  //-------------------------------------------
 import path from 'path'
 import  _url = from'url' 
@@ -37,16 +38,16 @@ function mult(a, b){
 }
 // module.exports  = mult;
 
- function doSomething(something){
+function doSomething(something){
 	x = something
- }
- doSomething2 = doSomething
+}
+doSomething2 = doSomething
 
- var theTruth =x ?  true:false;
+var theTruth = x ?  true:false;
 
- if(theTruth){
- 	 y = 'it was true!'
- }
+if(theTruth){
+	 y = 'it was true!'
+}
 
 export {doSomething as doSomething, x, y}
 
