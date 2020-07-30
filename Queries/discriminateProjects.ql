@@ -1,6 +1,7 @@
 import javascript
 import DataFlow
 import ES20xxFeatures
+import semmle.javascript.DynamicPropertyAccess
 
 class LocalFile extends File {
   LocalFile() {
@@ -79,6 +80,60 @@ predicate hasUseOfArgsCallerOrCallee() {
   )
 }
 
+// --------------------------------------------------------------------------------------------- other problems than strict mode
+
+class ModuleExportsNode extends DataFlow::Node {
+  ModuleExportsNode() {
+    this.(DataFlow::PropRef).getBase().asExpr() instanceof ModuleAccess and 
+    this.(DataFlow::PropRef).getPropertyName() = "exports" 
+  }
+}
+
+
+predicate hasEvalCall() { 
+  exists(CallExpr ce | ce.getCalleeName() = "eval" and ce.getFile() instanceof LocalFile )
+}
+
+predicate accessRequireFields() {
+  exists( DataFlow::PropRef pr | pr.getBase().asExpr().toString() = "require" and pr.getFile() instanceof LocalFile)
+}
+
+predicate accessModuleFields() {
+  exists( DataFlow::PropRef pr | pr.getBase().asExpr().toString() = "module" and 
+                       not pr.getPropertyName() = "exports" and
+                       pr.getFile() instanceof LocalFile)
+}
+
+predicate accessProcessMainModule() {
+  exists( DataFlow::PropRef pr | pr.getBase().asExpr().toString() = "process" and 
+                       pr.getPropertyName() = "mainModule" and
+                       pr.getFile() instanceof LocalFile)
+}
+
+predicate dynamicModuleExport() {
+  exists( DynamicPropRead dpr | dpr.getBase() instanceof ModuleExportsNode and dpr.getFile() instanceof LocalFile)
+}
+
+predicate conditionalExport() { 
+  exists( DataFlow::PropWrite pw | pw instanceof ModuleExportsNode and
+                       pw.asExpr().getEnclosingStmt().getParentStmt*() instanceof ControlStmt and 
+                       pw.getFile() instanceof LocalFile)
+}
+
+predicate exportInFunction() {
+  exists( DataFlow::PropWrite pw | pw instanceof ModuleExportsNode and
+                       pw.asExpr().getEnclosingStmt().getParentStmt*() instanceof FunctionDeclStmt and 
+                       pw.getFile() instanceof LocalFile)  
+}
+
+predicate exportsInPkgJSON() {
+  exists(PackageJSON pkgj | exists(pkgj.getPropValue("exports")) and pkgj.getFile() instanceof LocalFile) 
+}
+
+predicate nonstringRequireArg() {
+   exists(CallExpr ce | ce.getCalleeName() = "require" and (not exists(ce.getAnArgument().getStringValue())) and ce.getFile() instanceof LocalFile)
+}
+
 string projectViolatesCondition() {
   hasOctal() and result = "has an octal literal" or 
   hasWithStmt() and result = "has a with statement" or
@@ -90,7 +145,16 @@ string projectViolatesCondition() {
   hasFunctionWithDuplicateParamName() and result = "has a function with multiple parameters of the same name (e.g. function f(a, a, b))" or 
   hasAssignmentToUndeclaredVar() and result = "has assignment to an undeclared variable" or
   hasAssigningThisToGlobalVar() and result = "has an assignment of \"this\" to a global variable" or
-  hasUseOfArgsCallerOrCallee() and result = "arguments.callee and arguments.caller should not be used"
+  hasUseOfArgsCallerOrCallee() and result = "arguments.callee and arguments.caller should not be used" or 
+  hasEvalCall() and result = "eval is called: behaviour will change in ESM" or 
+  accessRequireFields() and result = "accessing fields of require that dont exist in ESM" or
+  accessModuleFields() and result = "accessing fields of module that dont exist in ESM" or 
+  accessProcessMainModule() and result = "accessing process.mainModule" or 
+  dynamicModuleExport() and result = "has a dynamic module export, module.exports[e] = o" or 
+  conditionalExport() and result = "has a conditional export" or 
+  exportInFunction() and result = "has an export in a function" or 
+  exportsInPkgJSON() and result = "has an exports field in a package.json" or 
+  nonstringRequireArg() and result = "has a require with a non-string module specifier"
 }
 
 string projectResult() {
