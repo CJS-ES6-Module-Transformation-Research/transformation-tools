@@ -26,8 +26,7 @@ interface ImportManagerI {
 	importsThis: (importString: string, value: string) => boolean
 	buildDeclList: () => ImportDeclaration[]
 }
-type APISupplier = (string)=> API
-export function createADefault(importString: string, defaultedName: string, isNamespace ): ImportDeclaration {
+ export function createADefault(importString: string, defaultedName: string, isNamespace ): ImportDeclaration {
 	let specifier: ImportDefaultSpecifier | ImportNamespaceSpecifier = {
 		local: {
 			name: defaultedName, type: "Identifier"
@@ -89,17 +88,20 @@ export function createASideEffect(importString: string): ImportDeclaration {
 }
 
 export class ImportManager implements ImportManagerI {
+	readonly IMPORT_MODE:"defaults"|"names"
 	private orderedImports: string[] = [] ;
 	private readonly importMap: importStringMap
 	private readonly js: JSFile
 	private readonly moduleAPIMap: (spec:string)=>API
 	private readonly apiMap: ModuleAPIMap;
 
-	constructor(apiMap: ModuleAPIMap, getApi: (e: string) => API) {
+	constructor(apiMap: ModuleAPIMap, getApi: (e: string) => API,js:JSFile, importMode:"defaults"|"names"="defaults") {
 		this.importMap = {};
 		this.orderedImports = [];
 		this.moduleAPIMap = getApi;
 		this.apiMap = apiMap
+		this.js = js;
+		this.IMPORT_MODE = importMode
 	}
 
 	// private getModuleAPI(specifier: string) {
@@ -195,7 +197,7 @@ export class ImportManager implements ImportManagerI {
 				let isNamespace
 
 				if(this.isBuiltInModule(value.importString)){
-					isNamespace = true;
+					isNamespace = !builtins_funcs.includes(value.importString);
 					this.apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
 				}else if(this.isLocalSpecifier(value.importString)){
 					isNamespace = true;
@@ -207,7 +209,13 @@ export class ImportManager implements ImportManagerI {
 
 			if (!built_ins.includes(value.importString)){
 				try {
-					let api_type = api.getType()
+					let api_type
+						try {
+							api_type = api.getType()
+						}catch (e) {
+							console.log(`could not get api type for ${api}`)
+							console.log(`this:${this.js.getRelative()} requested from ${imp}`)
+						}
 					if (api_type === API_TYPE.default_only) {
 						isNamespace = false;
 					}
@@ -263,6 +271,16 @@ export class ImportManager implements ImportManagerI {
 
 
 }
+export const builtins_funcs = ['_stream_duplex_',
+'_stream_passthrough_',
+'_stream_readable',
+'_stream_transform_',
+'_stream_wrap_',
+'_stream_writable_',
+'assert',
+'events',
+'module',
+'stream']
 
 export const built_ins = [
 	"_http_agent",

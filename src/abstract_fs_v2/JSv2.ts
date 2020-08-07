@@ -272,7 +272,7 @@ export class JSFile extends AbstractDataFile {
 			let apiFunc =(e:string)=> {
 				return this.apiMap.resolveSpecifier(e, this)
 			}
-			this.imports = new ImportManager(this.apiMap, apiFunc);
+			this.imports = new ImportManager(this.apiMap, apiFunc, this);
 		}
 		return this.imports;
 	}
