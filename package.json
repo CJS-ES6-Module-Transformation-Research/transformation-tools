@@ -5,21 +5,22 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js ",
-    "test": "ts-mocha test/*.ts",
+    "test": "tsc && nyc mocha --require ts-node/register --require source-map-support/register --recursive test/tests/require_string_testing.ts",
+    "_test": "tsc && mocha --require ts-node/register --require source-map-support/register --recursive test/tests/require_string_testing.ts",
+    "coverage": "nyc npm run test",
     "clean-js": "sh clean"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/escodegen": "0.0.6",
     "@types/esprima": "^4.0.2",
     "@types/estraverse": "0.0.6",
     "@types/estree": "0.0.44",
-    "@types/node": "^13.9.0",
     "@types/path-parse": "^1.0.19",
     "@types/yargs": "^15.0.4",
     "argparse": "^1.0.10",
-    "chai": "^4.2.0",
     "cp": "^0.2.0",
     "cpr": "^3.0.1",
     "cpy": "^8.1.0",
@@ -27,7 +28,6 @@
     "esprima": "^4.0.1",
     "fs": "0.0.1-security",
     "has-shebang": "^1.0.1",
-    "mocha": "^7.1.0",
     "ncp": "^2.0.0",
     "relative": "^3.0.2",
     "shebang-regex": "^3.0.0",
@@ -36,10 +36,17 @@
     "yargs": "^15.3.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.11",
+    "@types/chai": "^4.2.12",
     "@types/mocha": "^7.0.2",
-    "source-map-support": "^0.5.16",
+    "@types/node": "^13.13.15",
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "install": "^0.13.0",
+    "mocha": "^7.2.0",
+    "nyc": "^15.1.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^8.10.2",
     "ts-node-register": "^1.0.0",
-    "typescript": "^3.9.6"
+    "typescript": "^3.9.7"
   }
 }

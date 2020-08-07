@@ -1,0 +1,12 @@
+{
+  "name": "if_flatten_double_decons_from_requireleft_",
+  "version": "1.0.0",
+  "description": "",
+  "main": "if_flatten_double_decons_from_requireleft_.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

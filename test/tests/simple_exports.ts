@@ -1,7 +1,9 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
- import {ExportBuilder} from '../../src/transformations/export_transformations/ExportsBuilder'
+import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager.js";
 import {readdirSync, readFileSync} from "fs";
+import {transformBaseExports} from "../../src/transformations/export_transformations/visitors/exportTransformMain";
+import {mock_opts} from "../index";
 
 
 
@@ -18,9 +20,8 @@ testFiles.forEach(e => {
     if (e.isDirectory()) {
         // readFileSync(`.js`)
         let projDir = `${testPath}/${e.name}`
-        let proj = projectReader(projDir,'script' )
-        let transformer =   Transformer.ofProject(proj);
-        transformer.transform(transformBaseExports)
+        let proj = new ProjectManager(projDir,'script' ,mock_opts)
+        proj.forEachSource(transformBaseExports)
 
 
         //  // console.log(e.name)

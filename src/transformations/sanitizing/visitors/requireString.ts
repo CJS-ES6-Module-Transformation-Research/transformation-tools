@@ -1,6 +1,6 @@
  import {Identifier, Node, CallExpression} from "estree";
 import {RequireStringTransformer} from "../requireStringTransformer";
-// import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
+// test_resources.import {JSFile} from "../../../abstract_representation/project_representation/javascript/JSFile";
 import {Visitor,traverse} from "estraverse";
 import {dirname,join} from 'path'
  import {JSFile} from "../../../abstract_fs_v2/JSv2";

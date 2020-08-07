@@ -1,8 +1,8 @@
 import {mkdirSync, readdirSync} from "fs";
 import {basename, join} from "path";
-import {API} from "../transformations/export_transformations/API.js";
+import {API} from "../transformations/export_transformations/API";
 import {AbstractFile} from "./Abstractions";
-import {FileFactory} from "./Factory";
+import {FileFactory, ModuleAPIMap} from "./Factory";
 import {CJSBuilderData, FileVisitor, MetaData} from "./interfaces";
 import {JSFile} from "./JSv2.js";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
@@ -23,18 +23,23 @@ export class Dir extends AbstractFile {
 
 	protected package: PackageJSON = null;
 	protected children: AbstractFile[] = []
-
+	protected modMap : ModuleAPIMap;
 	//TODO add CJS TO THIS
 	addChild(child: AbstractFile) {
 		this.children.push(child)
 	}
 
-	constructor(path: string, b: MetaData, parent: Dir, factory: FileFactory) {
+	constructor(path: string, b: MetaData, parent: Dir, factory: FileFactory, rc: ModuleAPIMap) {
 		super(path, b, parent);
+		this.modMap = rc;
 		this.factory = () => factory;
 		this.childrenNames = readdirSync(this.path_abs)
 		this.root = factory.rootPath
 		this.apiMap = {};
+	}
+
+	getModMap():ModuleAPIMap{
+		return this.modMap
 	}
 
 	getRootDirPath() {
@@ -131,13 +136,13 @@ export class Dir extends AbstractFile {
 		// })
 	}
 
-	registerModuleAPI(js: JSFile, api: API) {
-		if (!this.isRoot) {
-			this.getParent().registerModuleAPI(js, api)
-		} else {
-			this.apiMap[js.getAbsolute()] = api;
-		}
-	}
+	// registerModuleAPI(js: JSFile, api: API) {
+	// 	if (!this.isRoot) {
+	// 		this.getParent().registerModuleAPI(js, api)
+	// 	} else {
+	// 		this.apiMap[js.getAbsolute()] = api;
+	// 	}
+	// }
 
 	getAbsoluteModule(specifier: string) {
 		if (!this.isRoot) {

@@ -1,5 +1,5 @@
 import {readFileSync, readdirSync} from "fs";
-// import {describe, it} from 'mocha'
+// test_resources.import {describe, it} from 'mocha'
 import {expect} from 'chai'
 import {project as PROJ_ROOT_DIR} from '../../index'
 import {write_status} from "../../src/abstract_fs_v2/interfaces";
@@ -47,13 +47,17 @@ function extracted(testDataDirString: string) {
 }
 
 
+// @ts-ignore
 describe('Sanitize: 2 Testing of Declarator Flattening', () => {
+// @ts-ignore
     it('Base Declarator Flattening Tests', () => {
         BASE_TEST_DATA.forEach(extracted);
     });
+// @ts-ignore
     it('For-Loop Declarator Flattening Tests', () => {
         FOR_TEST_DATA.forEach(extracted);
     });
+// @ts-ignore
     it('If-Statement-Encapsulated Declarator Flattening Tests', () => {
         IF_TEST_DATA.forEach(extracted);
     });

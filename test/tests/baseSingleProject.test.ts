@@ -7,16 +7,18 @@ import shebangRegex from "shebang-regex";
     flattenDecls,
     accessReplace,
     jsonRequire,
-    collectDefaultObjectAssignments
+    objLiteralFlatten
 } from "../../src";
 import {project as PROJ_DIR} from '../../index'
-import {project_test_dirs as directories, test_root} from '../index';
+import {JSFile} from "../../src/abstract_fs_v2/JSv2";
+import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
+import {mock_opts, project_test_dirs as directories } from '../index';
 import {transformImport} from "../../src/transformations/import_transformations/visitors/import_replacement";
 
-let project: TransformableProject;
+let project: ProjectManager;
 
 let projstr = `${PROJ_DIR}/test/res/fixtures/test_dir`;
-project = projectReader(projstr);
+project = new ProjectManager(projstr,mock_opts);
 let jsIndex = project.getJS('index.js')
 let libIndex = project.getJS('lib/index.js')
 
@@ -31,12 +33,12 @@ function wipeShebang(text: string): string {
 }
 
 //
-describe('Testing various sanitize procedures within a project', () => {
+describe('Testing various test_resources.sanitize procedures within a project', () => {
 //
     it('Require String Tests', () => {
-        let actual: TransformableProject = projectReader(directories['untouched'])
+        let actual: ProjectManager = new ProjectManager(directories['untouched'],mock_opts)
         // let expected: TransformableProject = projectReader(`${EXPECTED}/requireString/`);
-        let expected: TransformableProject = projectReader(directories['requireString']);
+        let expected: ProjectManager =  new ProjectManager((directories['requireString']);
         let listOfFiles: string[] = ['index.js', 'lib/index.js', 'lib.js', 'src/index.js', 'test/default.test.js']
 
 
@@ -47,7 +49,7 @@ describe('Testing various sanitize procedures within a project', () => {
         listOfFiles.forEach((file: string) => {
             let actualFile: JSFile = actual.getJS(file);
             let expectedFile: JSFile = expected.getJS(file)
-            expect(actualFile.makeString()).to.be.equal(expectedFile.makeString());
+            expect(actualFile.makeSerializable().fileData).to.be.equal(expectedFile.makeSerializable().fileData);
         });
 
 
@@ -56,10 +58,10 @@ describe('Testing various sanitize procedures within a project', () => {
 
     it('JSON Require Transforming', () => {
         //jsonRequire
-        // let inputProjectDir = `${PROJ_DIR}/test/res/actual/flattenActual/`
+        // let inputProjectDir = `${PROJ_DIR}/test/test_resources.res/actual/flattenActual/`
         // let expectedProjDir = `${EXPECTED}/flattener`;
-        let actual: TransformableProject = projectReader(directories['requireString'])
-        let expected: TransformableProject = projectReader(directories['jsonRequireCreate']);
+        let actual: ProjectManager =  new ProjectManager((directories['requireString'],mock_opts
+        let expected: ProjectManager =  new ProjectManager((directories['jsonRequireCreate'],mock_opts);
         let listOfFiles: string[] = ['index.js', 'lib/index.js', 'lib.js', 'src/index.js', 'test/default.test.js']
 
 
@@ -70,7 +72,7 @@ describe('Testing various sanitize procedures within a project', () => {
         listOfFiles.forEach((file: string) => {
             let actualFile: JSFile = actual.getJS(file);
             let expectedFile: JSFile = expected.getJS(file)
-            expect(expectedFile.makeString()).to.be.equal(actualFile.makeString(), ` ${actualFile.getAbsolute()}`);
+            expect(expectedFile.makeSerializable().fileData).to.be.equal(actualFile.makeSerializable().fileData, ` ${actualFile.getAbsolute()}`);
         });
 
 
@@ -79,17 +81,17 @@ describe('Testing various sanitize procedures within a project', () => {
 
     it('VariableDeclaration Flattening', () => {
         //flattenDecls
-        // let inputProjectDir = `${PROJ_DIR}/test/res/actual/flattenActual/`
+        // let inputProjectDir = `${PROJ_DIR}/test/test_resources.res/actual/flattenActual/`
         // let expectedProjDir = `${EXPECTED}/flattener`;
-        let actual: TransformableProject = projectReader(directories['jsonRequireCreate'])
-        let expected: TransformableProject = projectReader(directories['declFlatten']);
+        let actual: ProjectManager =  new ProjectManager((directories['jsonRequireCreate'],mock_opts)
+        let expected: ProjectManager =  new ProjectManager((directories['declFlatten'],mock_opts);
         let listOfFiles: string[] = ['index.js',
             'lib/index.js',
             'lib.js',
             'src/index.js',
             'test/default.test.js',
-            'package.json.export.js',
-            'test/test_dat.json.export.js'
+            'package.json.test_resources.export.js',
+            'test/test_dat.json.test_resources.export.js'
         ]
         let transformer = Transformer.ofProject(actual);
         transformer.transform(flattenDecls)
@@ -98,7 +100,7 @@ describe('Testing various sanitize procedures within a project', () => {
         listOfFiles.forEach((file: string) => {
             let actualFile: JSFile = actual.getJS(file);
             let expectedFile: JSFile = expected.getJS(file)
-            expect(expectedFile.makeString()).to.be.equal(actualFile.makeString(), `DECL FLATTEN ERR   ${actualFile.getAbsolute()}`);
+            expect(expectedFile.makeSerializable().fileData).to.be.equal(actualFile.makeSerializable().fileData, `DECL FLATTEN ERR   ${actualFile.getAbsolute()}`);
         });
 
 
@@ -107,15 +109,15 @@ describe('Testing various sanitize procedures within a project', () => {
     //
     it('Access Replacement', () => {
         //AccessReplace${
-        let actualProj: TransformableProject = projectReader(directories['declFlatten'])
-        let expectedProj: TransformableProject = projectReader(directories['accessReplace']);
+        let actualProj: ProjectManager =  new ProjectManager((directories['declFlatten'], mock_opts);
+        let expectedProj: ProjectManager =  new ProjectManager(directories['accessReplace'], mock_opts);
         let listOfFiles: string[] = ['index.js',
             'lib/index.js',
             'lib.js',
             'src/index.js',
             'test/default.test.js',
-            'package.json.export.js',
-            'test/test_dat.json.export.js'
+            'package.json.test_resources.export.js',
+            'test/test_dat.json.test_resources.export.js'
         ]
         let transformer = Transformer.ofProject(actualProj);
         transformer.transform(accessReplace);
@@ -126,8 +128,8 @@ describe('Testing various sanitize procedures within a project', () => {
             let actualFile: JSFile = actualProj.getJS(file);
             let expectedFile: JSFile = expectedProj.getJS(file);
 
-            expected = expectedFile.makeString();
-            actual = actualFile.makeString();
+            expected = expectedFile.makeSerializable().fileData;
+            actual = actualFile.makeSerializable().fileData;
 
             expect(actual)
                 .to.be.equal(expected, `in file ${actualFile.getAbsolute()}`);
@@ -136,20 +138,20 @@ describe('Testing various sanitize procedures within a project', () => {
 
 
     it('exports flatten', () => {
-         let actualProj: TransformableProject = projectReader(directories['accessReplace'])
-        let expectedProj: TransformableProject = projectReader(directories['module_exports_flatten']);
+         let actualProj: ProjectManager =  new ProjectManager((directories['accessReplace'],mock_opts);
+        let expectedProj: ProjectManager =  new ProjectManager((directories['module_exports_flatten'],mock_opts);
         let listOfFiles: string[] = ['index.js',
             'lib/index.js',
             'lib.js',
             'src/index.js',
             'test/default.test.js',
-            'package.json.export.js',
-            'test/test_dat.json.export.js'
+            'package.json.test_resources.export.js',
+            'test/test_dat.json.test_resources.export.js'
         ]
 
 
         let transformer = Transformer.ofProject(actualProj);
-        transformer.transform(collectDefaultObjectAssignments);
+        transformer.transform(objLiteralFlatten);
 
         listOfFiles.forEach((file: string) => {
             let expected: string, actual: string
@@ -158,8 +160,8 @@ describe('Testing various sanitize procedures within a project', () => {
             let expectedFile: JSFile = expectedProj.getJS(file);
 
 
-            expected = expectedFile.makeString();
-            actual = actualFile.makeString();
+            expected = expectedFile.makeSerializable().fileData;
+            actual = actualFile.makeSerializable().fileData;
 
 
             expect(actual)
@@ -171,17 +173,17 @@ describe('Testing various sanitize procedures within a project', () => {
 //
     it('Import Transformations', () => {
 
-        let actualProj: TransformableProject = projectReader(directories['module_exports_flatten'])
+        let actualProj: ProjectManager =  new ProjectManager((directories['module_exports_flatten'],mock_opts);
 
-        let expectedProj: TransformableProject = projectReader(directories['import_main'], 'module');
+        let expectedProj: ProjectManager =  new ProjectManager((directories['import_main'], modmock);
 
         let listOfFiles: string[] = ['index.js',
             'lib/index.js',
             'lib.js',
             'src/index.js',
             'test/default.test.js',
-            'package.json.export.js',
-            'test/test_dat.json.export.js'
+            'package.json.test_resources.export.js',
+            'test/test_dat.json.test_resources.export.js'
         ]
         let transformer = Transformer.ofProject(actualProj);
         transformer.transform(transformImport);
@@ -194,13 +196,13 @@ describe('Testing various sanitize procedures within a project', () => {
 
             let expectedFile: JSFile = expectedProj.getJS(file);
             try {
-                expected = expectedFile.makeString();
+                expected = expectedFile.makeSerializable().fileData;
             } catch (e) {
                 // console.log(e)
                 // console.log(file)
                 throw e;
             }
-            actual = actualFile.makeString();
+            actual = actualFile.makeSerializable().fileData;
             expect(actual)
                 .to.be.equal(expected, `in file ${file} `);
         });
@@ -211,10 +213,10 @@ describe('Testing various sanitize procedures within a project', () => {
 describe('Misc', () => {
 
     it('Test Write-Out for shebangs', () => {
-        projectReader(directories['untouched']).forEachSource((e) => {
+        new ProjectManager((directories['untouched']).forEachSource((e) => {
             if (e.getSheBang()) {
                 console.log(`SHEBANG DETECTED: ${e.getSheBang()}`)
-                let out = e.makeString()
+                let out = e.makeSerializable().fileData
 
                 let shebang = shebangRegex.test(out)
                 expect(shebang).to.be.eq(true,e.getAbsolute());

@@ -1,5 +1,8 @@
 import {ImportDeclaration, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier} from 'estree'
-import {JSFile} from "../../abstract_fs_v2/JSv2.js";
+import {ModuleAPIMap} from "../../abstract_fs_v2/Factory";
+import {JSFile} from "../../abstract_fs_v2/JSv2";
+import {API} from "../export_transformations/API";
+import {API_TYPE} from "../export_transformations/ExportsBuilder";
 
 
 interface ImportRepresentation {
@@ -23,13 +26,13 @@ interface ImportManagerI {
 	importsThis: (importString: string, value: string) => boolean
 	buildDeclList: () => ImportDeclaration[]
 }
-
-export function createADefault(importString: string, defaultedName: string, isRelative): ImportDeclaration {
+type APISupplier = (string)=> API
+export function createADefault(importString: string, defaultedName: string, isNamespace ): ImportDeclaration {
 	let specifier: ImportDefaultSpecifier | ImportNamespaceSpecifier = {
 		local: {
 			name: defaultedName, type: "Identifier"
 		},
-		type: isRelative ? "ImportNamespaceSpecifier" : "ImportDefaultSpecifier"
+		type: isNamespace ? "ImportNamespaceSpecifier" : "ImportDefaultSpecifier"
 	}
 	return {
 		specifiers: [specifier],
@@ -86,23 +89,27 @@ export function createASideEffect(importString: string): ImportDeclaration {
 }
 
 export class ImportManager implements ImportManagerI {
-	private orderedImports: string[];
+	private orderedImports: string[] = [] ;
 	private readonly importMap: importStringMap
 	private readonly js: JSFile
+	private readonly moduleAPIMap: (spec:string)=>API
+	private readonly apiMap: ModuleAPIMap;
 
-	constructor(js: JSFile) {
+	constructor(apiMap: ModuleAPIMap, getApi: (e: string) => API) {
 		this.importMap = {};
 		this.orderedImports = [];
-		this.js = js;
+		this.moduleAPIMap = getApi;
+		this.apiMap = apiMap
 	}
 
-	private getModuleAPI(specifier: string) {
-		if (this.isLocalSpecifier(specifier)||this.isBuiltInModule(specifier)) {
-			return this.js.getAPIFromRelativePath(specifier)
-		} else {
-			return null;
-		}
-	}
+	// private getModuleAPI(specifier: string) {
+	// 	if (this.isLocalSpecifier(specifier)||this.isBuiltInModule(specifier)) {
+	// 		return this.js.getAPI(specifier)
+	// 		//(specifier)
+	// 	} else {
+	// 		return null;
+	// 	}
+	// }
 
 
 	public isLocalSpecifier(specifier: string) {
@@ -110,7 +117,7 @@ export class ImportManager implements ImportManagerI {
 	}
 
 	public isBuiltInModule(specifier: string) {
-		return ImportManager.built_ins.includes(specifier)
+		return built_ins.includes(specifier)
 	}
 
 
@@ -180,17 +187,41 @@ export class ImportManager implements ImportManagerI {
 
 	buildDeclList(): ImportDeclaration[] {
 		let decls: ImportDeclaration[] = [];
+
 		this.orderedImports.forEach(imp => {
 			let value = this.importMap [imp];
 			let tmp: ImportDeclaration[] = [];
 			if (value.hasDefault) {
-				value.defaultIdentifiers.forEach(name => {
-					tmp.push(createADefault(value.importString, name, (
-						this.isBuiltInModule(value.importString)
-						|| this.isLocalSpecifier(value.importString)))
-					)
-				})
+				let isNamespace
 
+				if(this.isBuiltInModule(value.importString)){
+					isNamespace = true;
+					this.apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
+				}else if(this.isLocalSpecifier(value.importString)){
+					isNamespace = true;
+				}
+
+				console.log(imp)
+
+				let api  =this.moduleAPIMap(imp)//this.js.getAPI(imp)
+
+			if (!built_ins.includes(value.importString)){
+				try {
+					let api_type = api.getType()
+					if (api_type === API_TYPE.default_only) {
+						isNamespace = false;
+					}
+				}catch(err){
+					console.log(imp)
+					console.log(value.importString)
+					throw err;
+				}
+			}
+
+				value.defaultIdentifiers.forEach(name => {
+					tmp.push(createADefault(value.importString, name, isNamespace )
+					)
+				});
 			}
 			tmp.reverse().forEach(e => decls.push(e))
 			tmp = []
@@ -230,63 +261,65 @@ export class ImportManager implements ImportManagerI {
 		}
 	}
 
-	static built_ins = [
-		"_http_agent",
-		"_http_client",
-		"_http_common",
-		"_http_incoming",
-		"_http_outgoing",
-		"_http_server",
-		"_stream_duplex",
-		"_stream_passthrough",
-		"_stream_readable",
-		"_stream_transform",
-		"_stream_wrap",
-		"_stream_writable",
-		"_tls_common",
-		"_tls_wrap",
-		"assert",
-		"async_hooks",
-		"buffer",
-		"child_process",
-		"cluster",
-		"console",
-		"constants",
-		"crypto",
-		"dgram",
-		"dns",
-		"domain",
-		"events",
-		"fs",
-		"fs/promises",
-		"http",
-		"http2",
-		"https",
-		"inspector",
-		"module",
-		"net",
-		"os",
-		"path",
-		"perf_hooks",
-		"process",
-		"punycode",
-		"querystring",
-		"readline",
-		"repl",
-		"stream",
-		"string_decoder",
-		"sys",
-		"timers",
-		"tls",
-		"trace_events",
-		"tty",
-		"url",
-		"util",
-		"v8",
-		"vm",
-		"worker_threads",
-		"zlib"
-	]
+
 }
+
+export const built_ins = [
+	"_http_agent",
+	"_http_client",
+	"_http_common",
+	"_http_incoming",
+	"_http_outgoing",
+	"_http_server",
+	"_stream_duplex",
+	"_stream_passthrough",
+	"_stream_readable",
+	"_stream_transform",
+	"_stream_wrap",
+	"_stream_writable",
+	"_tls_common",
+	"_tls_wrap",
+	"assert",
+	"async_hooks",
+	"buffer",
+	"child_process",
+	"cluster",
+	"console",
+	"constants",
+	"crypto",
+	"dgram",
+	"dns",
+	"domain",
+	"events",
+	"fs",
+	"fs/promises",
+	"http",
+	"http2",
+	"https",
+	"inspector",
+	"module",
+	"net",
+	"os",
+	"path",
+	"perf_hooks",
+	"process",
+	"punycode",
+	"querystring",
+	"readline",
+	"repl",
+	"stream",
+	"string_decoder",
+	"sys",
+	"timers",
+	"tls",
+	"trace_events",
+	"tty",
+	"url",
+	"util",
+	"v8",
+	"vm",
+	"worker_threads",
+	"zlib"
+]
 
 

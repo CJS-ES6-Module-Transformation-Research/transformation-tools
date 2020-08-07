@@ -22,7 +22,7 @@ import _ from 'lodash'
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {Namespace} from "../../../abstract_fs_v2/Namespace";
 import {createRequireDecl} from '../../../abstract_representation/es_tree_stuff/astTools';
-// import {JSFile} from "../../../index";
+// test_resources.import {JSFile} from "../../../index";
 import {RequireAccessIDs} from "../../../Types";
 
 
@@ -36,7 +36,7 @@ const alphaNumericString: string = `${lower}${upper}${numeric}`
  * @param js the JSFile to transform.
  */
 export function accessReplace(js: JSFile) {
-    let requireTracker = js.getRequireTracker();
+    let requireTracker = js.getInfoTracker();
     let runTraversal = function () {
         let imports: RequireAccessIDs = {};
         let visitor: Visitor = {
@@ -51,7 +51,7 @@ export function accessReplace(js: JSFile) {
                             identifier = tracked.identifier
                         } else {
                             identifier = extract(requireString, js.getNamespace())
-                            requireTracker.insertBlind(identifier.name, requireString, true)
+                            requireTracker.insertImportPair(identifier.name, requireString )
 
                         }
 

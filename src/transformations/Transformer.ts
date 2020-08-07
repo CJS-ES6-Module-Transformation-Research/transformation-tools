@@ -1,10 +1,10 @@
-// import {JSFile, TransformableProject} from '../index'
+// test_resources.import {JSFile, TransformableProject} from '../index'
 //
 //
 // /**
 //  * Tool for running transformations on a project.
 //  */
-// export class Transformer {
+// test_resources.export class Transformer {
 //
 //     /**
 //      * Runs a namespace re-building on all javascript files in the project.
@@ -64,5 +64,5 @@
 //
 // }
 // // transformation function types for restricting function while as typescript
-// export type TransformFunction = (js: JSFile) => void;
-// export type ProjectTransformFunction = (proj: TransformableProject) => TransformFunction;
+// test_resources.export type TransformFunction = (js: JSFile) => void;
+// test_resources.export type ProjectTransformFunction = (proj: TransformableProject) => TransformFunction;

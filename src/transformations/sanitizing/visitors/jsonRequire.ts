@@ -1,6 +1,6 @@
-// import {JSFile, TransformableProject} from "../../../abstract_representation/project_representation";
+// test_resources.import {JSFile, TransformableProject} from "../../../abstract_representation/project_representation";
 import {traverse, Visitor} from "estraverse";
-import {dirname, join} from "path";
+import path, {dirname, join} from "path";
 import {existsSync} from "fs";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
@@ -24,10 +24,10 @@ export const jsonRequire: TransformFunction =  function (js: JSFile): void {
 
                     // const requireString = node.arguments[0].value.toString();
 
-                    node.arguments[0].value = js.spawnCJS(node.arguments[0].value.toString())
+                    node.arguments[0].value = js.createCJSFromIdentifier(node.arguments[0].value.toString())
 
                    //  const joinedJson = join(dirname(js.getAbsolute()), requireString);
-                   //  const suffix: string = ".export.js";
+                   //  const suffix: string = ".test_resources.export.js";
                    //
                    //  let regex: RegExp
                    //  regex = new RegExp('.+\.json[0-9]+');

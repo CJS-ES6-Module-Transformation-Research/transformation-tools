@@ -48,7 +48,7 @@ interface TransformationOptions {
 //                     nargs: 1
 //                 },
 //                 "in-place": {
-//                     desc: "omits the 'sanitize' step.", type: "string"
+//                     desc: "omits the 'test_resources.sanitize' step.", type: "string"
 //                 },
 //                 "suffix": {desc: "suffix for keeping copies in-place", type: "string"}
 //             }).argv;
@@ -75,13 +75,4 @@ let inPlaceCommandModule: CommandModule = {
 function commandBuilder(args: Argv<{}>): Argv<{}> {
     return args.option('', {});
 };
-
-let arv = yargs
-    .command(copyCommandModule)
-    .command(inPlaceCommandModule)
-    .argv;
-
-console.log(arv)
-
-
 

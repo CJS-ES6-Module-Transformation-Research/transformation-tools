@@ -1,4 +1,4 @@
-export {collectDefaultObjectAssignments} from './exportObjectNamer'
+export {objLiteralFlatten} from './exportObjectNamer'
 export {requireStringSanitizer} from './requireString'
 export {flattenDecls} from './declFlattener'
 export {accessReplace} from './accessReplacer'

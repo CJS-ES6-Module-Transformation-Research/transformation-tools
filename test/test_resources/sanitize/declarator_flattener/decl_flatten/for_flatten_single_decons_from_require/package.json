@@ -1,0 +1,12 @@
+{
+  "name": "for_flatten_single_decons_from_require",
+  "version": "1.0.0",
+  "description": "",
+  "main": "for_flatten_single_decons_from_require.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

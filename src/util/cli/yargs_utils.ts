@@ -41,7 +41,7 @@ function parse(yargs): TransformationOptions {
                     nargs: 1
                 },
                 "in-place": {
-                    desc: "omits the 'sanitize' step.", type: "string"
+                    desc: "omits the 'test_resources.sanitize' step.", type: "string"
                 },
                 "suffix": {desc: "suffix for keeping copies in-place", type: "string"}
             }).argv;

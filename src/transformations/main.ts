@@ -1,7 +1,7 @@
-// import {Transformer} from "./Transformer";
+// test_resources.import {Transformer} from "./Transformer";
 import {
     accessReplace,
-    collectDefaultObjectAssignments,
+    objLiteralFlatten,
     flattenDecls,
     jsonRequire,
     requireStringSanitizer
@@ -9,7 +9,7 @@ import {
 import {argv} from "process";
 import {join} from "path";
 import {existsSync} from "fs";
-// import {projectReader, TransformableProject} from "../abstract_representation/project_representation";
+// test_resources.import {projectReader, TransformableProject} from "../abstract_representation/project_representation";
 import {importTransforms} from "./import_transformations/exec_transform";
 import {transformBaseExports} from "./export_transformations/visitors/exportTransformMain";
 import {ProjConstructionOpts, ProjectManager} from "../abstract_fs_v2/ProjectManager";

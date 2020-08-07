@@ -1,6 +1,7 @@
 import {Stats} from "fs";
 import {Dir} from "./Dirv2";
 import {AbstractFile} from "./Abstractions";
+import {ModuleAPIMap} from "./Factory";
 import {JSFile} from "./JSv2";
 
 
@@ -45,6 +46,7 @@ export type write_status = "copy"| "in-place"
 export type script_or_module = "script" | "module"
 
 export interface MetaData {
+    moduleAPIMap:ModuleAPIMap
     rootDir:string
     ext:string
     stat:Stats|null

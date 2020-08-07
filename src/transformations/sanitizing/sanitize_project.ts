@@ -1,7 +1,7 @@
 #!/usr/local/bin/ts-node
 import {
     accessReplace,
-    collectDefaultObjectAssignments,
+    objLiteralFlatten,
     flattenDecls,
     jsonRequire,
     requireStringSanitizer
@@ -10,7 +10,7 @@ import {argv} from "process";
 import {existsSync} from "fs";
 import {join} from 'path';
 import {ProjectManager} from "../../abstract_fs_v2/ProjectManager";
-import {addLocationVariables} from "./visitors/__dirname";
+import {add__dirname} from "./visitors/__dirname";
 import {requireRegistration} from "./visitors/requireRegistration";
 
 export function sanitize(projectManager: ProjectManager) {
@@ -20,8 +20,8 @@ export function sanitize(projectManager: ProjectManager) {
     projectManager.forEachSource(flattenDecls)
     projectManager.forEachSource(requireRegistration)
     projectManager.forEachSource(accessReplace)
-    projectManager.forEachSource(collectDefaultObjectAssignments)
-    projectManager.forEachSource(addLocationVariables )
+    projectManager.forEachSource(objLiteralFlatten)
+    projectManager.forEachSource(add__dirname )
 }
 //
 // argv.shift();

@@ -26,7 +26,7 @@ import {Program} from "esprima";
 import {traverse} from "estraverse";
 import {varLetConst} from "../../Types";
 
-// export function isARequireDeclartor(node: VariableDeclarator) {
+// test_resources.export function isARequireDeclartor(node: VariableDeclarator) {
 //     return (node.init.type === "CallExpression"
 //         && node.init.callee.type === "Identifier"
 //         && node.init.callee.name === "require"
@@ -35,7 +35,7 @@ import {varLetConst} from "../../Types";
 // }
 //
 //
-// export function isARequire(node: (VariableDeclarator | CallExpression)) {
+// test_resources.export function isARequire(node: (VariableDeclarator | CallExpression)) {
 //     if (node.type === "VariableDeclarator") {
 //         (node.init.type === "CallExpression"
 //             && node.init.callee.type === "Identifier"
@@ -192,7 +192,7 @@ export function isExpr(val: string): boolean {
 // }
 //
 //
-// export function instanceOfExpr(x: Node) {
+// test_resources.export function instanceOfExpr(x: Node) {
 //     return (instanceofThisExpression(x) ||
 //         instanceofArrayExpression(x) ||
 //         instanceofObjectExpression(x) ||
@@ -219,7 +219,7 @@ export function isExpr(val: string): boolean {
 //         instanceofImportExpression(x));
 // }
 //
-// export function getAllRequireStringsAsList(ast: Program): string[] {
+// test_resources.export function getAllRequireStringsAsList(ast: Program): string[] {
 //     let list: string[] = [];
 //
 //     traverse(ast, {
@@ -237,7 +237,7 @@ export function isExpr(val: string): boolean {
 //     return list;
 // }
 //
-// export function isForLoopParent(parent: Node) {
+// test_resources.export function isForLoopParent(parent: Node) {
 //     switch (parent.type) {
 //         case "ForStatement":
 //         case "ForInStatement":
@@ -280,7 +280,7 @@ export function createRequireDecl(varStr: string, importStr: string, kindStr: va
 
 
 //
-// export function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
+// test_resources.export function createNamedAssignment(named: string, assignable: Expression, op: AssignmentOperator = "="): Statement {
 //     return {
 //         type: "ExpressionStatement",
 //         expression: {
@@ -317,7 +317,7 @@ export function createRequireDecl(varStr: string, importStr: string, kindStr: va
 
 
 
-// export function createDecl(varStr: string, , kindStr: varLetConst): VariableDeclaration {
+// test_resources.export function createDecl(varStr: string, , kindStr: varLetConst): VariableDeclaration {
 //     let varDecl: VariableDeclaration;
 //     varDecl = {
 //         type: "VariableDeclaration",

@@ -1,7 +1,9 @@
+import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
 import {ImportManager} from "../../src/transformations/import_transformations/ImportManager";
 import {expect} from 'chai'
 import {generate} from "escodegen";
 import {parseModule} from "esprima";
+import {mock_opts} from "../index";
 
 // new JSFile(path,)
 
@@ -29,16 +31,21 @@ import {parseModule} from "esprima";
 //     })
 
 // })
-let path = `/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/res/importManager_test_files`
-let project: TransformableProject;
-let manager = new ImportManager();
+let path = ` /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/test_resources/res/importManager_test_files`
+let project: ProjectManager = new ProjectManager(path, mock_opts);
+
+let manager = ;
 
 
+// @ts-ignore
 describe('Utility Testing for ImportManager', () => {
+// @ts-ignore
     beforeEach('before each', () => {
-        manager = new ImportManager()
+
+        manager = new ImportManager(this.apiMap)
     })
     let actual, expected
+    // @ts-ignore
     it('add one default', () => {
 
         manager.createDefault('path', '_path')
@@ -49,6 +56,7 @@ describe('Utility Testing for ImportManager', () => {
 
     })
 
+    // @ts-ignore
     it('add one named', () => {
         manager.createNamedWithAlias('path', 'dirname', 'path_dirname')
         let actualList = manager.buildDeclList()[0]
@@ -56,6 +64,7 @@ describe('Utility Testing for ImportManager', () => {
         let expected = `import { dirname as path_dirname } from 'path';`
         expect(actual).to.eq(expected)
     })
+    // @ts-ignore
     it('add one with two named same call', () => {
         manager.createNamedWithAlias('path', 'dirname', 'path_dirname')
         manager.createNamedWithAlias('path', 'join')
@@ -65,6 +74,7 @@ describe('Utility Testing for ImportManager', () => {
         expect(actual).to.eq(expected)
     })
 
+    // @ts-ignore
     it('add one with two named different call', () => {
         manager.createNamedWithAlias('path', 'dirname', 'path_dirname')
         manager.createNamedWithAlias('path', 'join')
@@ -74,6 +84,7 @@ describe('Utility Testing for ImportManager', () => {
         expect(actual).to.eq(expected)
     })
 
+    // @ts-ignore
     it('add one side effect', () => {
         manager.createSideEffect('path')
         let actualList = manager.buildDeclList()[0]
@@ -82,6 +93,7 @@ describe('Utility Testing for ImportManager', () => {
         expect(actual).to.eq(expected)
     })
 
+    // @ts-ignore
     it('add default+named', () => {
         manager.createDefault('url', 'url')
         manager.createNamedWithAlias('path', 'dirname', 'path_dirname')
@@ -93,6 +105,7 @@ describe('Utility Testing for ImportManager', () => {
     })
 
 
+    // @ts-ignore
     it('add default+side effect', () => {
         manager.createDefault('url', 'url')
         manager.createSideEffect('path')
@@ -104,6 +117,7 @@ describe('Utility Testing for ImportManager', () => {
     })
 
 
+    // @ts-ignore
     it('add named+side effect', () => {
         manager.createNamedWithAlias('path', 'dirname', 'path_dirname')
         manager.createSideEffect('chai')

@@ -1,16 +1,16 @@
 #!/usr/local/bin/ts-node
 import {
     accessReplace,
-    collectDefaultObjectAssignments,
+    objLiteralFlatten,
     flattenDecls,
     jsonRequire,
     requireStringSanitizer
 } from '../../';
 import {argv} from "process";
-// import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
+// test_resources.import {projectReader, TransformableProject} from "../../abstract_representation/project_representation";
 import {existsSync} from "fs";
 import {join} from 'path';
-// sanitize(transformer)
+// test_resources.sanitize(transformer)
 import {transformImport} from '../import_transformations/visitors/import_replacement'
 import {transformBaseExports} from "./visitors/exportTransformMain";
 import {ProjectManager} from "../../abstract_fs_v2/ProjectManager";

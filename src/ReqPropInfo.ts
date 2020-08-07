@@ -1,7 +1,7 @@
 import {traverse, Visitor, VisitorOption} from "estraverse";
 import {VariableDeclarator, Identifier, Program, MemberExpression, Node} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2";
-import {RequireTracker} from "./RequireTracker";
+import {InfoTracker} from "./InfoTracker.js";
 import {generate} from "escodegen";
 
 function containsNode( nodelist: Node[], n: Node): boolean {
@@ -61,22 +61,22 @@ function getPropsCalledOrAccd( ast: Program, mapOfRPIs: { [id: string]: ReqPropI
     // return notPrimProps;
 }
 
-export const reqPropertyInfoGather = (js: JSFile) => {
-    let ast = js.getAST()
-    let list =[]
-    let requireMgr:RequireTracker = js.getRequireTracker();
-    let listOfVars = requireMgr.getList().map( vardecl => <Identifier> (vardecl.declarations[0].id));
+//  const reqPropertyInfoGather = (js: JSFile) => {
+//     let ast = js.getAST()
+//     let list =[]
+//     let requireMgr:InfoTracker = js.getInfoTracker();
+//     let listOfVars = requireMgr.getDeclarations().map(vardecl => <Identifier> (vardecl.declarations[0].id));
+//
+//     let rpis: { [id: string]: ReqPropInfo } = {};
+//
+//     getReqPropertiesAccessed( ast, listOfVars, rpis);
+//     getPropsCalledOrAccd( ast, rpis);
+//
+//     requireMgr.setReqPropsAccessedMap( rpis);
+//
+// }
 
-    let rpis: { [id: string]: ReqPropInfo } = {};
-
-    getReqPropertiesAccessed( ast, listOfVars, rpis);
-    getPropsCalledOrAccd( ast, rpis);
-
-    requireMgr.setReqPropsAccessedMap( rpis);
-
-}
-
-export interface ReqPropInfo {
+  interface ReqPropInfo {
     listOfAllPropsAccessed: MemberExpression[];
     listOfPropsCalledOrAccessed: MemberExpression[];
 }

@@ -1,0 +1,12 @@
+{
+  "name": "standard_flatten_triple_ident_left_",
+  "version": "1.0.0",
+  "description": "",
+  "main": "standard_flatten_triple_ident_left_.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

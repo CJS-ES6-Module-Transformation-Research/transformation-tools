@@ -1,3 +1,4 @@
+import {API} from "../transformations/export_transformations/API";
 import {Dir} from "./Dirv2";
 import {basename, extname, join, normalize, relative, resolve} from "path";
 import {CJSBuilderData, FileType, MetaData} from "./interfaces";
@@ -6,20 +7,33 @@ import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {ProjectManager} from "./ProjectManager";
+import path from 'path'
+export class ModuleAPIMap{
+    apiKey:{[moduleSpecifier:string]:API} = {} ;
+    resolveSpecifier(moduleSpecifier:string, jsFile:JSFile|CJSToJSON):API {
 
+        let _path = jsFile.getRelative()
+
+
+        _path = join(path.dirname(_path), moduleSpecifier)
+        return this.apiKey[_path]
+    }
+    addSelf(api:API, jsFile:JSFile|CJSToJSON){
+        this.apiKey[jsFile.getRelative()] = api
+    }
+}
 export class FileFactory {
     readonly root_dir: Dir
     readonly rootPath: string
     readonly target_dir: string | null;
     readonly isModule: boolean
     readonly pm: ProjectManager;
-
+    readonly rc:ModuleAPIMap = new ModuleAPIMap();
     constructor(path: string, isModule?: boolean, pm: ProjectManager = null) {
         this.isModule = isModule;
         this.rootPath = resolve(path);
         this.pm = pm;
         this.root_dir = this.createRoot();
-
     }
 
 
@@ -30,6 +44,7 @@ export class FileFactory {
     createPackageCJSRequire(data: CJSBuilderData) {
         let resolved = normalize(join((data.dir.getAbsolute()), data.cjsFileName))
         let metaData: MetaData = {
+            moduleAPIMap:this.rc,
             target_dir: this.target_dir,
             stat: null,
             type: FileType.cjs,
@@ -72,13 +87,14 @@ export class FileFactory {
         let resolved = resolve(this.rootPath)
         let stat = lstatSync(resolved)
         let data: MetaData = this.getData(stat, resolved)
-        return new Dir(this.rootPath, data, null, this);
+        return new Dir(this.rootPath, data, null, this, this.rc);
     };
 
 
     private getData(stat: Stats, resolved: string): MetaData {
         // let parent_f = createGetParent(parent)
         return {
+            moduleAPIMap:this.rc,
             target_dir: this.target_dir,
             stat: stat,
             type: this.determineType(resolved, stat),
@@ -97,7 +113,7 @@ export class FileFactory {
         switch (data.type) {
 
             case FileType.dir:
-                return new Dir(path, data, parent, this)
+                return new Dir(path, data, parent, this, this.rc)
                 break;
             case FileType.js:
                 return new JSFile(path, data, parent, this.isModule)

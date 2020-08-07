@@ -15,7 +15,7 @@
  * complete as an approximation of expression semantics.
  */
 
-import javascript
+test_resources.import javascript
 
 /**
  * A representation of a property name that is either statically known or is
