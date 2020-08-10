@@ -32,13 +32,15 @@ export class ExportBuilder {
 	// private defaultIdentifier: Identifier;
 	private exportNameValue: { [name: string]: ExportSpecifier } = {};
 	private defaultExport: Identifier = null;
-	private api_type: API_TYPE = API_TYPE.none
+	private api_type: API_TYPE
 	private api: API = null;
 	private builtVals: ExportTypes = null
 
 	constructor(api_type: API_TYPE.default_only | API_TYPE.synthetic_named = undefined) {
 		if (api_type) {
 			this.api_type = api_type;
+		}else{
+			this.api_type = API_TYPE.none
 		}
 	}
 

@@ -139,7 +139,7 @@ export class ProjectManager {
 
 		this.removeAll()
 		this.writeAll()
-		console.log("DONE!")
+		// console.log("DONE!")
 	}
 
 	private removeAll(root_dir: string = this.root.getAbsolute()) {
@@ -276,7 +276,7 @@ export class ProjectManager {
 		}, () => {
 
 			this.writeAll(_target)
-			console.log("DONE!")
+			// console.log("DONE!")
 		})
 		let includeGit = this.includeGit;
 		let includeModules = this.includeNodeModules

@@ -27,25 +27,25 @@ function detect(ast: Program) {
                     if( memex.object.object.type === "Identifier"
 
                     && memex.object.object.name === "module"){
-                        console.log('missing link:\t  '+generate(node ))
+                        // console.log('missing link:\t  '+generate(node ))
 
 
                     }else if( memex.property.type === "Identifier"){
-                        console.log('module .exports only')
-
-                        console.log(generate(node))
+                        // console.log('module .exports only')
+                        //
+                        // console.log(generate(node))
 
                     }else{
                         console
                             .log('property is memex2 ')
-                        console.log(generate(node))
+                        // console.log(generate(node))
 
                     }
 
                 } else if (memex.property.type === "Identifier") {
-                    console.log('nothing after mod.exp')
-
-                    console.log(generate(node))
+                    // console.log('nothing after mod.exp')
+                    //
+                    // console.log(generate(node))
 
                 }
 
@@ -57,8 +57,8 @@ function detect(ast: Program) {
                 &&node.expression.callee.object.name ==="module"
                 &&node.expression.callee.property.name ==="exports"
             ){
-                console.log (`callexp`)
-                console.log(generate(node))
+                // console.log (`callexp`)
+                // console.log(generate(node))
 
             }
 
@@ -80,11 +80,11 @@ ast = parseScript(`
   }
 `)
 // detect(ast)
-console.log(JSON.stringify(parseScript('module.exports()'),null,4))
-console.log('\n')
-
-console.log(JSON.stringify(parseScript('module.exports.myFunc()'),null,4))
-console.log('\n')
-
-
-console.log(JSON.stringify(parseScript('module.exports.myObj.myFunc()'),null,4))
+// console.log(JSON.stringify(parseScript('module.exports()'),null,4))
+// console.log('\n')
+//
+// console.log(JSON.stringify(parseScript('module.exports.myFunc()'),null,4))
+// console.log('\n')
+//
+//
+// console.log(JSON.stringify(parseScript('module.exports.myObj.myFunc()'),null,4))

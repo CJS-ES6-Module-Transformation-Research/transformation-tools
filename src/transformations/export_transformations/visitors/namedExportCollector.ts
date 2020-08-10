@@ -89,18 +89,18 @@ function getName(node: AssignmentExpression, child: MemberExpression) {
     }
 }
 
-
-let x = parseScript(`
-module.exports = 32
-module.exports.name = 'name'
-module.exports.object = {a:b , c}
-exports.objectE = {a:b , c}
-exports.hello = "hello world" 
-
-`)
-console.log(x)
-
-replace(x, namedVisitor);
+//
+// let x = parseScript(`
+// module.exports = 32
+// module.exports.name = 'name'
+// module.exports.object = {a:b , c}
+// exports.objectE = {a:b , c}
+// exports.hello = "hello world"
+//
+// `)
+// console.log(x)
+//
+// replace(x, namedVisitor);
 // exportBuilder.build().forEach(e => {
 //     x.body.push(e)
 // });

@@ -15,8 +15,8 @@ export function propReadReplace(js: JSFile) {
 				&& node.object.object.name === "module"
 				&& node.object.property.name === "exports"
 			) {
-				console.log(node)
-				console.log("GOTOIT")
+				// console.log(node)
+				// console.log("GOTOIT")
 				return exportBuilder.getByName(node.property.name).local;
 
 			}
@@ -46,10 +46,10 @@ export function propReadReplace(js: JSFile) {
 				&& ((node.object.name === "module" && node.property.name === "exports") || node.object.name === "exports")
 			) {
 				if (parent.type === "MemberExpression" && parent.property.type === "Identifier") {
-					console.log(parent.property.name)
+					// console.log(parent.property.name)
 					return exportBuilder.getByName(node.property.name)
 				}
-				console.log("OTHER")
+				// console.log("OTHER")
 
 				if (node.object.name === "module") {
 

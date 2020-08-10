@@ -88,7 +88,7 @@ export function createASideEffect(importString: string): ImportDeclaration {
 }
 
 export class ImportManager implements ImportManagerI {
-	readonly IMPORT_MODE:"defaults"|"names"
+	private readonly IMPORT_MODE:"defaults"|"names"//TODO REMOVE
 	private orderedImports: string[] = [] ;
 	private readonly importMap: importStringMap
 	private readonly js: JSFile
@@ -203,9 +203,8 @@ export class ImportManager implements ImportManagerI {
 					isNamespace = true;
 				}
 
-				console.log(imp)
 
-				let api  =this.moduleAPIMap(imp)//this.js.getAPI(imp)
+				let api  =this.moduleAPIMap(imp)//this.js.getA PI(imp)
 
 			if (!built_ins.includes(value.importString)){
 				try {
@@ -213,8 +212,8 @@ export class ImportManager implements ImportManagerI {
 						try {
 							api_type = api.getType()
 						}catch (e) {
-							console.log(`could not get api type for ${api}`)
-							console.log(`this:${this.js.getRelative()} requested from ${imp}`)
+							// console.log(`could not get api type for ${api}`)
+							// console.log(`this:${this.js.getRelative()} requested from ${imp}`)
 						}
 					if (api_type === API_TYPE.default_only) {
 						isNamespace = false;

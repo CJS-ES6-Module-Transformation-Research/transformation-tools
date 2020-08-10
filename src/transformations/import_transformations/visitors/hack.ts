@@ -8,12 +8,16 @@ export let hacker_defaults = (js: JSFile) => {
 
 	let ns = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
+	let getRPI = (x: string) => js.getInfoTracker().getRPI(x)
 
 	let idSet: { [base: string]: { [prop: string]: Identifier } } = {}
 	let infoTracker = js.getInfoTracker()
 	infoTracker
 		.getMaybePrims()
 		.map(e => {
+			if (getRPI(e.modId).forceDefault) {
+				return null;
+			}
 			let best = ns.generateBestName(e.propName)
 			if (!idSet[e.modId]) {
 				idSet[e.modId] = {}
@@ -25,21 +29,28 @@ export let hacker_defaults = (js: JSFile) => {
 			replace_identifiers.push(best)
 			let declaration = createDeclFromBest(e, best);
 			return declaration
-		}).forEach((value: VariableDeclaration) => {
-		js.insertCopyByValue(value);
-	});
+		})
+		.filter(e => e !== null)
+		.forEach((value: VariableDeclaration) => {
+			js.insertCopyByValue(value);
+		});
 
 
 	let ast = js.getAST();
 	replace(ast, {
 		leave: ((node, parent) => {
 
-			if (parent
-				// && parent.type === "AssignmentExpression"
-				&& node.type === "MemberExpression"
+			if (node.type === "MemberExpression"
 				&& node.object.type === "Identifier"
-				&& node.property.type === "Identifier") {
-
+				&& node.property.type === "Identifier"
+			) {
+				if (parent
+					&& idSet[node.object.name]
+					&& idSet[node.object.name][node.property.name]
+					&& parent.type === "AssignmentExpression"
+					&& (parent.left === node)) {
+					return node
+				}
 				if (idSet[node.object.name]
 					&& idSet[node.object.name][node.property.name]) {
 					return idSet[node.object.name][node.property.name]

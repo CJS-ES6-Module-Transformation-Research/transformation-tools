@@ -1,7 +1,13 @@
 import {traverse, VisitorOption} from "estraverse";
 import {CallExpression, VariableDeclaration, VariableDeclarator} from 'estree'
-import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
+import {
+	createRequireDec,
+	RequireDeclaration,
+	RequireExpression,
+	TransformFunction
+} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {createRequireDecl} from "../../../abstract_representation/es_tree_stuff/astTools";
 import {InfoTracker} from "../../../InfoTracker";
 
 
@@ -59,7 +65,10 @@ function addFilename(js: JSFile) {
 		url = rdecl.identifier.name;
 	} else {
 		url = js.getNamespace().generateBestName('url').name
-		requireTracker.insertImportPair(url, 'url')
+		// requireTracker.insertImportPair(url, 'url')
+		// requireTracker.insertImportPair(url, 'url')
+		let reqDecl:RequireDeclaration =createRequireDec(url,'url')
+		// requireTracker.insertRequireImport(reqDecl)
 
 	}
 
@@ -88,7 +97,8 @@ function addDirname(js: JSFile) {
 		pathId = _path.identifier.name;
 	} else {
 		pathId = js.getNamespace().generateBestName('path')
-		requireTracker.insertImportPair(pathId.name, 'path')
+		requireTracker.insertRequireImport(createRequireDec(pathId.name, 'path'))
+		// requireTracker.insertImportPair(pathId.name, 'path')
 
 	}
 
@@ -227,8 +237,8 @@ function create__dirname(_path): VariableDeclaration {
 }
 
 export let req_filler = (js: JSFile) => {
-	let _r: VariableDeclaration[] = []
-	js.getInfoTracker().getDeclarations().forEach(e => _r.push(e))
+	let _r: (RequireExpression|RequireDeclaration)[] = []
+	js.getInfoTracker().getDeclarations().forEach((e:RequireExpression|RequireDeclaration) => _r.push(e))
 	let body = js.getAST().body
 	_r.reverse().forEach(e => body.splice(0, 0, e))
 }

@@ -1,6 +1,6 @@
 import {generate} from "escodegen";
-import {parseModule, parseScript} from "esprima";
-import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {parseModule, ParseOptions, parseScript} from "esprima";
+import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {JPP} from "../../index";
@@ -21,6 +21,7 @@ type script_or_module = "script" | "module"
 export class JSFile extends AbstractDataFile {
 	private api: API;
 	private apiMap: ModuleAPIMap;
+	private importList: ImportDeclaration[] = [] ;
 
 
 	getInfoTracker(): InfoTracker {
@@ -55,7 +56,7 @@ export class JSFile extends AbstractDataFile {
 
 		this.ast = this.parseProgram(this.data, isModule)
 
-		this.r_tracker = new InfoTracker();
+		this.r_tracker = new InfoTracker(this.getRelative());
 		this.removeStrict();
 		this.namespace = Namespace.create(this.ast)
 		this.apiMap = b.moduleAPIMap
@@ -133,7 +134,6 @@ export class JSFile extends AbstractDataFile {
 
 	public registerReplace(replace: string, value: string): void {
 		// this.stringReplace.set(replace, value);
-		console.log(`replace: ${replace} with ${value} at on serialize.`)
 		this.stringReplace[replace] = value
 	}
 	private buildProgram(): Program {
@@ -177,7 +177,10 @@ export class JSFile extends AbstractDataFile {
 			body.splice(0, 0, e)
 		})
 
-		this.getImportManager().buildDeclList().forEach(e => {
+		// this.getImportManager().buildDeclList().forEach(e => {
+		// 	newAST.body.splice(0, 0, e)
+		// })
+		this.importList.forEach(e => {
 			newAST.body.splice(0, 0, e)
 		})
 
@@ -236,7 +239,7 @@ export class JSFile extends AbstractDataFile {
 		}
 
 		try {
-			let _program: Program = (isModule ? parseModule : parseScript)(program)
+			let _program: Program = (isModule ? parseModule : parseScript)(program,{loc:true})
 			return _program
 		} catch (e) {
 			throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
@@ -290,8 +293,9 @@ export class JSFile extends AbstractDataFile {
 		let program:Program = this.buildProgram()
 		let programString: string
 		let parseJSON = JSON.parse(JSON.stringify(program,null,3)) as Program
-		// console.log(parseJ)
-		// programString = generate(parseJSON)
+		// console.log(parseJSON)
+		// console.log(JSON.stringify(program,null,3)	)
+		programString = generate(parseJSON)
 		try {
 			if(true) {
 
@@ -303,12 +307,15 @@ export class JSFile extends AbstractDataFile {
 				// 	JPP(node)
 				// });
 				// // console.log(generate(node))
-				if(programString) {
-					console.log(this.getRelative())
-				} else throw new Error()
+				// if(programString) {
+				// 	console.log(this.getRelative())
+				// } else throw new Error()
 			}
 		} catch (e) {
+
 			console.log(`CAUGHT generate in file ${this.path_relative} with exception: ${e}`)
+			console.log(JSON.stringify(program,null,3)	)
+
 			console.log()
 			throw e
 		}
@@ -363,4 +370,16 @@ export class JSFile extends AbstractDataFile {
 		type:FileType.js,
 
 	};
+
+	getAPIMap() {
+		return this.apiMap;
+	}
+
+	usesNamed() {
+		return true;
+	}
+
+	addAnImport(_import: ImportDeclaration) {
+this.importList.push(_import)
+	}
 }

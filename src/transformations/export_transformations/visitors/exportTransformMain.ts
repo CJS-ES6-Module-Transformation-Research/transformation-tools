@@ -48,18 +48,11 @@ export const transformBaseExports = (js: JSFile) => {
 	let __default:Identifier = null;
 	// let _hasCreatedDefault: Identifier = namespace.generateBestName('defaultExport');
 	// let hasCreatedDefault: Identifier = _hasCreatedDefault
-	function getDefault(){
-		if (!__default){
 
-			console.log('getdefault called ')
-			__default = namespace.generateBestName('defaultExport');
-			console.log(__default.name)
-
-		}
-	}
 
 	const info = js.getInfoTracker()
 	let exType = info.getExportType()
+	// console.log(`${ js.getRelative()} ==> ${ exType}`)
 	const exportBuilder = js.getExportBuilder(exType);
 
 	// function processClassOrFunction(assignmentNode:AssignmentExpression) {
@@ -106,14 +99,18 @@ export const transformBaseExports = (js: JSFile) => {
 				&& node.expression.left.property.type === "Identifier"
 				&& node.expression.left.object.name === 'module'
 				&& node.expression.left.property.name === 'exports') {
-				console.log('direct assign')
+				// console.log('direct assign')
 				exportBuilder.clear();
 
 				if(assignmentNode.right.type ==="ObjectExpression"){
 					exportBuilder.registerObjectLiteral(assignmentNode.right)
 					return {option: VisitorOption.Remove}
 				}else{
-					getDefault()
+					if (!__default){
+
+						__default = namespace.generateBestName('defaultExport');
+
+					}
 					exportBuilder.registerDefault(__default)
 					assignmentNode.left = __default
 				}
@@ -382,7 +379,7 @@ export const transformBaseExports = (js: JSFile) => {
 		declarations:[declarator]
 	}
 	if (__default) {
-		console.log (`adding ${toAdd} to top`)
+		// console.log (`adding ${toAdd} to top`)
 		js.addToTop(toAdd);
 	}
 	js.registerAPI()

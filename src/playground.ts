@@ -27,11 +27,9 @@ let ast: Program
 // 		enter: (node, parent) => {
 // 			switch (node.type) {
 // 				case "MemberExpression":
-// 					// console.log(node.object);
 // 					if (node.object.type === "Identifier"
 // 						&& node.property.type === "Identifier"
 // 						&& listOfVars.includes(node.object.name)  /*containsNode( )*/) {
-// 						// console.log(node.object.type)
 // 						// listOfProps.push( node);
 // 						let name = node.object.name
 // 						if (!mapOfRPIs[name]) {
@@ -147,7 +145,6 @@ let ast: Program
 // for (let str in mapOfRPIS) {
 //
 // 	let value = mapOfRPIS[str]
-// 	console.log()
 // 	let _strs: string[] = []
 // 	let __strs: string[] = []
 // 	value.listOfAllPropsAccessed.forEach((e: string) => __strs.push(e))
@@ -159,9 +156,6 @@ let ast: Program
 // calledOrPropst: ${_strs}
 // `)
 
-	// console.log(`Accessed: ${accessed.replace(/\n\n/g,'\n' )} `)
-	// console.log(`Called: ${called.replace(/\n\n/g,'\n' )} `)
-	// console.log(`\n\n`)
 // }
 // for (let key in outData) {
 // 	let value = outData[key]
