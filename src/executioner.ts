@@ -23,7 +23,7 @@ export default function(projectManager:ProjectManager){
 	projectManager.forEachSource(requireStringSanitizer)
 	projectManager.forEachSource(jsonRequire)
 
-	// projectManager.forEachSource(deconsFlatten )
+	projectManager.forEachSource(deconsFlatten )
 //  // location of require call to varaible declarations
 	projectManager.forEachSource(flattenDecls)
 
@@ -47,27 +47,27 @@ export default function(projectManager:ProjectManager){
 //push all requires back to ast
 	projectManager.forEachSource(req_filler)
 
-// // exports test_resources.sanitize, flatten object literal assignment
-// projectManager.forEachSource(objLiteralFlatten)
+// exports test_resources.sanitize, flatten object literal assignment
+projectManager.forEachSource(objLiteralFlatten)
 
-//
-// // init the list of properties accessed, and definitely not primitives
-// // for each require
-//
-// 	projectManager.forEachSource(reqPropertyInfoGather)
-//
-// 	projectManager.forEachSource(transformBaseExports)
-// 	projectManager.forEachSource(propReadReplace)
-//
-//
-// 	projectManager.forEachSource(js => {
-// 		js.setAsModule()
-// 	})
-// // importTransforms(projectManager)//depr?
-// 	projectManager.forEachPackage(pkg => pkg.makeModule())
-// 	// projectManager.forEachSource(transformImport);
-// 	projectManager.forEachSource(insertImports);
-// 	projectManager.forEachSource(hacker_defaults)
+
+// init the list of properties accessed, and definitely not primitives
+// for each require
+
+	projectManager.forEachSource(reqPropertyInfoGather)
+
+	projectManager.forEachSource(transformBaseExports)
+	projectManager.forEachSource(propReadReplace)
+
+
+	projectManager.forEachSource(js => {
+		js.setAsModule()
+	})
+// importTransforms(projectManager)//depr?
+	projectManager.forEachPackage(pkg => pkg.makeModule())
+	// projectManager.forEachSource(transformImport);
+	projectManager.forEachSource(insertImports);
+	projectManager.forEachSource(hacker_defaults)
 
 	projectManager.writeOut()
 }

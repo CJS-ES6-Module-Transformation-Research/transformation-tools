@@ -1,7 +1,6 @@
 #!/bin/env ts-node
 import assert from "assert";
-import {generate} from "escodegen";
-import {replace, traverse, Visitor, VisitorOption} from 'estraverse'
+import {replace, Visitor, VisitorOption} from 'estraverse'
 import {
 	ArrayPattern,
 	AssignmentExpression,
@@ -69,10 +68,10 @@ interface RequireAccessIDs {
 }
 
 
-function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns: Namespace, js:JSFile): RequireAccessIDs {
+function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns: Namespace, js: JSFile): RequireAccessIDs {
 	let ast = js.getAST()
 	let visitor: Visitor = {
-		leave:
+		enter:
 			(node: Node, parent: Node | null) => {
 
 				let moduleSpecifiers = requireTracker.getImportedModuleSpecifiers();
@@ -108,18 +107,20 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 				// 	requireTracker.insertRequireImport(createRequireDec(identifier.name, requireString))
 				// 	return deconstructDeconstructors(node,parent,requireTracker,js)
 				// }else
-				if (isARequire(node) ) {
+
+
+				if (isARequire(node)) {
 					let require: Require = node as Require
 					let requireString: string = (require.arguments[0] as Literal).value.toString();
 
 
 					if (moduleSpecifiers.includes(requireString)) {
-						console.log("includes: " + requireString  )
+						console.log("includes: " + requireString)
 						identifier = requireTracker.importingModule(requireString)
-							assert(identifier,`${requireString} id was ${identifier}`)
+						assert(identifier, `${requireString} id was ${identifier}`)
 
 					} else {
-						console.log("added: " + requireString  )
+						console.log("added: " + requireString)
 
 						identifier = extractBestIdentifier(requireString, ns)
 						let reqDecl = createRequireDec(identifier.name, requireString)
@@ -143,11 +144,10 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 					//gets the appropriate identifier for the require for a require string access variable.
 
 					//check is call expression and not single-identifier declarator
-					if (parent &&"CallExpression" === parent.type ||
+					if (parent && "CallExpression" === parent.type ||
 						"MemberExpression" === parent.type ||
 						"AssignmentExpression" === parent.type ||
 						("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
-
 
 
 						switch (parent.type) {
@@ -170,12 +170,16 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 								parent.right = identifier;
 								return;
 							case "VariableDeclarator":
-								if (parent.id.type === "ObjectPattern") {
-									parent.init = identifier
+								if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
+									// parent.init = identifier
 									// return VisitorOption.Remove
+									js.getInfoTracker().addDeconsId(identifier)
+								} else if (parent.id.type === "ObjectPattern") {
+									return VisitorOption.Remove;
 								} else {
 									return node;
 								}
+
 						}
 					} else {
 						switch (parent.type) {
@@ -213,6 +217,16 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 						extractRequireDataForAccess(e, extractBestIdentifier, ns);
 					});
 				}
+			},
+			leave:(node, parentNode) => {
+				if (node.type ==="VariableDeclaration"
+				&& node.declarations[0]
+				&& node.declarations[0].id.type === "ObjectPattern"
+				&& (!node.declarations[0].init)
+				){
+					return VisitorOption.Remove ;
+				}
+
 			}
 	}
 
@@ -377,7 +391,7 @@ function isARequire(node: Node): boolean {
 		&& node.callee.name === "require";
 }
 
-function deconstructDeconstructors(node:VariableDeclaration,parent:Node|null,info:InfoTracker,js:JSFile) {
+function deconstructDeconstructors(node: VariableDeclaration, parent: Node | null, info: InfoTracker, js: JSFile) {
 
 	let ids = info.getIDs()
 
@@ -444,14 +458,14 @@ function deconstructDeconstructors(node:VariableDeclaration,parent:Node|null,inf
 	} else {
 		throw new Error("don't know why it got here ")
 	}
-	let index=body.indexOf(node)
+	let index = body.indexOf(node)
 	// = body[body.indexOf(node)]
 
 	stmts.forEach(e => {
 		// body .splice(index,0,e)
 		js.addToTop(e)
 	})
-	index=body.indexOf(node)
-	body.splice(index,1)
+	index = body.indexOf(node)
+	body.splice(index, 1)
 	return VisitorOption.Remove
 }

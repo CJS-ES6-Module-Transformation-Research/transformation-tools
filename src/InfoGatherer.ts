@@ -91,33 +91,44 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs:
 
 					}
 					break;
-				case "VariableDeclaration": {
-					if (
-						node.declarations[0]
-						&& node.declarations[0].id.type === "ObjectPattern"
-						&& node.declarations[0].init
-						&& node.declarations[0].init.type === "Identifier"
-					) {
-						if (listOfVars.includes(node.declarations[0].init.name)) {
-							node.declarations[0].id.properties.forEach((prop: Property | RestElement) => {
-								if (prop.type === "Property" && prop.value.type === "Identifier") {
-									let key, val
-									let spec:Specifier
-									if (prop.shorthand) {
-										val = prop.value;
-										spec = {local:val, imported:val}
-									} else if (prop.key.type === "Identifier") {
-										val = prop.value
-										key = prop.key
-										spec = {local:val, imported:key}
-									}
-								}
-							});
-						}
-
-					}
-				}
-					break;
+				// case "VariableDeclaration": {
+				// 	if (
+				// 		node.declarations[0]
+				// 		&& node.declarations[0].id.type === "ObjectPattern"
+				// 		&& node.declarations[0].init
+				// 		&& node.declarations[0].init.type === "Identifier"
+				// 	) {
+				// 		let name:string =  node.declarations[0].init.name;
+				// 		if (listOfVars.includes(name)) {
+				// 			if (!mapOfRPIs[name]) {
+				// 				mapOfRPIs[name] = {
+				// 					allAccessedProps: [],//new Set(),
+				// 					potentialPrimProps: [],//new Set(),
+				// 					refTypeProps: [],//new Set(),
+				// 					forceDefault: false,
+				// 					aliasedProps:Specifier[]
+				// 				};
+				// 			}
+				// 			node.declarations[0].id.properties.forEach((prop: Property | RestElement) => {
+				//
+				// 				if (prop.type === "Property" && prop.value.type === "Identifier") {
+				// 					let key, val
+				// 					let spec:Specifier
+				// 					if (prop.shorthand) {
+				// 						val = prop.value;
+				// 						spec = {local:val, imported:val}
+				// 					} else if (prop.key.type === "Identifier") {
+				// 						val = prop.value
+				// 						key = prop.key
+				// 						spec = {local:val, imported:key}
+				// 					}
+				// 				}
+				// 			});
+				// 		}
+				//
+				// 	}
+				// }
+				// 	break;
 			}
 		}, leave: (node, parent) => {
 			switch (node.type) {

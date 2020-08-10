@@ -22,6 +22,7 @@ export class JSFile extends AbstractDataFile {
 	private api: API;
 	private apiMap: ModuleAPIMap;
 	private importList: ImportDeclaration[] = [] ;
+	private readonly _usesNames: boolean;
 
 
 	getInfoTracker(): InfoTracker {
@@ -51,7 +52,7 @@ export class JSFile extends AbstractDataFile {
 
 	constructor(path: string, b: MetaData, parent: Dir, isModule: boolean, data= '') {
 		super(path, b, parent,data);
-
+		this._usesNames = b.uses_names;
 		this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
 		this.ast = this.parseProgram(this.data, isModule)
@@ -358,7 +359,7 @@ export class JSFile extends AbstractDataFile {
 		this.to_insert_copyByValue.push(copiedValue)
 	}
 
-	static mockedMeta:MetaData = {
+	static mockedMetaDefault:MetaData = {
 		moduleAPIMap:null,
 		isRoot:false,
 		ext:'js',
@@ -368,7 +369,19 @@ export class JSFile extends AbstractDataFile {
 		stat:null,
 		target_dir:'',
 		type:FileType.js,
-
+		uses_names:false
+	};
+	static mockedMetaNamed:MetaData = {
+		moduleAPIMap:null,
+		isRoot:false,
+		ext:'js',
+		path_abs:'/this.js',
+		path_relative:'this.js',
+		rootDir:'/',
+		stat:null,
+		target_dir:'',
+		type:FileType.js,
+		uses_names:true
 	};
 
 	getAPIMap() {
@@ -377,6 +390,7 @@ export class JSFile extends AbstractDataFile {
 
 	usesNamed() {
 		return true;
+		// return this._usesNames;
 	}
 
 	addAnImport(_import: ImportDeclaration) {

@@ -63,6 +63,7 @@ export interface MetaData {
 	path_abs: string
 	path_relative: string
 	target_dir: string
+	uses_names:boolean
 }
 
 export interface RequireDeclaration extends VariableDeclaration {

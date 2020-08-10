@@ -19,14 +19,14 @@ import {ProjectManager} from "./ProjectManager";
 
 
 
-const pwd = `/Users/sam/Dropbox/Spring_20/research_proj/DEV_UTIL_DATA_HAS_DB/COMPLEX_FS_TO_PARSE`
-const owd = `/Users/sam/Dropbox/Spring_20/research_proj/DEV_UTIL_DATA_HAS_DB/__x`
-
-let pm = new ProjectManager(pwd, {
-    write_status: "in-place",
-    isModule: false,
-    suffix: '',
-    target_dir: owd
-});
-pm.writeOut()
+// const pwd = `/Users/sam/Dropbox/Spring_20/research_proj/DEV_UTIL_DATA_HAS_DB/COMPLEX_FS_TO_PARSE`
+// const owd = `/Users/sam/Dropbox/Spring_20/research_proj/DEV_UTIL_DATA_HAS_DB/__x`
+//
+// let pm = new ProjectManager(pwd, {
+//     write_status: "in-place",
+//     isModule: false,
+//     suffix: '',
+//     target_dir: owd
+// });
+// pm.writeOut()
 

@@ -2,7 +2,7 @@ import {generate} from "escodegen";
 import {replace, Visitor, VisitorOption} from "estraverse";
 import {
 	CallExpression,
-	Identifier,
+	Identifier, ImportDeclaration, ImportSpecifier,
 	MemberExpression,
 	Node,
 	Property,
@@ -61,7 +61,7 @@ export function deconsFlatten(js: JSFile) {
 					// let ns = js.getNamespace()
 					// let objPat: ObjectPattern = declarator.id as ObjectPattern
 					let requireCall: CallExpression = declarator.init as CallExpression
-					// let requireString: string = node.declarations[0].init.arguments[0].value.toString()
+					let requireString: string = node.declarations[0].init.arguments[0].value.toString()
 					//
 					// let moduleSpecifiers: string[] = requireTracker.getImportedModuleSpecifiers()
 					// let identifier: Identifier
@@ -91,7 +91,7 @@ export function deconsFlatten(js: JSFile) {
 					// 		init:requireCall
 					// 	}]
 					// }
-
+					let specifiers:ImportSpecifier[] = []
 
 					if (parent && parent.type === "Program") {
 						let body = parent.body
@@ -107,6 +107,7 @@ export function deconsFlatten(js: JSFile) {
 												prop.value, requireCall))
 											x = declaratorFactory(//identifier,
 												prop.value, requireCall)
+											specifiers.push({type:"ImportSpecifier", local:prop.value, imported:prop.value})
 
 											parent.body.splice(body.indexOf(node), 0, x)
 
@@ -115,6 +116,7 @@ export function deconsFlatten(js: JSFile) {
 												prop.key, requireCall, prop.value))
 											x = declaratorFactory(// identifier,
 												prop.key, requireCall, prop.value)
+											specifiers.push({type:"ImportSpecifier", local:prop.key, imported:prop.value})
 											parent.body.splice(body.indexOf(node), 0, x)
 										}
 										console.log("__x ")
@@ -129,6 +131,7 @@ export function deconsFlatten(js: JSFile) {
 					// declArray.forEach(elem=>js.addToTop(elem))
 				}
 				// return VisitorOption.Remove;
+
 			}
 
 		}

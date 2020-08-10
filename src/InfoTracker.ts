@@ -170,6 +170,17 @@ export class InfoTracker {
 		}
 		return
 	}
+
+	private  readonly  deconsIDs:string[]  = []
+	addDeconsId(identifier: Identifier) {
+		let _name = identifier.name
+		if (!this.deconsIDs.includes(_name)) {
+			this.deconsIDs.push(_name)
+		}
+	}
+	getDeconses(){
+		return this.deconsIDs;
+	}
 }
 
 interface requireDecl {

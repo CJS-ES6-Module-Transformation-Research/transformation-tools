@@ -14,6 +14,7 @@ export interface ProjConstructionOpts {
 	target_dir: string
 	suffix: string
 	isModule?: boolean
+	isNamed:boolean
 	copy_node_modules?: boolean
 }
 
@@ -42,16 +43,18 @@ export class ProjectManager {
 	private readonly suffixFsData: { [abs: string]: string } = {}
 	private includeGit: boolean = false;
 	private includeNodeModules: boolean = false;
+	private uses_names: boolean;
 
 
 	constructor(path: string, opts: ProjConstructionOpts) {
+		this.uses_names = opts.isNamed;
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
 
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 
-		this.factory = new FileFactory(path, opts.isModule, this);
+		this.factory = new FileFactory(path, this.uses_names, opts.isModule, this);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 

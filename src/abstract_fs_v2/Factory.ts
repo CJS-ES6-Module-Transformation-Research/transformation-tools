@@ -29,7 +29,8 @@ export class FileFactory {
     readonly isModule: boolean
     readonly pm: ProjectManager;
     readonly rc:ModuleAPIMap = new ModuleAPIMap();
-    constructor(path: string, isModule?: boolean, pm: ProjectManager = null) {
+    private uses_names: boolean;
+    constructor(path: string,uses_names:boolean, isModule?: boolean, pm: ProjectManager = null) {
         this.isModule = isModule;
         this.rootPath = resolve(path);
         this.pm = pm;
@@ -52,7 +53,8 @@ export class FileFactory {
             isRoot: this.rootPath === resolved,
             rootDir: this.rootPath,
             path_abs: resolved,
-            path_relative: join(data.dir.getRelative(), data.cjsFileName)
+            path_relative: join(data.dir.getRelative(), data.cjsFileName),
+            uses_names:this.uses_names
         };
         let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)
         // if (this.pm) {
@@ -105,7 +107,8 @@ export class FileFactory {
 
             rootDir: this.rootPath,
             path_abs: resolved,
-            path_relative: this.rootPath === resolved ? '.' : relative(this.rootPath, resolved)
+            path_relative: this.rootPath === resolved ? '.' : relative(this.rootPath, resolved),
+            uses_names:this.uses_names
         };
     }
 
