@@ -1,6 +1,7 @@
 import {replace, Visitor} from 'estraverse'
 import {Identifier} from 'estree'
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import { generate } from 'escodegen';
 
 export function propReadReplace(js: JSFile) {
 	let exportBuilder = js.getExportBuilder()
@@ -17,8 +18,26 @@ export function propReadReplace(js: JSFile) {
 			) {
 				// console.log(node)
 				// console.log("GOTOIT")
-				return exportBuilder.getByName(node.property.name).local;
+				// 	if (!exportBuilder.getByName(node.property.name) )
+				// 	{
+				// 		console.log("exportBuilder.getByName "+node.property.name + "null ")
+				// 	}else if(exportBuilder.getByName(node.property.name) .local) {
+				//
+				// 		console.log("exportBuilder.getByName "+node.property.name +" of "+ exportBuilder.getByName(node.property.name).local.name+" local> < imported"+exportBuilder.getByName(node.property.name).exported.name  )
+// 				// 	}
+// 				let j =exportBuilder.getByName(node.property.name)
+// 					console.log(`reading from property: ${node.property.name} where ${exportBuilder.getByName(node.property.name)? exportBuilder.getByName(node.property.name).exported.name:"nothing"} is  exported
+// 					 and  ${exportBuilder.getByName(node.property.name)?
+// 						( exportBuilder.getByName(node.property.name).local.type==="Identifier" ?exportBuilder.getByName(node.property.name).local.name:"c") :"nothing" } is the local type  `)
+// 					console.log(exportBuilder.getByName(node.property.name) .local.type)
+try {
+	return exportBuilder.getByName(node.property.name).local;
+}catch (e) {
 
+	console.log( " __ "+	generate(node))
+	console.log( "err:  " + e  )
+					return null
+}
 			}
 		}
 	}
@@ -99,8 +118,7 @@ export function propReadReplace(js: JSFile) {
 // reqPropertyInfoGather(js)
 // transformBaseExports(js)
 // console.log(js.makeSerializable().fileData)
-// propReadReplace(js)
-// console.log( )
+// propReadReplace  console.log( )
 // console.log( )
 // console.log( )
 // console.log( )

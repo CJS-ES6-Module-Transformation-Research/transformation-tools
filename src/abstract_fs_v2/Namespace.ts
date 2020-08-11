@@ -125,7 +125,14 @@ export class Namespace {
     }
 
 
+    getImportMeta()
+    {
+        let best = this.generateBestName("IMPORT_META_URL")
+        this.addToNamespace(best.name)
+        return best;
+    }
 }
+
 
 /**
  * recursive walker function to detect identifiers as names for a namespace.

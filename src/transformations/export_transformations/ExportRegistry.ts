@@ -13,7 +13,7 @@ import {
 	Statement
 } from "estree";
 import {Namespace} from "../../abstract_fs_v2/Namespace.js";
-import {API} from "./API.js";
+import {API, api_possible} from "./API.js";
 import {API_TYPE} from "./ExportsBuilder.js";
 
 type exportsMap = { [exported: string]: exportedLocal }
@@ -133,59 +133,61 @@ export class ExportRegistry {
 		this.names = {}
 	}
 	generateExports(isForcedDefault: boolean) {
-
-		let stmts: Node[] = []
-		if (this._hasDefaultExports || isForcedDefault) {
-			if (!this.api){
-			this.api = new API(API_TYPE.default_only);
-		}
-			if (isForcedDefault) {
-				stmts.push({
-					type: "ExpressionStatement",
-					expression: {
-						type: "AssignmentExpression",
-						left: this.getDefaultIdentifier(),
-						right: {
-							type: "ObjectExpression",
-							properties: []
-
-						},
-						operator: "="
-					}
-
-				})
-			}
-
-			if (this.names) {
-				for (let name in this.names) {
-					let stmt = this.createAssingmentTo(this.names[name].exported, this.names[name].local)
-					stmts.push(stmt)
-				}
-			}
-			stmts.push({type: "ExportDefaultDeclaration", declaration: this.getDefaultIdentifier()})
-		} else {
-			let _api_names:string[] = []
-			if (!this.api) {
-				this.api = new API(API_TYPE.named_only, _api_names);
-			}
-			let specifiers: ExportSpecifier[] = []
-			for (let spec in this.names) {
-				_api_names.push(this.names[spec].exported.name)
-				specifiers.push({
-					type: "ExportSpecifier",
-					local: this.names[spec].local,
-					exported: this.names[spec].exported
-				})
-			}
-			if (specifiers) {
-				let ex: ExportNamedDeclaration = {
-					type: "ExportNamedDeclaration",
-					specifiers: specifiers
-				}
-				stmts.push(ex)
-			}
-		}
-		return stmts;
+		//
+		//
+		//
+		// let stmts: Node[] = []
+		// if (this._hasDefaultExports || isForcedDefault) {
+		// 	if (!this.api){
+		// 	this.api = new API(API_TYPE.default_only);
+		// }
+		// 	if (isForcedDefault) {
+		// 		stmts.push({
+		// 			type: "ExpressionStatement",
+		// 			expression: {
+		// 				type: "AssignmentExpression",
+		// 				left: this.getDefaultIdentifier(),
+		// 				right: {
+		// 					type: "ObjectExpression",
+		// 					properties: []
+		//
+		// 				},
+		// 				operator: "="
+		// 			}
+		//
+		// 		})
+		// 	}
+		//
+		// 	if (this.names) {
+		// 		for (let name in this.names) {
+		// 			let stmt = this.createAssingmentTo(this.names[name].exported, this.names[name].local)
+		// 			stmts.push(stmt)
+		// 		}
+		// 	}
+		// 	stmts.push({type: "ExportDefaultDeclaration", declaration: this.getDefaultIdentifier()})
+		// } else {
+		// 	let _api_names:string[] = []
+		// 	if (!this.api) {
+		// 		this.api = new API(API_TYPE.named_only, _api_names);
+		// 	}
+		// 	let specifiers: ExportSpecifier[] = []
+		// 	for (let spec in this.names) {
+		// 		_api_names.push(this.names[spec].exported.name)
+		// 		specifiers.push({
+		// 			type: "ExportSpecifier",
+		// 			local: this.names[spec].local,
+		// 			exported: this.names[spec].exported
+		// 		})
+		// 	}
+		// 	if (specifiers) {
+		// 		let ex: ExportNamedDeclaration = {
+		// 			type: "ExportNamedDeclaration",
+		// 			specifiers: specifiers
+		// 		}
+		// 		stmts.push(ex)
+		// 	}
+		// }
+		// return stmts;
 	}
 
 	private createAssingmentTo(exported: Identifier, local: Identifier): Statement {

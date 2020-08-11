@@ -55,34 +55,7 @@ export const transformBaseExports = (js: JSFile) => {
 	// console.log(`${ js.getRelative()} ==> ${ exType}`)
 	const exportBuilder = js.getExportBuilder(exType);
 
-	// function processClassOrFunction(assignmentNode:AssignmentExpression) {
-	//
-	// 	if (assignmentNode.right.id) {
-	// 		console.log(assignmentNode.right.id.name)
-	// 		let declaration: FunctionDeclaration | ClassDeclaration
-	// 		declaration = assignmentNode.right.type === "FunctionExpression" ? {
-	// 			async: assignmentNode.right.async,
-	// 			type: "FunctionDeclaration",
-	// 			body: assignmentNode.right.body,
-	// 			id: assignmentNode.right.id,
-	// 			params: assignmentNode.right.params,
-	// 			generator: assignmentNode.right.generator
-	// 		} : {
-	// 			id: assignmentNode.right.id,
-	// 			body: assignmentNode.right.body,
-	// 			type: "ClassDeclaration",
-	// 			superClass: assignmentNode.right.superClass
-	// 		};
-	// 		hasCreatedDefault = declaration.id
-	// 		return {node: declaration}
-	// 	} else {
-	// 		hasCreatedDefault = _hasCreatedDefault
-	// 		assignmentNode.left = hasCreatedDefault;
-	// 	}
-	//
-	// 	exportBuilder.registerDefault(hasCreatedDefault)
-	// 	return;
-	// }
+
 
 
 	let leave = (node: (Directive | Statement | ModuleDeclaration)): TypeSafeReturn => {
@@ -114,86 +87,7 @@ export const transformBaseExports = (js: JSFile) => {
 					exportBuilder.registerDefault(__default)
 					assignmentNode.left = __default
 				}
-				// switch (assignmentNode.right.type) {
-				//
-				// 	// case   "FunctionExpression":
-				// 	// 	return processClassOrFunction(assignmentNode);
-				// 	//
-				// 	// case "ClassExpression":
-				// 	// 	return processClassOrFunction(assignmentNode);
-				//
-				//
-				// 	case "ObjectExpression": {
-				// 		console.log('_flag')
-				// 		console.log(generate(assignmentNode.right))
-				//
-				// 		exportBuilder.clear();
-				// 		exportBuilder.registerObjectLiteral(assignmentNode.right)
-				// 		return {option: VisitorOption.Remove}
-				// 		//return;
-				// 	}
-				//
-				// 	default: {
-				// 		assignmentNode.left = __default
-				// 		// console.log('2x')
-				// 		// hasUsedDefault = true;
-				// 		//
-				// 		// return {
-				// 		// 	node: {
-				// 		// 		type: "ExpressionStatement",
-				// 		// 		expression: {
-				// 		// 			type: "AssignmentExpression",
-				// 		// 			left: hasCreatedDefault,
-				// 		// 			right: assignmentNode.right,
-				// 		// 			operator: "="
-				// 		//
-				// 		// 		}
-				// 		// 	}
-				// 		//
-				// 		//
-				// 		// }
-				// 		// // return unNamedDefaultExport(assignmentNode);
-				//
-				// 	}
-				// }
-				// return;
-				//
-				// 	if (assignmentNode.right.id
-				// 		&& assignmentNode.right.id) {
-				// 		let short: FunctionExpression|FunctionDeclaration = assignmentNode.right;
-				//
-				//
-				//
-				// 		let FD: FunctionDeclaration = ;
-				// 		name = assignmentNode.right.id.name
-				// 		hasCreatedDefault = assignmentNode.right.id
-				// 		// exportBuilder.registerName({exported_name: name, local_alias: name})
-				// 		exportBuilder.registerDefault({name: name, type: "Identifier"})
-				// 		return {node: FD}
-				// 	}else{
-				// 		assignmentNode.left = hasCreatedDefault;
-				// 		exportBuilder.registerDefault(hasCreatedDefault)
-				// 	}
-				// 	break;
-				// case   "ClassExpression":
-				// 	if (assignmentNode.right.id) {
-				// 		let decl: ClassDeclaration = {
-				// 			id: assignmentNode.right.id,
-				// 			body: assignmentNode.right.body,
-				// 			type: "ClassDeclaration",
-				// 			superClass: assignmentNode.right.superClass
-				// 		};
-				//
-				// 		name = assignmentNode.right.id.name
-				// 		hasCreatedDefault = assignmentNode.right.id
-				// 		exportBuilder.registerDefault(hasCreatedDefault)
-				// 		return {node: decl}// {type:"ExpressionStatement", expression:assignmentNode.right} ;
-				// 	}else{
-				// 		assignmentNode.left = hasCreatedDefault;
-				// 		exportBuilder.registerDefault(hasCreatedDefault)
-				// 		return
-				// 	}
-				// 	break;
+
 
 
 			} else if (assignmentNode.left.type === "MemberExpression") {
@@ -214,13 +108,32 @@ export const transformBaseExports = (js: JSFile) => {
 					(memex.object.type === "Identifier"
 						&& memex.property.type === "Identifier"
 						&& memex.object.name === "exports")) {
+						console.log("--dx --")
 					if (__default) {
-						assignmentNode.left = {
+						console.log("dx --")
+						console.log(__default.name)
+						console.log(memex.property.name )
+						// assignmentNode.left =
+
+							let left:MemberExpression = {
 							type: "MemberExpression",
 							object: __default,
 							property: memex.property,
 							computed: false
-						};
+						}
+
+						let mx :TypeSafeReturn= {node:  {
+								type: "ExpressionStatement",
+								expression: {
+									type: "AssignmentExpression",
+									left: left ,
+									right: assignmentNode.right,
+									operator: '='
+								}
+							}}
+						console.log(generate(mx.node))
+
+						return mx;
 					} else {
 						return extractFromNamespace(memex.property.name, assignmentNode.right)
 					}
@@ -382,6 +295,8 @@ export const transformBaseExports = (js: JSFile) => {
 		// console.log (`adding ${toAdd} to top`)
 		js.addToTop(toAdd);
 	}
+	exportBuilder.build()
+	console.log('about to reg api')
 	js.registerAPI()
 }
 

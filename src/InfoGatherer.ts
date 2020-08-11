@@ -1,5 +1,6 @@
+import {generate} from "escodegen";
 import {traverse} from "estraverse";
-import {Identifier, Node, Program, Property, RestElement} from "estree";
+import {Identifier, Node, Program, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
 
@@ -146,9 +147,10 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs:
 	});
 	// return listOfProps;
 }
-interface Specifier{
-	local:Identifier
-	imported:Identifier
+
+interface Specifier {
+	local: Identifier
+	imported: Identifier
 }
 
 function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
@@ -249,9 +251,11 @@ function getReassignedProps(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo
 export const reqPropertyInfoGather = (js: JSFile) => {
 	let ast = js.getAST()
 	let requireMgr: InfoTracker = js.getInfoTracker();
-	let listOfVars = []
-	requireMgr.getIDs().forEach(e => listOfVars.push(e))
-
+	let listOfVars: string[] = []
+	requireMgr.getIDs().forEach(e => {
+		listOfVars.push(e)
+	})
+	console.log(`list of vars:  ${listOfVars}`)
 	let rpis: { [id: string]: ReqPropInfo } = {};
 	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
 	// console.log(JSON.stringify(listOfVars))
@@ -262,6 +266,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	listOfVars.forEach((id: string) => {
 		if (rpis[id]) {
+			console.log(`rpis of id: ${id}`)
 			let rpi = rpis[id];
 			rpi.allAccessedProps.forEach((prop: string) => {
 				if (!rpi.refTypeProps.includes(prop)) {
@@ -270,6 +275,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 			});
 		} else {
 			//if must be default import and no calls or accesses made
+			console.log("NOD IDS FOR ID: " + id)
 			rpis[id] = {
 				allAccessedProps: [],
 				forceDefault: true,
@@ -352,3 +358,46 @@ export interface ReqPropInfo {
 }
 
 // console.log(JSON.stringify(parseScript(`var {a, c:d} = x;  `),null,3))
+
+
+export function getDeclaredModuleImports(js: JSFile) {
+	traverse(js.getAST(),
+		{
+			enter: (node: Node, parent: Node | null) => {
+				if (node.type === "VariableDeclaration"
+					&& node.declarations
+					&& node.declarations[0]
+
+				) {
+					let decl: VariableDeclarator = node.declarations[0];
+					if (
+						decl.init
+						&& decl.id.type === "Identifier"
+						&& decl.init.type === "CallExpression"
+						&& decl.init.callee.type === "Identifier"
+						&& decl.init.callee.name === "require"
+						&& decl.init.arguments
+						&& decl.init.arguments[0]
+						&& decl.init.arguments[0].type === "Literal"
+
+					) {
+						// console.log(generate(decl))
+						js.getInfoTracker().insertDeclPair(decl.id.name, decl.init.arguments[0].value.toString())
+						// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
+					}
+				}
+			}
+		})
+}
+
+
+
+
+
+
+
+
+
+
+
+

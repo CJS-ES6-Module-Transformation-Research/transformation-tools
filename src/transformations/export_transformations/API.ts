@@ -1,12 +1,13 @@
 import {API_TYPE} from "./ExportsBuilder";
 
 export class API {
-	constructor(type, names: string[] = [], isBuiltin = false) {
-		this.type = type,
+ 	constructor(type, names: string[] = [], isBuiltin = false) {
+ 		this.type = type,
 		this.exports = []
 		this._isBuiltin = isBuiltin
 		this.non_api = this.type === API_TYPE.none
 	}
+
 
 	getExports(): string[] {
 		return this.exports

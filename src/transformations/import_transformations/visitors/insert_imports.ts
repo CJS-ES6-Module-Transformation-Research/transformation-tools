@@ -3,13 +3,19 @@ import {replace, Visitor, VisitorOption} from "estraverse";
 import * as ESTree from "estree";
 import {Identifier, ImportSpecifier} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {Imports, WithPropNames} from "../../../InfoTracker";
 import {API} from "../../export_transformations/API";
 import {API_TYPE} from "../../export_transformations/ExportsBuilder";
 import {built_ins, builtins_funcs} from "../ImportManager";
 
+function cleanModuleSpecifier(moduleSpecifier:string):string{
+	return moduleSpecifier.replace(/^\.{0,2}\//,'' )
+}
+
 export function insertImports(js: JSFile) {
 	// console.log(`calling insertImports on jsfile : ${js.getRelative()} `)
 
+	let infoTracker = js.getInfoTracker();
 
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
@@ -41,6 +47,13 @@ export function insertImports(js: JSFile) {
 
 	let propNameReplaceMap: { [base: string]: { [property: string]: string } }//replaceName
 	propNameReplaceMap = {};
+	let MAM = js.getAPIMap()
+ 	let _imports:Imports  =new Imports(js.getInfoTracker().getDeMap(),((mspec: string)=> MAM.resolveSpecifier(mspec, js)) ,MAM,js.getInfoTracker())
+
+ 	js.setImports(_imports)
+
+
+
 	let visitor: Visitor = {
 
 		enter: (node, parent): VisitorOption | ESTree.Node | void => {
@@ -58,8 +71,14 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
 						let isNamespace = computeType(js, node.declarations[0].id, node.declarations[0].init.arguments[0].value.toString())
+						// let clean = cleanModuleSpecifier(module_specifier)
+						// if(api && api.getType() ===API_TYPE.named_only){
+						// }
 
-						if (js.usesNamed() && isNamespace) {
+						let module_specifier = node.declarations[0].init.arguments[0].value.toString()
+						let wpn:WithPropNames = _imports.getWPN()
+						let api=  wpn.api[module_specifier];
+						if (js.usesNamed() && isNamespace &&api && api.getType()  === API_TYPE.named_only) {
 
 							let module_specifier = node.declarations[0].init.arguments[0].value.toString()
 							let info = js.getInfoTracker();
@@ -71,13 +90,14 @@ export function insertImports(js: JSFile) {
 							// 	removed = removed.substr(1, removed.length )
 							// }
 							let id = node.declarations[0].id.name
-							let rpi = info.getRPI(id)
-
+							let rpi = info.getRPI(id);info.getRPI_( )
+console.log(`${js.getRelative()}ID:${ id }||`)
 							// console.log(`api type of variable ${id} importing ${module_specifier} is ${isNamespace?  "named":"default"}`)
 
 							let specifiers: ImportSpecifier[] = []
 							if ((!rpi)) {
-								throw new Error("in file: "+js.getRelative()+" identifier "+id+" had no rpi "+module_specifier)
+								console.log(`in file: ${js.getRelative()} identifier   ${id }+ had no rpi ${module_specifier}`)
+								throw new Error(`in file: ${js.getRelative()} identifier   ${id }+ had no rpi ${module_specifier}`)
 								// console.log(`!RPI:   START`)
 								// let z = info.getRPI_()
 								// for (let p in z) {
@@ -91,9 +111,17 @@ export function insertImports(js: JSFile) {
 								// console.log(generate(node))
 
 							}
+							let apiexports=api.getExports()
+
+							let accessables:string[] = rpi.allAccessedProps.filter(e=>apiexports.includes(e))
+							accessables.forEach((e,index,arr)=>{
+								if( wpn.aliases[module_specifier][e]===e){
+									arr[index] = wpn.aliases[module_specifier][e]
+								}
+							});
 							rpi.allAccessedProps.forEach((e: string) => {
 								let accessed = js.getNamespace().generateBestName(e)
-
+			demap.fromId['               ']
 								if (!propNameReplaceMap[id]) {
 									propNameReplaceMap[id] = {}
 								}
@@ -107,12 +135,13 @@ export function insertImports(js: JSFile) {
 								specifiers.push(is)
 							});
 
-							js.addAnImport({
+							// js.addAnImport
+							(_imports.add({
 								type: "ImportDeclaration",
 								source: node.declarations[0].init.arguments[0],
 
 								specifiers: specifiers
-							})
+							}))
 						} else {
 							let cc = node.declarations[0].id.name
 							// console.log(`_______ `)
@@ -121,7 +150,8 @@ export function insertImports(js: JSFile) {
 							// console.log(`${JSON.stringify(js.getInfoTracker().getRPI(cc))}`)
 							// console.log(`${node.declarations[0].init.arguments[0].value.toString()}`)
 							// console.log(generate(node))
-							js.addAnImport({
+
+								_imports.add({
 								type: "ImportDeclaration",
 								source: node.declarations[0].init.arguments[0],
 								specifiers: [{
@@ -144,7 +174,8 @@ export function insertImports(js: JSFile) {
 					) {
 
 						// return
-						js.addAnImport({
+						// js.addAnImport
+						_imports.add({
 							type: "ImportDeclaration",
 							source: node.expression.arguments[0],
 							specifiers: []
@@ -157,8 +188,11 @@ export function insertImports(js: JSFile) {
 		}
 	}
 	replace(js.getAST(), visitor)
+	let demap = infoTracker.getDeMap()
+
 	replace(js.getAST(), {
 		leave: (node, parent) => {
+
 			if (
 				node.type === "MemberExpression"
 				&& node.object.type === "Identifier"
@@ -167,10 +201,20 @@ export function insertImports(js: JSFile) {
 				&& propNameReplaceMap[node.object.name]
 				&& propNameReplaceMap[node.object.name][node.property.name]
 			) {
+
 				return {type: "Identifier", name: propNameReplaceMap[node.object.name][node.property.name]}
+			}else	if (false){
+				// if ()
 			}
+
+			// else if (node.type ==="Identifier"
+			// && infoTracker.
+			// )
 		}
 	});
+
+
+
 }
 
 //
@@ -195,11 +239,6 @@ export function insertImports(js: JSFile) {
 //
 //
 //
-
-
-
-
-
 
 
 

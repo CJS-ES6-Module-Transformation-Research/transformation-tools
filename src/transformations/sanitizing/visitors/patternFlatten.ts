@@ -1,17 +1,24 @@
-import {generate} from "escodegen";
-import {replace, Visitor, VisitorOption} from "estraverse";
+import {replace, Visitor} from "estraverse";
 import {
+	BlockStatement,
 	CallExpression,
-	Identifier, ImportDeclaration, ImportSpecifier,
+	Declaration,
+	Directive,
+	Identifier,
+	ImportSpecifier,
 	MemberExpression,
+	ModuleDeclaration,
 	Node,
+	Program,
 	Property,
 	RestElement,
+	Statement,
 	VariableDeclaration,
 	VariableDeclarator
 } from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {alphaNumericString} from "./accessReplacer";
+import { generate } from "escodegen";
 
 
 export function deconsFlatten(js: JSFile) {
@@ -23,19 +30,17 @@ export function deconsFlatten(js: JSFile) {
 			// 	console.log(generate(parent))
 			// 	console.log(parent.type)
 			// }
-		if(node.type === "VariableDeclaration"
+			if (node.type === "VariableDeclaration"
 
-			&& node.declarations
-			&& node.declarations[0]
-			&& node.declarations[0].id
-			&& node.declarations[0].id.type !=="Identifier"
+				&& node.declarations
+				&& node.declarations[0]
+				&& node.declarations[0].id
+				&& node.declarations[0].id.type !== "Identifier"
 
-			){
-
+			) {
 				if (
-
-					  node.declarations[0].init
-			&& node.declarations[0].id.type === "ObjectPattern"
+					node.declarations[0].init
+					&& node.declarations[0].id.type === "ObjectPattern"
 					&& node.declarations[0].init.type === "CallExpression"
 					&& node.declarations[0].init.callee.type === "Identifier"
 					&& node.declarations[0].init.callee.name === "require"
@@ -43,58 +48,39 @@ export function deconsFlatten(js: JSFile) {
 					&& node.declarations[0].init.arguments[0]
 					&& node.declarations[0].init.arguments[0].type === "Literal"
 				) {
-
-
-					console.log(JSON.stringify(node.declarations[0].id, null, 3))
-					console.log(generate(node.declarations[0].id))
-
-					if (!node.declarations[0].id) {
-						console.log("NOT ID")
-						console.log(generate(node))
-					} else if (!node.declarations[0].id.properties) {
-						console.log("NOT properties")
-						console.log(generate(node))
-					}
-
 					// let requireTracker = js.getInfoTracker()
 					let declarator = node.declarations[0];
 					// let ns = js.getNamespace()
 					// let objPat: ObjectPattern = declarator.id as ObjectPattern
 					let requireCall: CallExpression = declarator.init as CallExpression
 					let requireString: string = node.declarations[0].init.arguments[0].value.toString()
-					//
-					// let moduleSpecifiers: string[] = requireTracker.getImportedModuleSpecifiers()
-					// let identifier: Identifier
-					// if (moduleSpecifiers.includes(requireString)) {
-					// 	identifier = requireTracker.importingModule(requireString)
-					// 	console.log("DIDIDIFIIER")
-					// 	console.log(identifier.name)
-					//
-					// 	assert(identifier)
-					// } else {
-					// 	identifier = ns.generateBestName(`_moduleAccess_${cleanValue(requireString)}`);
-					// 	console.log("DIDIDIFIIER___2")
-					// 	console.log(identifier.name)
-					// 	ns.addToNamespace(identifier.name)
-					// 	let reqDecl = createRequireDec(identifier.name, requireString)
-					// 	requireTracker.insertRequireImport(reqDecl)
-					// 	// console.log(requireString)
-					// 	assert(requireTracker.importingModule(requireString).name === identifier.name)
-					// }
 
-					// toReturn = {
-					// 	type:"VariableDeclaration",
-					// 	kind:"var",
-					// 	declarations:[{
-					// 		type:"VariableDeclarator",
-					// 		id:identifier,
-					// 		init:requireCall
-					// 	}]
-					// }
-					let specifiers:ImportSpecifier[] = []
+					let specifiers: ImportSpecifier[] = []
 
-					if (parent && parent.type === "Program") {
-						let body = parent.body
+					if (parent) {
+						let body: (Statement | Declaration | Directive | ModuleDeclaration)[]
+						if ("Program" === parent.type) {
+							body = (parent as Program).body
+						} else if (parent.type === "BlockStatement") {
+							body = (parent as BlockStatement).body
+						} else if (parent.type === "ForStatement") {
+							if (parent.init === node) {
+								console.log(generate(parent))
+								throw new Error(' "special" edge case deal w/ later') //TODO FIXME  this
+							}
+							if (parent.body.type === "BlockStatement"
+								&& parent.body.body.includes(node)
+							) {
+								console.log('incluseion!!! ')
+							}
+
+							// else if(  parent.body.includes(node)){}
+							// // throw new Error(' "special" edge case deal w/ later') //TODO FIXME  this
+							// return;
+						} else {
+							throw new Error("should maybe not be here... likely unreachabvle")
+						}
+
 						// let idz :Identifier =
 						let declArray: VariableDeclaration[] = []
 						node.declarations[0].id.properties.forEach((prop: Property | RestElement) => {
@@ -107,30 +93,39 @@ export function deconsFlatten(js: JSFile) {
 												prop.value, requireCall))
 											x = declaratorFactory(//identifier,
 												prop.value, requireCall)
-											specifiers.push({type:"ImportSpecifier", local:prop.value, imported:prop.value})
+											specifiers.push({
+												type: "ImportSpecifier",
+												local: prop.value,
+												imported: prop.value
+											})
 
-											parent.body.splice(body.indexOf(node), 0, x)
+											body.splice(body.indexOf(node), 0, x)
 
 										} else if (prop.key.type === "Identifier") {
 											declArray.push(declaratorFactory(//identifier,
 												prop.key, requireCall, prop.value))
 											x = declaratorFactory(// identifier,
 												prop.key, requireCall, prop.value)
-											specifiers.push({type:"ImportSpecifier", local:prop.key, imported:prop.value})
-											parent.body.splice(body.indexOf(node), 0, x)
+											specifiers.push({
+												type: "ImportSpecifier",
+												local: prop.key,
+												imported: prop.value
+											})
+											js.getInfoTracker().registerAlias(requireString, prop.key.name,prop.value.name)
+											body.splice(body.indexOf(node), 0, x)
+											console.log(JSON.stringify(js.getInfoTracker().getAlias(requireString),null,3))
 										}
-										console.log("__x ")
-										console.log(generate(x))
+										// console.log("__x ")
+										// console.log(generate(x))
 									}
 									break;
 								case "RestElement":
 									break;
 							}
+							// js.getInfoTracker().addSpecifiers(requireString, specifiers)//.insertDeclPair().getFromDeMap()
 						});
 					}
-					// declArray.forEach(elem=>js.addToTop(elem))
 				}
-				// return VisitorOption.Remove;
 
 			}
 

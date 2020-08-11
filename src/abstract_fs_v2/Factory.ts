@@ -43,7 +43,7 @@ export class FileFactory {
     }
 
     createPackageCJSRequire(data: CJSBuilderData) {
-        let resolved = normalize(join((data.dir.getAbsolute()), data.cjsFileName))
+        let resolved = normalize( data.cjsFileName )
         let metaData: MetaData = {
             moduleAPIMap:this.rc,
             target_dir: this.target_dir,
@@ -53,7 +53,7 @@ export class FileFactory {
             isRoot: this.rootPath === resolved,
             rootDir: this.rootPath,
             path_abs: resolved,
-            path_relative: join(data.dir.getRelative(), data.cjsFileName),
+            path_relative: relative( this.rootPath, data.cjsFileName),//data.dir .getRootDirPath() ,
             uses_names:this.uses_names
         };
         let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)

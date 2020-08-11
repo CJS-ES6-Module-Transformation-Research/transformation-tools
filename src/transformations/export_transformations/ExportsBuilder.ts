@@ -1,3 +1,4 @@
+import {generate} from "escodegen";
 import {
 	ExportDefaultDeclaration,
 	ExportNamedDeclaration,
@@ -6,6 +7,9 @@ import {
 	ObjectExpression,
 	Property
 } from "estree";
+import {id} from "../../abstract_fs_v2/interfaces";
+import {JSFile} from "../../abstract_fs_v2/JSv2";
+import {InfoTracker} from "../../InfoTracker";
 import {API} from "./API";
 
 // interface ExportIdentifier extends ExportSpecifier{
@@ -24,6 +28,8 @@ export interface ExportTypes {
 
 
 export class ExportBuilder {
+	private infoTracker: InfoTracker;
+	private js : JSFile;
 	getBuilt(): ExportTypes {
 		return this.builtVals
 	}
@@ -36,7 +42,9 @@ export class ExportBuilder {
 	private api: API = null;
 	private builtVals: ExportTypes = null
 
-	constructor(api_type: API_TYPE.default_only | API_TYPE.synthetic_named = undefined) {
+	constructor(js:JSFile, infoTracker:InfoTracker, api_type: API_TYPE.default_only | API_TYPE.synthetic_named = undefined) {
+		this.infoTracker = infoTracker
+		this.js = js;
 		if (api_type) {
 			this.api_type = api_type;
 		}else{
@@ -61,14 +69,8 @@ export class ExportBuilder {
 
 	//todo test
 	getByName(name: string): ExportSpecifier {
-		let theNamed = this.exportNameValue[name];
-		// if (theNamed) {
-		// 	return {
-		// 		name:  theNamed,
-		// 		type: "Identifier"
-		// 	}
-		// }
-		return  this.exportNameValue[name];
+
+		return  this.exportNameValue[name]?this.exportNameValue[name]: {type:"ExportSpecifier", local:this.defaultExport, exported:id('default')};
 	}
 
 
@@ -97,6 +99,7 @@ export class ExportBuilder {
 			// 	object:this.defaultExport,
 			// 	property:(prop.value as Identifier)
 			// }
+			console.log(generate({type: "ExportSpecifier", exported, local}))
 			this.registerName({type: "ExportSpecifier", exported, local})
 		});
 	}
@@ -115,17 +118,17 @@ export class ExportBuilder {
 	}
 
 	build(): void {
-		//noExports
+
+ 		//noExports
 		  if (!this.defaultExport && !this.exportList.length) {
 			this.builtVals = {type: API_TYPE.none};
-			  this.api = new API(API_TYPE.none )
+			  this.api = new API(API_TYPE.none ,null)
 			return;
 		}
 		//no preferred api type
 		if (this.api_type === API_TYPE.none && (this.defaultExport || this.exportList)) {
 			this.api_type = this.defaultExport ? API_TYPE.default_only : API_TYPE.named_only
 		}
-
 		this.generateAPI();
 		this.buildExports( );
 
@@ -146,6 +149,8 @@ export class ExportBuilder {
 	}
 
 	private createNamedExportDeclaration():ExportTypes {
+		console.log(this.exportList.length)
+
 		return {
 			type: API_TYPE.named_only,
 			named_exports: {
@@ -158,6 +163,8 @@ export class ExportBuilder {
 	}
 
 	private buildDefaultExportDeclaration():ExportTypes {
+		console.log(this.exportList.length)
+
 		let default_object: ObjectExpression = {type: "ObjectExpression", properties: []}
 		this.exportList.forEach(e => {
 			if (default_object) {
@@ -175,17 +182,18 @@ export class ExportBuilder {
 	}
 
 	private generateAPI() {
-		let api = new API(this.api_type);
+
+			let api = new API(this.api_type);
 
 		//use specified api type to test_resources.export specified names
 		switch (api.getType()) {
 			case API_TYPE.default_only:
-				api.getExports().push('default')
+				// api.getExports().push('default')
 				break;
 			case API_TYPE.named_only:
 				break;
 			case API_TYPE.synthetic_named:
-				api.getExports().push('default')
+				// api.getExports().push('defaul/t')
 				break;
 		}
 		if (api.getType() !== API_TYPE.default_only) {

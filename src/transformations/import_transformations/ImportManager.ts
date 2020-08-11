@@ -198,7 +198,7 @@ export class ImportManager implements ImportManagerI {
 
 				if(this.isBuiltInModule(value.importString)){
 					isNamespace = !builtins_funcs.includes(value.importString);
-					this.apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
+					this.apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[], true)
 				}else if(this.isLocalSpecifier(value.importString)){
 					isNamespace = true;
 				}
@@ -270,7 +270,8 @@ export class ImportManager implements ImportManagerI {
 
 
 }
-export const builtins_funcs = ['_stream_duplex_',
+export const builtins_funcs = [
+	'_stream_duplex_',
 '_stream_passthrough_',
 '_stream_readable',
 '_stream_transform_',

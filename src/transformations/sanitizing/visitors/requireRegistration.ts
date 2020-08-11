@@ -1,6 +1,6 @@
-import {replace, Visitor, VisitorOption} from "estraverse";
+import {replace, Visitor} from "estraverse";
 import {CallExpression, VariableDeclaration, VariableDeclarator} from "estree";
-import {RequireCall, RequireDeclaration, RequireExpression} from '../../../abstract_fs_v2/interfaces'
+import {RequireCall, RequireDeclaration} from '../../../abstract_fs_v2/interfaces'
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {InfoTracker} from "../../../InfoTracker";
 
@@ -11,7 +11,7 @@ export const requireRegistration = (js: JSFile) => {
 
 	let visitor: Visitor = {
 		leave: (node, parent) => {
- 			let init: VariableDeclarator | CallExpression
+			let init: VariableDeclarator | CallExpression
 			if (!(parent && parent.type === "Program")) {
 				return
 			} else {
@@ -28,10 +28,12 @@ export const requireRegistration = (js: JSFile) => {
 					init = node.expression;
 				}
 			}
-			if (!init){return }
+			if (!init) {
+				return
+			}
 			let reqCall: RequireCall = getRequireCall(init)
-			if (!reqCall){
-				return ;
+			if (!reqCall) {
+				return;
 			}
 			let declaration: RequireDeclaration
 
@@ -54,64 +56,21 @@ export const requireRegistration = (js: JSFile) => {
 
 
 			}
-
-			if (declaration && reqCall) {
-				requireMgr.insertRequireImport(declaration)
-			} else if (reqCall) {
-				requireMgr.insertRequireImport({
-					type: "ExpressionStatement",
-					expression: reqCall
-				});
-			}  else {
-				//should be redundant
-			}
-			return VisitorOption.Remove
-
 			//
-			// if (parent
-			// 	&& node.type === "VariableDeclaration" && parent.type === "Program") {
-			// 	if (node.declarations
-			// 		&& node.declarations[0]
-			// 		&& node.declarations[0].type === "VariableDeclarator"
-			// 		&& node.declarations[0]) {
-			// 		let declarator: VariableDeclarator = node.declarations[0]
-			// 		let init = declarator.init
-			// 		if (declarator.id.type === "Identifier"
-			// 			&& init
-			// 			&& init.type === "CallExpression"
-			// 			&& init.callee.type === "Identifier"
-			// 			&& init.callee.name === "require"
-			// 			&& init.arguments
-			// 			&& init.arguments[0]
-			// 			&& init.arguments[0].type === "Literal"
-			//
-			// 		) {
-			// 			let require_string = init.arguments[0].value.toString()
-			// 			list.push(require_string)
-			// 			requireMgr.insertImportPair(declarator.id.name, require_string)
-			//
-			//
-			// 			// return VisitorOption.Remove
-			// 		}
-			// 	}
-			// } else if (
-	 		// 	parent
-			// 	&& parent.type === "Program"
-			// 	&& node.type === "ExpressionStatement"
-			// 	&& node.expression.type === "CallExpression"
-			// 	&& node.expression.callee.type === "Identifier"
-			// 	&& node.expression.callee.name === "require"
-			// 	&& node.expression.arguments
-			// 	&& node.expression.arguments[0]
-			// 	&& node.expression.arguments[0].type === "Literal"
-			// ) {
-			// 	let require_string = init.arguments[0].value.toString()
-			// 	list.push(require_string)
-			// 	requireMgr.insertImportPair(null, require_string)
-			//
+			// if (declaration && reqCall) {
+			// 	requireMgr.insertRequireImport(declaration)
+			// } else if (reqCall) {
+			// 	requireMgr.insertRequireImport({
+			// 		type: "ExpressionStatement",
+			// 		expression: reqCall
+			// 	});
+			// } else {
+			// 	//should be redundant
 			// }
+			// return VisitorOption.Remove
 		}
 	}
+
 
 	replace(ast, visitor)
 

@@ -1,7 +1,9 @@
 import {generate} from "escodegen";
-import {Identifier} from "estree";
+import {Identifier, ImportDeclaration} from "estree";
+import {ModuleAPIMap} from "./abstract_fs_v2/Factory";
 import {RequireDeclaration, RequireExpression} from "./abstract_fs_v2/interfaces";
 import {ReqPropInfo} from "./InfoGatherer";
+import {API} from "./transformations/export_transformations/API";
 import {API_TYPE} from "./transformations/export_transformations/ExportsBuilder";
 
 interface ToDeclMap {
@@ -21,6 +23,18 @@ export class InfoTracker {
 		this.filename = name
 	}
 
+	private specMap: DeMap = {
+		aliases: {},
+		fromId: {},
+		fromSpec: {}
+	}
+
+	insertDeclPair(id: string, modSpec: string) {
+
+		this.specMap.fromId[id] = modSpec
+		this.specMap.fromSpec[modSpec] = id
+	}
+
 	setForcedDecl(isForced: boolean) {
 		this.isForcedDefault = isForced;
 	}
@@ -35,6 +49,18 @@ export class InfoTracker {
 		// this.pushToDeclList(makeDecl(decl.identifier, decl.module_identifier))
 		this.fromVarIDMap[varName] = decl;
 		this.fromModuleMap[module] = decl;
+	}
+
+	getFromDeMap(thing: string, _type: "id" | "ms") {
+		switch (_type) {
+			case "id":
+				return this.specMap.fromId[thing]
+				break;
+			case "ms":
+				return this.specMap.fromSpec[thing]
+				break;
+		}
+
 	}
 
 	getRPI(id: string): ReqPropInfo {
@@ -56,11 +82,9 @@ export class InfoTracker {
 
 
 	getIDs(): string[] {
-		let ids:string[] = []
+		let ids: string[] = []
 		for (let id in this.fromVarIDMap) {
-			if (!ids.includes(id)){
-				ids.push(id)
-			}
+ 				ids.push(id)
 		}
 		return ids
 	}
@@ -124,11 +148,11 @@ export class InfoTracker {
 		this.declList.push(stmt)
 
 		if (stmt.type === "ExpressionStatement") {
- 			moduleIdentifier = stmt.expression.arguments[0].value.toString()
+			moduleIdentifier = stmt.expression.arguments[0].value.toString()
 		} else if (stmt.type === "VariableDeclaration") {
 			let decl = stmt.declarations[0]
 			let _id = decl.id
- 			id = decl.id;
+			id = decl.id;
 
 			moduleIdentifier = stmt.declarations[0].init.arguments[0].value.toString()
 		} else {
@@ -145,7 +169,7 @@ export class InfoTracker {
 			let decl: requireDecl = {identifier: id, module_identifier: moduleIdentifier}
 			this.fromVarIDMap[id.name] = decl;
 			this.fromModuleMap[moduleIdentifier] = decl;
-		}else {
+		} else {
 			console.log('err_______')
 			console.log(generate(stmt))
 			throw new Error()
@@ -161,25 +185,50 @@ export class InfoTracker {
 
 	importingModule(requireString: string): Identifier {
 
-		console.log(`  ${this.fromModuleMap[requireString] }`)
-		console.log(`  ${this.fromModuleMap[requireString].identifier }`)
-		console.log(`  ${this.fromModuleMap[requireString].module_identifier  }`)
-		if (this.fromModuleMap[requireString] && this.fromModuleMap[requireString].identifier) {
-			// console.log(`returning value: ${this.fromModuleMap[requireString].identifier.name} `)
-			return this.fromModuleMap[requireString].identifier;
-		}
+		// console.log(`  ${this.fromModuleMap[requireString]}`)
+		// console.log(`  ${this.fromModuleMap[requireString].identifier}`)
+		// console.log(`  ${this.fromModuleMap[requireString].module_identifier}`)
+		// if (this.fromModuleMap[requireString] && this.fromModuleMap[requireString].identifier) {
+		// 	// console.log(`returning value: ${this.fromModuleMap[requireString].identifier.name} `)
+		// 	return this.fromModuleMap[requireString].identifier;
+		// }
 		return
 	}
 
-	private  readonly  deconsIDs:string[]  = []
+	private readonly deconsIDs: string[] = []
+
 	addDeconsId(identifier: Identifier) {
 		let _name = identifier.name
 		if (!this.deconsIDs.includes(_name)) {
 			this.deconsIDs.push(_name)
 		}
 	}
-	getDeconses(){
+
+	getDeconses() {
 		return this.deconsIDs;
+	}
+
+
+	// addSpecifiers(requireString:string, specifiers: ImportSpecifier[]) {
+	// 	ImportDefaultSpecifier
+	// 	//	this.specMap.specifiers[requireString] = specifiers
+	// }
+	registerAlias(requireString: string, key: string, value: string) {
+		if (!this.specMap.aliases[requireString]) {
+			this.specMap.aliases[requireString] = {}
+		}
+		if (!this.specMap.aliases[requireString][key]) {
+			this.specMap.aliases[requireString][key] = value
+		}
+
+	}
+
+	getAlias(moduleSpecifier: string) {
+		return this.specMap.aliases[moduleSpecifier]
+	}
+
+	getDeMap() {
+		return this.specMap
 	}
 }
 
@@ -204,3 +253,66 @@ interface requireDecl {
 //
 // 	}
 // }
+export interface DeMap {
+	aliases: { [modSpec: string]: { [local: string]: string } }
+	fromId: { [id: string]: string },
+	fromSpec: { [spec: string]: string }
+
+
+}
+
+export class Imports {
+	private withPropNames: WithPropNames;
+	private apiGetter: (string) => API;
+	private mapiM: ModuleAPIMap;
+	private info: InfoTracker;
+	private readonly declarations: ImportDeclaration[];
+
+	constructor(map: DeMap, apiGetter: (string) => API, MAM: ModuleAPIMap, info:InfoTracker) {
+		this.info = info ;
+	this.declarations = []
+		this.mapiM = MAM
+		this.apiGetter = apiGetter
+		let _api: { [moduleSpecifier: string]: API } = {};
+ 		let po={}
+		for (let spec in map.fromSpec) {
+try {
+	_api[spec] = apiGetter(spec.replace(/^\.{0,2}\//, ''))
+	po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
+}catch (e) {
+	console.log(map.fromSpec[spec] )
+}
+		}
+		;
+
+		this.withPropNames = {
+			fromId: map.fromId,
+			fromSpec: map.fromSpec,
+			aliases: map.aliases,
+			propertiesOf: po,
+			api: _api
+
+		}
+
+	}
+
+	addAllProps(modSpec: string, props: string[]) {
+		this.withPropNames.propertiesOf[modSpec] = props;
+	}
+
+
+	add(declaration:ImportDeclaration) {
+		this.declarations.push(declaration)
+	}
+	getWPN( ){
+		return this.withPropNames
+	}
+}
+
+export interface WithPropNames
+	extends DeMap {
+	propertiesOf: {
+		[mod: string]: string[]
+	},
+	api: { [moduleSpecifier: string]: API }
+}

@@ -4,7 +4,7 @@ import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, Var
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {JPP} from "../../index";
-import {InfoTracker} from "../InfoTracker";
+import {Imports, InfoTracker} from "../InfoTracker";
 import {API} from "../transformations/export_transformations/API";
 // test_resources.import {ExportRegistry} from "../transformations/export_transformations/ExportRegistry.js";
 import {API_TYPE, ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
@@ -26,10 +26,10 @@ export class JSFile extends AbstractDataFile {
 
 
 	getInfoTracker(): InfoTracker {
-		return this.r_tracker;
+		return this.infoTracker;
 	}
 
-	private readonly r_tracker: InfoTracker;
+	private readonly infoTracker: InfoTracker;
 	private readonly ast: Program;
 	private shebang: string;
 	private isStrict: boolean = false;//TODO might be unnnecssary--find purposes
@@ -57,7 +57,7 @@ export class JSFile extends AbstractDataFile {
 
 		this.ast = this.parseProgram(this.data, isModule)
 
-		this.r_tracker = new InfoTracker(this.getRelative());
+		this.infoTracker = new InfoTracker(this.getRelative());
 		this.removeStrict();
 		this.namespace = Namespace.create(this.ast)
 		this.apiMap = b.moduleAPIMap
@@ -83,9 +83,11 @@ export class JSFile extends AbstractDataFile {
 
 		//FIXME
 		dirRelativeToRoot = dirname(this.getRelative())
-
-		let builder = {
-			cjsFileName: `${dirRelativeToRoot}/${basename(json)}.cjs`,
+// console.log(this.parent().getRootDirPath())
+console.log("JOIN ")
+console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
+		let builder = {//${dirRelativeToRoot}/
+			cjsFileName: `${ join( this.parent().getRootDirPath(), basename(json))}.cjs`,
 			jsonFileName: relative(this.parent().getRootDirPath(), json),
 			dataAsString: `module.exports = require('./${basename(moduleID)}');`,
 			dir: parent
@@ -138,10 +140,10 @@ export class JSFile extends AbstractDataFile {
 		this.stringReplace[replace] = value
 	}
 	private buildProgram(): Program {
-		let addToTop: (Directive | Statement | ModuleDeclaration)[] = []
-		this.toAddToTop.forEach(e => addToTop.push(e));
-		let addToBottom: (Directive | Statement | ModuleDeclaration)[] = []
-		this.toAddToBottom.forEach(e => addToBottom.push(e));
+		// let  addToTop: (Directive | Statement | ModuleDeclaration)[] = []
+		// this.toAddToTop.forEach(e => addToTop.push(e));
+		// let addToBottom: (Directive | Statement | ModuleDeclaration)[] = []
+		// this.toAddToBottom.forEach(e => addToBottom.push(e));
 
 		let newAST = this.ast;
 		let body
@@ -151,7 +153,7 @@ export class JSFile extends AbstractDataFile {
 		this.to_insert_copyByValue.reverse().forEach((e) => {
 			body.splice(0, 0, e)
 		})
-		addToTop.reverse().forEach((e) => {
+		this.toAddToTop.reverse().forEach((e) => {
 			body.splice(0, 0, e)
 		})
 
@@ -165,7 +167,7 @@ export class JSFile extends AbstractDataFile {
 		// 		kind:"var"
 		// 	})
 		// }
-		addToBottom.reverse().forEach((e) => {
+		this.toAddToBottom.reverse().forEach((e) => {
 			body.push(e)
 		})
 
@@ -207,17 +209,24 @@ export class JSFile extends AbstractDataFile {
 	private makeExportsArray(body: (Directive | ModuleDeclaration | Statement)[]) {
 
 		let exports = this.exports.getBuilt();
-
+		console.log(JSON.stringify(exports,null,2 ))
 		if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
 			body.push(exports.named_exports)
+						console.log(`naemd exopots pushed:  ${generate(exports.named_exports)}`)
+		}else{
+			console.log(`something went wrong with naemd exports`)
 		}
 
 		if (exports.default_exports && exports.default_exports.declaration) {
 			switch (exports.default_exports.declaration.type) {
 
 				case "ObjectExpression":
+			console.log(`something went wrong with naemd exports`)
 					if (exports.default_exports.declaration.properties.length === 0) {
+						console.log(`objectExporession had value, 0`)
 						break;
+					}else{
+						console.log(`objectExporession had value,   ${exports.default_exports.declaration.properties.toString()}`)
 					}
 
 				// not technically necessary however it is the only other possibility at this time... seems explicit.
@@ -284,7 +293,7 @@ export class JSFile extends AbstractDataFile {
 
 	getExportBuilder(exportType: API_TYPE.default_only | API_TYPE.synthetic_named = null ): ExportBuilder {
 		if (!this.exports) {
-			this.exports = new ExportBuilder(exportType);
+			this.exports = new ExportBuilder(this, this.infoTracker, exportType);
 		}
 		return this.exports;
 	}
@@ -349,7 +358,10 @@ export class JSFile extends AbstractDataFile {
 	// }
 
 	registerAPI() {
-		this.exports.build()
+		console.log('registering api')
+		if (!(this.exports.getBuilt())){
+			throw new Error("ERROR")
+		}
 		this.api = this.exports.getAPI()
 		this.apiMap.addSelf(this.api, this)
 
@@ -395,5 +407,12 @@ export class JSFile extends AbstractDataFile {
 
 	addAnImport(_import: ImportDeclaration) {
 this.importList.push(_import)
+	}
+data_based_imports:Imports ;
+	setImports(imports: Imports) {
+		this.data_based_imports = imports
+	}
+	getDImports():Imports{
+		return  this.data_based_imports
 	}
 }

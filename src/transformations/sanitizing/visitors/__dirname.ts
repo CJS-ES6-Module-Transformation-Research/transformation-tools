@@ -1,19 +1,20 @@
 import {traverse, VisitorOption} from "estraverse";
-import {CallExpression, VariableDeclaration, VariableDeclarator} from 'estree'
+import {CallExpression, Expression, Identifier, Program, VariableDeclaration, VariableDeclarator} from 'estree'
 import {
 	createRequireDec,
+	id,
 	RequireDeclaration,
 	RequireExpression,
 	TransformFunction
 } from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {createRequireDecl} from "../../../abstract_representation/es_tree_stuff/astTools";
+import {Namespace} from "../../../abstract_fs_v2/Namespace";
 import {InfoTracker} from "../../../InfoTracker";
 
 
 export const add__dirname: TransformFunction = (js: JSFile) => {
 	let i = 0;
- 	let seenDirname: boolean = false
+	let seenDirname: boolean = false
 	let seenFilename: boolean = false
 	traverse(js.getAST(), {
 		enter: (node, parentNode) => {
@@ -34,55 +35,92 @@ export const add__dirname: TransformFunction = (js: JSFile) => {
 	})
 
 
-	if (js.namespaceContains('__dirname')|| seenDirname) {
+	if (js.namespaceContains('__dirname') || seenDirname) {
+
+		addFilename(js)
+		refact(js, create__dirname, 'path');
 
 
-		addDirname(js);
-
-
-	} else if (js.namespaceContains('__filename')|| seenFilename) {
+	} else if (js.namespaceContains('__filename') || seenFilename) {
 
 
 		addFilename(js);
 
 
-	} else {
-
-
-		return;
 	}
-
 
 
 }
 
 
 function addFilename(js: JSFile) {
-	let requireTracker: InfoTracker = js.getInfoTracker();
-	let url: string;
-	let rdecl = requireTracker.getIfExists('url')
-	if (rdecl) {
-		url = rdecl.identifier.name;
-	} else {
-		url = js.getNamespace().generateBestName('url').name
-		// requireTracker.insertImportPair(url, 'url')
-		// requireTracker.insertImportPair(url, 'url')
-		let reqDecl:RequireDeclaration =createRequireDec(url,'url')
-		// requireTracker.insertRequireImport(reqDecl)
+	refact(js, create__filename, 'url')
+	// let requireTracker: InfoTracker = js.getInfoTracker();
+	// let url: string;
+	// let rdecl = requireTracker.getIfExists('url')
+	// if (rdecl) {
+	// 	url = rdecl.identifier.name;
+	// } else {
+	// 	url = js.getNamespace().generateBestName('url').name
+	// 	// requireTracker.insertImportPair(url, 'url')
+	// 	// requireTracker.insertImportPair(url, 'url')
+	// 	let reqDecl:RequireDeclaration =createRequireDec(url,'url')
+	// 	// requireTracker.insertRequireImport(reqDecl)
+	//
+	// }
 
-	}
+	const import_meta_url: string = js.getNamespace().generateBestName("IMPORT_META_URL").name;
+	js.registerReplace(import_meta_url, `import.meta.url`)
+	js.getNamespace().addToNamespace(import_meta_url)
+	// let toAdd = create__filename(url )
+	// js.addToTop(toAdd);
+	// js.getNamespace().addToNamespace(url)
+	function create__filename(url: string): VariableDeclaration {
+		let callToURLModule: CallExpression = {
+			arguments: [
+				{
+					"type": "Identifier",
+					"name": import_meta_url
+				}
+			],
+			callee: {
+				type: "MemberExpression",
+				computed: false,
 
-	const temp_import_meta: string = js.getNamespace().generateBestName("IMPORT_META_URL").name;
-	js.registerReplace(temp_import_meta, `import.meta.url`)
-	js.getNamespace().addToNamespace(temp_import_meta)
-	let toAdd = create__filename(url, temp_import_meta)
-	js.addToTop(toAdd);
-	js.getNamespace().addToNamespace(url)
+				object: {
+					"type": "Identifier",
+					"name": url
+				},
+				property: {
+					"type": "Identifier",
+					"name": 'fileURLToPath'
+				}
+
+			},
+			type: "CallExpression"
+		}
+		let filename_decltr: VariableDeclarator = {
+
+			type: "VariableDeclarator",
+			id: {
+				type: "Identifier",
+				name: "__filename"
+			},
+			init: callToURLModule
+		}
+		return {
+			type: "VariableDeclaration",
+			declarations: [
+				filename_decltr
+			],
+			"kind": "var"
+		}
+	};
 
 }
 
-function addDirname(js: JSFile) {
-	addFilename(js);
+function refact(js: JSFile, creator: (string) => VariableDeclaration, modSTR: string) {
+	// addFilename(js);
 	// let  pathId//  = js.getNamespace().generateBestName('dirname').name
 	// js.getImportManager().createNamedWithAlias('path', 'dirname', path);
 
@@ -90,133 +128,39 @@ function addDirname(js: JSFile) {
 	let requireTracker: InfoTracker = js.getInfoTracker()
 
 
-	let _path = requireTracker.getIfExists('path')
-	let varDecl: VariableDeclaration
-	let pathId
-	if (_path) {
-		pathId = _path.identifier.name;
-	} else {
-		pathId = js.getNamespace().generateBestName('path')
-		requireTracker.insertRequireImport(createRequireDec(pathId.name, 'path'))
-		// requireTracker.insertImportPair(pathId.name, 'path')
+	// let _path = requireTracker.getIfExists(modSTR)
+	let __thename = requireTracker.getFromDeMap(modSTR, "ms")
+	if (!__thename) {
+		__thename = js.getNamespace().generateBestName(modSTR).name;
+		js.getNamespace().addToNamespace(__thename)
 
 	}
-
-	js.addToTop(create__dirname(pathId));
-	js.getNamespace().addToNamespace(pathId)
-
+	let __decl = createRequireDec(__thename, modSTR);
+	js.addToTop(creator(__thename));
 
 	//
-}
-
-function create__filename(url: string, import_meta_url: string): VariableDeclaration {
-
-	// let callToURLModule: MemberExpression = {
-	//     computed: false,
 	//
-	//     object: {
-	//         type: "Identifier",
-	//         name: url
-	//     },
-	//     type: "MemberExpression", property: {
-	//         "type": "CallExpression",
-	//         "callee": {
-	//             "type": "Identifier",
-	//             "name": 'fileURLToPath'
-	//         },
-	//         "arguments": [
-	//             {
-	//                 "type": "Identifier",
-	//                 "name": import_meta_url
-	//             }
-	//         ]
-	//     }
+	// let varDecl: VariableDeclaration
+	// let pathId
+	// if (_path) {
+	// 	pathId = _path.identifier.name;
+	// } else {
+	// 	pathId = js.getNamespace().generateBestName('path')
+	// 	requireTracker.insertRequireImport(createRequireDec(pathId.name, 'path'))
+	// 	// requireTracker.insertImportPair(pathId.name, 'path')
+	//
 	// }
-
-	let callToURLModule: CallExpression = {
-		arguments: [
-			{
-				"type": "Identifier",
-				"name": import_meta_url
-			}
-		],
-		callee: {
-			type: "MemberExpression",
-			computed: false,
-
-			object: {
-				"type": "Identifier",
-				"name": url
-			},
-			property: {
-				"type": "Identifier",
-				"name": 'fileURLToPath'
-			}
-
-		},
-		type: "CallExpression"
-	}
+	//
+	// js.addToTop(create__dirname(pathId));
+	// js.getNamespace().addToNamespace(pathId)
 
 
-	let filename_decltr: VariableDeclarator = {
+	//
 
-		type: "VariableDeclarator",
-		id: {
-			type: "Identifier",
-			name: "__filename"
-		},
-		init: callToURLModule
-	}
-	return {
-		type: "VariableDeclaration",
-		declarations: [
-			filename_decltr
-		],
-		"kind": "var"
-	}
-};
+}
 
 
 function create__dirname(_path): VariableDeclaration {
-	let _init: CallExpression =
-
-		{
-			type: "CallExpression",
-			callee: {
-				type: "MemberExpression",
-				object: {
-					type: "Identifier",
-					name: _path
-				},
-				property: {
-					type: "Identifier",
-					name: 'dirname'
-				}, computed: false
-			},
-			arguments: [{type: "Identifier", name: "__filename"}]
-		}
-	//     type: "CallExpression",
-	//         callee:
-	// }
-	// computed: false,
-	//
-	//     object: {
-	//     type: "Identifier",
-	//         name: _path
-
-
-	//     property: {
-	//     "type": "MemberExpression",
-	//         "type": "Identifier",
-	//         "name": 'dirname'
-	//     "arguments": [
-	//         {
-	//             "type": "Identifier",
-	//             "name": "__filename"
-	//         }]
-	// }
-
-
 	return {
 		"type": "VariableDeclaration",
 		"declarations": [
@@ -226,28 +170,165 @@ function create__dirname(_path): VariableDeclaration {
 					"type": "Identifier",
 					"name": "__dirname"
 				},
-				"init": _init
+				"init": {
+					type: "CallExpression",
+					callee: {
+						type: "MemberExpression",
+						object: {
+							type: "Identifier",
+							name: _path
+						},
+						property: {
+							type: "Identifier",
+							name: 'dirname'
+						}, computed: false
+					},
+					arguments: [{type: "Identifier", name: "__filename"}]
+				}
 			}
 		],
-
-
 		"kind": "var"
 	}
 
 }
 
 export let req_filler = (js: JSFile) => {
-	let _r: (RequireExpression|RequireDeclaration)[] = []
-	js.getInfoTracker().getDeclarations().forEach((e:RequireExpression|RequireDeclaration) => _r.push(e))
+	let _r: (RequireExpression | RequireDeclaration)[] = []
+	js.getInfoTracker().getDeclarations().forEach((e: RequireExpression | RequireDeclaration) => _r.push(e))
 	let body = js.getAST().body
 	_r.reverse().forEach(e => body.splice(0, 0, e))
 }
 
-// let x = {
-//     "type": "VariableDeclarator",
-//     "id": {
-//     "type": "Identifier",
-//         "name": "__filename"
-// },
-//     "init":
-// }
+export interface __dirnameInfo {
+	fileUrlToPath: Identifier;
+	dirname: Identifier;
+	path: Identifier
+	url: Identifier
+	isNamed: boolean
+}
+
+type isDirname = "__dirname" | "__filename"
+const __FILENAME:Identifier = {type: "Identifier", name: "__filename"}
+const __DIRNAME:Identifier = {type: "Identifier", name: "__dirname"}
+
+export function __dirnameHandlerPlusPlus(js: JSFile, dirInfo: __dirnameInfo) {
+	let vars: isDirname = hasLocationVar__(js.getAST())
+	let ns: Namespace = js.getNamespace()
+	let import_meta_url = ns.getImportMeta().name
+	js.registerReplace(import_meta_url, `import.meta.url`)
+	switch (vars) {
+		case "__dirname":
+			js.addToTop(filenameFrom())
+			js.addToTop(dirnameFrom())
+			break;
+		case "__filename":
+ 			js.addToTop(filenameFrom())
+			break;
+		default:
+			return;
+	}
+	if (!vars) {
+		return;
+	}
+
+
+	function dirnameFrom():VariableDeclaration {
+		return {
+			"type": "VariableDeclaration",
+			"declarations": [
+				{
+					"type": "VariableDeclarator",
+					id: __DIRNAME,
+					"init": {
+						type: "CallExpression",
+						callee: (dirInfo.isNamed ? dirInfo.path : {
+							type: "MemberExpression",
+							object: dirInfo.path,
+							property: dirInfo.dirname,
+							computed: false
+						}),
+						arguments: []
+					}
+				}
+			],
+			"kind": "var"
+		}
+	}
+
+	function filenameFrom():VariableDeclaration {
+
+		return {
+			type: "VariableDeclaration",
+			declarations: [
+				{
+					type: "VariableDeclarator",
+					id: __FILENAME,
+					init: fileNameInit()
+				}
+			],
+			"kind": "var"
+		}
+
+
+		function fileNameInit():Expression {
+			return {
+				arguments: [
+					id(import_meta_url)
+
+				],
+				callee: (dirInfo.isNamed ? dirInfo.fileUrlToPath : {
+					type: "MemberExpression",
+					computed: false,
+					object: dirInfo.url,
+					property: dirInfo.fileUrlToPath
+
+				}),
+				type: "CallExpression"
+			}
+		}
+	}
+}
+
+
+export function hasLocationVar__(ast: Program): isDirname {
+	let seenDirname: boolean = false
+	let seenFilename: boolean = false
+	traverse(ast, {
+		enter: (node, parentNode) => {
+			if (node.type === "Identifier") {
+				switch (node.name) {
+					case "__dirname":
+						seenDirname = true;
+						seenFilename = true;
+						return VisitorOption.Break
+						break;
+					case "__filename":
+						seenFilename = true;
+						break;
+				}
+
+			}
+
+		}
+	});
+	if (seenDirname) {
+		return "__dirname"
+	} else if (seenFilename) {
+		"__filename"
+	} else {
+		return null
+	}
+
+}
+
+type z = ('a' | 'b' | 'c');
+
+function fff() {
+	let xx = 2
+	if (xx > 1) {
+		return 'a'
+	}
+	if (xx === 1)
+		return 'c'
+	return 'b'
+}

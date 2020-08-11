@@ -1,3 +1,4 @@
+import {generate} from "escodegen";
 import {
     BlockStatement,
     Directive,
@@ -12,7 +13,7 @@ import {traverse, Visitor} from "estraverse";
 import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 
-/**
+/**.
  * TransformFunction that does Variable Declaration Declarator flattening.
  * @param js the JSFile to transform.
  */
@@ -62,7 +63,7 @@ export const flattenDecls: TransformFunction = function (js: JSFile) {
 
                     // insert back into body array
                     let indexof = body.indexOf((node as Statement | Directive));
-                    flattened.reverse().forEach((e) => {
+                    flattened.reverse().forEach((e ) => {
                             body.splice(indexof, 0, e)
                         }
                     )
@@ -73,4 +74,7 @@ export const flattenDecls: TransformFunction = function (js: JSFile) {
         }
     };
     traverse(js.getAST(), leaveFlatten);
+
+
+
 }
