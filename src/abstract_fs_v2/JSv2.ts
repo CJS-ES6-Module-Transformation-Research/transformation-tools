@@ -1,14 +1,13 @@
 import {generate} from "escodegen";
-import {parseModule, ParseOptions, parseScript} from "esprima";
+import {parseModule, parseScript} from "esprima";
 import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
-import {JPP} from "../../index";
 import {Imports, InfoTracker} from "../InfoTracker";
 import {API} from "../transformations/export_transformations/API";
 // test_resources.import {ExportRegistry} from "../transformations/export_transformations/ExportRegistry.js";
 import {API_TYPE, ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
-import {built_ins, ImportManager} from "../transformations/import_transformations/ImportManager";
+import {ImportManager} from "../transformations/import_transformations/ImportManager";
 import {AbstractDataFile} from './Abstractions'
 import {Dir} from './Dirv2'
 import {ModuleAPIMap} from "./Factory";
@@ -19,9 +18,14 @@ type script_or_module = "script" | "module"
 
 
 export class JSFile extends AbstractDataFile {
+	setAPI(api: API) {
+		this.api = api
+		this.apiMap.addSelf(this.api, this)
+	}
+
 	private api: API;
 	private apiMap: ModuleAPIMap;
-	private importList: ImportDeclaration[] = [] ;
+	private importList: ImportDeclaration[] = [];
 	private readonly _usesNames: boolean;
 
 
@@ -41,7 +45,7 @@ export class JSFile extends AbstractDataFile {
 	private replacer: (s: string) => string = (s) => s;
 
 	private imports: ImportManager
-	private exports: ExportBuilder;
+	// private exports: ExportBuilder;
 	private to_insert_copyByValue: VariableDeclaration[] = []
 	// private exportRegistry:ExportRegistry
 
@@ -50,8 +54,8 @@ export class JSFile extends AbstractDataFile {
 
 	private isShebang: RegExp = /^#!.*/
 
-	constructor(path: string, b: MetaData, parent: Dir, isModule: boolean, data= '') {
-		super(path, b, parent,data);
+	constructor(path: string, b: MetaData, parent: Dir, isModule: boolean, data = '') {
+		super(path, b, parent, data);
 		this._usesNames = b.uses_names;
 		this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
@@ -84,10 +88,10 @@ export class JSFile extends AbstractDataFile {
 		//FIXME
 		dirRelativeToRoot = dirname(this.getRelative())
 // console.log(this.parent().getRootDirPath())
-console.log("JOIN ")
-console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
+// console.log("JOIN ")
+		console.log(`${join(this.parent().getRootDirPath(), basename(json))}.cjs`)
 		let builder = {//${dirRelativeToRoot}/
-			cjsFileName: `${ join( this.parent().getRootDirPath(), basename(json))}.cjs`,
+			cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
 			jsonFileName: relative(this.parent().getRootDirPath(), json),
 			dataAsString: `module.exports = require('./${basename(moduleID)}');`,
 			dir: parent
@@ -139,6 +143,7 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 		// this.stringReplace.set(replace, value);
 		this.stringReplace[replace] = value
 	}
+
 	private buildProgram(): Program {
 		// let  addToTop: (Directive | Statement | ModuleDeclaration)[] = []
 		// this.toAddToTop.forEach(e => addToTop.push(e));
@@ -172,9 +177,9 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 		})
 
 
-		if (this.moduleType === "module") {
-			this.makeExportsArray(newAST.body)
-		}
+		// if (this.moduleType === "module") {
+		// 	this.makeExportsArray(newAST.body)
+		// }
 
 		this.potentialPrims.reverse().forEach((e) => {
 			body.splice(0, 0, e)
@@ -206,37 +211,37 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 		"directive": "use strict"
 	}
 
-	private makeExportsArray(body: (Directive | ModuleDeclaration | Statement)[]) {
-
-		let exports = this.exports.getBuilt();
-		console.log(JSON.stringify(exports,null,2 ))
-		if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
-			body.push(exports.named_exports)
-						console.log(`naemd exopots pushed:  ${generate(exports.named_exports)}`)
-		}else{
-			console.log(`something went wrong with naemd exports`)
-		}
-
-		if (exports.default_exports && exports.default_exports.declaration) {
-			switch (exports.default_exports.declaration.type) {
-
-				case "ObjectExpression":
-			console.log(`something went wrong with naemd exports`)
-					if (exports.default_exports.declaration.properties.length === 0) {
-						console.log(`objectExporession had value, 0`)
-						break;
-					}else{
-						console.log(`objectExporession had value,   ${exports.default_exports.declaration.properties.toString()}`)
-					}
-
-				// not technically necessary however it is the only other possibility at this time... seems explicit.
-				case "Identifier":
-				default:
-					body.push(exports.default_exports)
-					break;
-			}
-		}
-	}
+	// private makeExportsArray(body: (Directive | ModuleDeclaration | Statement)[]) {
+	//
+	// 	let exports = this.exports.getBuilt();
+	// 	console.log(JSON.stringify(exports, null, 2))
+	// 	if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
+	// 		body.push(exports.named_exports)
+	// 		// console.log(`naemd exopots pushed:  ${generate(exports.named_exports)}`)
+	// 	} else {
+	// 		console.log(`something went wrong with naemd exports`)
+	// 	}
+	//
+	// 	if (exports.default_exports && exports.default_exports.declaration) {
+	// 		switch (exports.default_exports.declaration.type) {
+	//
+	// 			case "ObjectExpression":
+	// 				console.log(`something went wrong with naemd exports`)
+	// 				if (exports.default_exports.declaration.properties.length === 0) {
+	// 					console.log(`objectExporession had value, 0`)
+	// 					break;
+	// 				} else {
+	// 					console.log(`objectExporession had value,   ${exports.default_exports.declaration.properties.toString()}`)
+	// 				}
+	//
+	// 			// not technically necessary however it is the only other possibility at this time... seems explicit.
+	// 			case "Identifier":
+	// 			default:
+	// 				body.push(exports.default_exports)
+	// 				break;
+	// 		}
+	// 	}
+	// }
 
 	private parseProgram(program: string, isModule): Program {
 
@@ -249,7 +254,7 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 		}
 
 		try {
-			let _program: Program = (isModule ? parseModule : parseScript)(program,{loc:true})
+			let _program: Program = (isModule ? parseModule : parseScript)(program, {loc: true})
 			return _program
 		} catch (e) {
 			throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
@@ -282,7 +287,7 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 	 */
 	getImportManager(): ImportManager {
 		if (!this.imports) {
-			let apiFunc =(e:string)=> {
+			let apiFunc = (e: string) => {
 				return this.apiMap.resolveSpecifier(e, this)
 			}
 			this.imports = new ImportManager(this.apiMap, apiFunc, this);
@@ -291,43 +296,49 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 	}
 
 
-	getExportBuilder(exportType: API_TYPE.default_only | API_TYPE.synthetic_named = null ): ExportBuilder {
-		if (!this.exports) {
-			this.exports = new ExportBuilder(this, this.infoTracker, exportType);
-		}
-		return this.exports;
-	}
+	// getExportBuilder(exportType: API_TYPE.default_only | API_TYPE.synthetic_named = null): ExportBuilder {
+	// 	if (!this.exports) {
+	// 		this.exports = new ExportBuilder(this, this.infoTracker);
+	// 	}
+	// 	return this.exports;
+	// }
 
 
 	makeSerializable(): SerializedJSData {
-		let program:Program = this.buildProgram()
+		let program: Program = this.buildProgram()
 		let programString: string
-		let parseJSON = JSON.parse(JSON.stringify(program,null,3)) as Program
+		let stringified = (JSON.stringify(program, null, 2))
+		//
+		// parse
+		// JSON = JSON.parse(stringified) as Program
 		// console.log(parseJSON)
 		// console.log(JSON.stringify(program,null,3)	)
-		programString = generate(parseJSON)
+
 		try {
-			if(true) {
 
-				programString = generate(program)
+			program.body = program.body.filter((e) => e !== null && e !== undefined)
 
-				// console.log  (`PROGRAM LENGTH: ${program.body.length}`)
-				// console.log  (program.body)
-				// program.body.forEach((node,index:number,arr)=>{
-				// 	JPP(node)
-				// });
-				// // console.log(generate(node))
-				// if(programString) {
-				// 	console.log(this.getRelative())
-				// } else throw new Error()
-			}
+			programString = generate(program)
+
+			// console.log  (`PROGRAM LENGTH: ${program.body.length}`)
+			// console.log  (program.body)
+			// program.body.forEach((node,index:number,arr)=>{
+			// 	JPP(node)
+			// });
+			// // console.log(generate(node))
+			// if(programString) {
+			// 	console.log(this.getRelative())
+			// } else throw new Error()
+
 		} catch (e) {
 
+
 			console.log(`CAUGHT generate in file ${this.path_relative} with exception: ${e}`)
-			console.log(JSON.stringify(program,null,3)	)
+			// console.log(JSON.stringify(program,null,3)	)
 
 			console.log()
 			throw e
+			// process.exit(-1)
 		}
 		if (!programString) {
 			throw new Error(`generation issue in file ${this.getRelative()}`)
@@ -359,10 +370,10 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 
 	registerAPI() {
 		console.log('registering api')
-		if (!(this.exports.getBuilt())){
-			throw new Error("ERROR")
-		}
-		this.api = this.exports.getAPI()
+		// if (!(this.exports.getBuilt())) {
+		// 	throw new Error("ERROR")
+		// }
+		// this.api = this.exports.getAPI()
 		this.apiMap.addSelf(this.api, this)
 
 	}
@@ -371,29 +382,29 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 		this.to_insert_copyByValue.push(copiedValue)
 	}
 
-	static mockedMetaDefault:MetaData = {
-		moduleAPIMap:null,
-		isRoot:false,
-		ext:'js',
-		path_abs:'/this.js',
-		path_relative:'this.js',
-		rootDir:'/',
-		stat:null,
-		target_dir:'',
-		type:FileType.js,
-		uses_names:false
+	static mockedMetaDefault: MetaData = {
+		moduleAPIMap: null,
+		isRoot: false,
+		ext: 'js',
+		path_abs: '/this.js',
+		path_relative: 'this.js',
+		rootDir: '/',
+		stat: null,
+		target_dir: '',
+		type: FileType.js,
+		uses_names: false
 	};
-	static mockedMetaNamed:MetaData = {
-		moduleAPIMap:null,
-		isRoot:false,
-		ext:'js',
-		path_abs:'/this.js',
-		path_relative:'this.js',
-		rootDir:'/',
-		stat:null,
-		target_dir:'',
-		type:FileType.js,
-		uses_names:true
+	static mockedMetaNamed: MetaData = {
+		moduleAPIMap: null,
+		isRoot: false,
+		ext: 'js',
+		path_abs: '/this.js',
+		path_relative: 'this.js',
+		rootDir: '/',
+		stat: null,
+		target_dir: '',
+		type: FileType.js,
+		uses_names: true
 	};
 
 	getAPIMap() {
@@ -401,18 +412,21 @@ console.log(`${ join( this.parent().getRootDirPath(), basename(json))}.cjs`)
 	}
 
 	usesNamed() {
-		return true;
-		// return this._usesNames;
+		// return true;
+		return this._usesNames;
 	}
 
 	addAnImport(_import: ImportDeclaration) {
-this.importList.push(_import)
+		this.importList.push(_import)
 	}
-data_based_imports:Imports ;
+
+	data_based_imports: Imports;
+
 	setImports(imports: Imports) {
 		this.data_based_imports = imports
 	}
-	getDImports():Imports{
-		return  this.data_based_imports
+
+	getDImports(): Imports {
+		return this.data_based_imports
 	}
 }

@@ -64,17 +64,17 @@ switch (argv.length) {
     }
 }
 
+//
+// let projectManager = new ProjectManager(source, {
+//     target_dir: dest,
+//     suffix: '.bak',
+//     isModule: false,
+//     write_status: inPlace ? "in-place" : "copy"
+// })
+// sanitize(projectManager)
+// importTransforms(projectManager)
+// projectManager.forEachSource(transformBaseExports)
+//
 
-let projectManager = new ProjectManager(source, {
-    target_dir: dest,
-    suffix: '.bak',
-    isModule: false,
-    write_status: inPlace ? "in-place" : "copy"
-})
-sanitize(projectManager)
-importTransforms(projectManager)
-projectManager.forEachSource(transformBaseExports)
-
-
-projectManager.writeOut()
+// projectManager.writeOut()
 console.log("finished.")

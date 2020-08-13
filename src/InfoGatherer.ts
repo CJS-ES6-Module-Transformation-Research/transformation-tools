@@ -1,8 +1,12 @@
 import {generate} from "escodegen";
+import {parseScript} from "esprima";
 import {traverse} from "estraverse";
 import {Identifier, Node, Program, VariableDeclarator} from "estree";
+import {id} from "./abstract_fs_v2/interfaces";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
+import list = Mocha.reporters.Base.list;
+// import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
 // function containsNode(nodelist: Node[], n: Node): boolean {
 // 	let retVal = false;
@@ -225,7 +229,7 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 }
 
 
-function getReassignedProps(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }) {
+function getReassignedProps(ast: Program, listofVarse, mapOfRPIs: { [id: string]: ReqPropInfo }) {
 	let forcedDefault: boolean = false;
 
 	traverse(ast, {
@@ -252,21 +256,82 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	let ast = js.getAST()
 	let requireMgr: InfoTracker = js.getInfoTracker();
 	let listOfVars: string[] = []
-	requireMgr.getIDs().forEach(e => {
-		listOfVars.push(e)
-	})
-	console.log(`list of vars:  ${listOfVars}`)
+
+
+	setListOfVars();
+	// getIDs().forEach(e => {
+	// 	listOfVars.push(e)
+	// })
+	// console.log(`list of vars:  ${listOfVars}`)
 	let rpis: { [id: string]: ReqPropInfo } = {};
 	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
 	// console.log(JSON.stringify(listOfVars))
 	getReqPropertiesAccessed(ast, listOfVars, rpis, shadows);
 	getPropsCalledOrAccd(ast, rpis, shadows);
-	let forcedDefault = getReassignedProps(ast, rpis)
+	let forcedDefault = getReassignedProps(ast,listOfVars, rpis)
 	requireMgr.setForcedDecl(forcedDefault)
 
+	// let test = hasLocationVar__(js.getAST())
+	//
+	//
+	// let _url:Identifier, _path:Identifier
+	// let urlExists = requireMgr.getDeMap().fromSpec['url']
+	// if (!urlExists) {
+	// 	let id = js.getNamespace().generateBestName('url')
+	// 	_url = id
+	// 	js.getNamespace().addToNamespace(id.name)
+	// 	urlExists = id.name
+	// 	js.getAST().body.push({
+	// 		type: "VariableDeclaration", kind: "var", declarations: [
+	// 			{type:"VariableDeclarator",
+	// 			id: id,
+	// 			init: {
+	// 				type: "CallExpression",
+	// 				callee: {type: "Identifier", name: "require"},
+	// 				arguments: [{type: "Literal", value: "url"}]
+	// 			}}
+	// 		 ]
+	// 	})
+	// }
+	// let pathExists = requireMgr.getDeMap().fromSpec['path']
+	// if (!urlExists) {
+	// 	let id = js.getNamespace().generateBestName('path')
+	// 	_path = id
+	// 	js.getNamespace().addToNamespace(id.name)
+	// 	pathExists = id.name
+	// 	js.getAST().body.push({
+	// 		type: "VariableDeclaration", kind: "var", declarations: [
+	// 			{type:"VariableDeclarator",
+	// 				id: id,
+	// 				init: {
+	// 					type: "CallExpression",
+	// 					callee: {type: "Identifier", name: "require"},
+	// 					arguments: [{type: "Literal", value: "path"}]
+	// 				}}
+	// 		]
+	// 	})
+	// }
+	//
+	// if (test === "__dirname") {
+	//
+	// 	isnsertIt(urlExists, 'fileURLToPath')
+	// 	isnsertIt(pathExists, 'dirname')
+	//
+	// } else if (test === "__filename") {
+	// 	isnsertIt(urlExists, 'fileURLToPath')
+	//
+	// }
+
+	// __dirnameHandlerPlusPlus(js,{
+	// 	fileUrlToPath:id('fileURLToPath'),
+	// 	dirname:id('dirname'),
+	// 	path:_path,
+	// 	url:_url,
+	// 	isNamed:false
+	// })
 	listOfVars.forEach((id: string) => {
 		if (rpis[id]) {
-			console.log(`rpis of id: ${id}`)
+			// console.log(`rpis of id: ${id}`)
 			let rpi = rpis[id];
 			rpi.allAccessedProps.forEach((prop: string) => {
 				if (!rpi.refTypeProps.includes(prop)) {
@@ -275,7 +340,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 			});
 		} else {
 			//if must be default import and no calls or accesses made
-			console.log("NOD IDS FOR ID: " + id)
+			// console.log("NOD IDS FOR ID: " + id)
 			rpis[id] = {
 				allAccessedProps: [],
 				forceDefault: true,
@@ -296,7 +361,36 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		});
 	}
 
+	function isnsertIt(mod: string, prop: string) {
+		if (rpis[mod]) {
+			if (!rpis[mod].allAccessedProps.includes(prop)) {
+				rpis[mod].allAccessedProps.push(prop)
+				rpis[mod].refTypeProps.push(prop)
+			} else {
+				rpis[mod].allAccessedProps.push(prop)
+				rpis[mod].refTypeProps.push(prop)
+			}
+		} else {
+			rpis[mod] = {refTypeProps: [prop], allAccessedProps: [prop], forceDefault: false, potentialPrimProps: []}
+		}
+	}
+
+
+	//protect data
+	function setListOfVars() {
+		// console.log("LIST OF VARS: ")
+
+		let ids = requireMgr.getDeMap().fromId
+		for (let id in ids) {
+			listOfVars.push(id)
+			// console.log(id)
+		}
+	}
+
+
 	requireMgr.setReqPropsAccessedMap(rpis);
+
+
 }
 
 interface ShadowVariableMap {
@@ -388,16 +482,27 @@ export function getDeclaredModuleImports(js: JSFile) {
 				}
 			}
 		})
+
+
 }
 
+export function getOneOffForcedDefaults(ast:Program, listOfImportIds:string[]){
+	let fdMap:{[id:string ]:boolean} = {}
+	traverse(ast,{
+		enter:(node,parent)=>{
+			if (node.type === "Identifier" ){}
+
+		}
+	})
 
 
 
-
-
-
-
-
+	return fdMap ;
+}
+console.log(generate(`
+ (x || fs)
+ x ? fs : x2  
+`))
 
 
 

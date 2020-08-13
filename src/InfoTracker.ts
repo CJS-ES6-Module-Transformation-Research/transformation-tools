@@ -170,7 +170,7 @@ export class InfoTracker {
 			this.fromVarIDMap[id.name] = decl;
 			this.fromModuleMap[moduleIdentifier] = decl;
 		} else {
-			console.log('err_______')
+			console.log('ERR_______')
 			console.log(generate(stmt))
 			throw new Error()
 		}
@@ -306,6 +306,10 @@ try {
 	}
 	getWPN( ){
 		return this.withPropNames
+	}
+
+	getDeclarations() {
+		return this.declarations 
 	}
 }
 

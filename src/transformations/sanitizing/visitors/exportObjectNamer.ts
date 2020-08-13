@@ -23,7 +23,6 @@ export const objLiteralFlatten: TransformFunction = function (js: JSFile): void 
     const namespace = js.getNamespace()
     function createNamedDecl(prop_varname: string, value: Expression, property:Property):VariableDeclarator {
         let best = namespace.generateBestName(prop_varname)
-        namespace.addToNamespace(best.name)
         let _id:Identifier = {type:"Identifier", name:prop_varname};
         property.value = best
         return {

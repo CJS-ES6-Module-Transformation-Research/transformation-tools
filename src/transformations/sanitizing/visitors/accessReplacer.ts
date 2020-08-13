@@ -1,4 +1,5 @@
 #!/bin/env ts-node
+import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from 'estraverse'
 import {
 	ArrayPattern,
@@ -45,156 +46,126 @@ export const alphaNumericString: string = `${lower}${upper}${numeric}`
 export function accessReplace(js: JSFile) {
 	let requireTracker = js.getInfoTracker();
 	let imports: RequireAccessIDs = {};
-
+	let triesCaughtEtc:{[key:string]:string } = {}
 	let names = js.getNamespace()
-	runTraversal(imports, requireTracker, names, js);
-	for (const reqStr in imports) {
-
-		names.addToNamespace(imports[reqStr])
-	}
-
-	// deconstructDeconstructors(js)
-
-	// js.getInfoTracker().getRPI_()
-	populateAccessDecls(js, imports, js.getAST().body, names)
-}
-
-function populateAccessDecls(js: JSFile, reqStrMap: RequireAccessIDs, body: Node[], names: Namespace) {
-	let reverse: VariableDeclaration[] = []
-	for (const reqStr in reqStrMap) {
-		let vName: string = reqStrMap[reqStr];
-		reverse[reqStr] = vName;
-		names.addToNamespace(vName)
-
-		reverse.push(createRequireDecl(vName, reqStr, "const"))
-	}
-	reverse.reverse().forEach(e => {
-		body.splice(0, 0, e)
-	})
-
-}
-
-interface RequireAccessIDs {
-	[key: string]: string
-}
 
 
-function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns: Namespace, js: JSFile) {
-	let ast = js.getAST()
+
+
 	console.log(js.getRelative())
 	let visitor: Visitor = {
 		enter: (node: Node, parent: Node | null) => {
 
-				let access_replaceID: Identifier
+			let access_replaceID: Identifier
 
 
-				if (isARequire(node)) {
-					let require: Require = node as Require
-					let requireString: string = (require.arguments[0] as Literal).value.toString();
-// imports
-					let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
-					console.log(`acc   ${idStr}`
-					)
-					if (!idStr) {
-						if (imports[requireString]) { //already have made import string
-							access_replaceID = id(imports[requireString])
-						} else {// make import string
-							access_replaceID = extractBestModuleName(requireString, ns)
-							// imports[requireString] = idStr
-						}
-					}  else
-						{
-							//made import string during declarations
-							access_replaceID = id(idStr)
-						}
+			if (isARequire(node)) {
+				let require: Require = node as Require
+				let requireString: string = (require.arguments[0] as Literal).value.toString();
 
-						//check is call expression and not single-identifier declarator
-						if (parent && "CallExpression" === parent.type ||
-							"MemberExpression" === parent.type ||
-							"AssignmentExpression" === parent.type ||
-							("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
+				let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
+				console.log(`acc   ${idStr}`
+				)
+				if (!idStr) {
+					if (imports[requireString]) { //already have made import string
+						access_replaceID = id(imports[requireString])
+					} else {// make import string
+						access_replaceID = extractBestModuleName(requireString, names)
+						// imports[requireString] = idStr
+					}
+				}  else
+				{
+					//made import string during declarations
+					access_replaceID = id(idStr)
+				}
+
+				//check is call expression and not single-identifier declarator
+				if (parent && "CallExpression" === parent.type ||
+					"MemberExpression" === parent.type ||
+					"AssignmentExpression" === parent.type ||
+					("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
 
 
-							switch (parent.type) {
-								case "CallExpression":
-									if (node === parent.callee) {
-										parent.callee = access_replaceID;
-									} else {
-										parent.arguments.forEach((elem: Expression | SpreadElement, index: number, array: Node[]) => {
-											if (elem === node) {
-												array[index] = access_replaceID;
-											}
-										});
+					switch (parent.type) {
+						case "CallExpression":
+							if (node === parent.callee) {
+								parent.callee = access_replaceID;
+							} else {
+								parent.arguments.forEach((elem: Expression | SpreadElement, index: number, array: Node[]) => {
+									if (elem === node) {
+										array[index] = access_replaceID;
 									}
-
-									return;
-								case "MemberExpression":
-									parent.object = access_replaceID;
-									return;
-								case "AssignmentExpression":
-									parent.right = access_replaceID;
-									return;
-								case "VariableDeclarator":
-									if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
-										// return VisitorOption.Remove
-										js.getInfoTracker().addDeconsId(access_replaceID)
-									} else if (parent.id.type === "ObjectPattern") {
-										parent.init = access_replaceID
-										//return VisitorOption.Remove;
-									} else {
-										return node;
-									}
-
-							}
-						} else {
-							switch (parent.type) {
-								case "NewExpression":
-								case "IfStatement":
-								case"WhileStatement":
-								case"DoWhileStatement":
-								case "ForStatement":
-								case "LogicalExpression":
-								case  "ConditionalExpression":
-								case "SwitchCase":
-									return access_replaceID;
-									break;
-								case "FunctionDeclaration" :
-								case "FunctionExpression" :
-								case "ArrowFunctionExpression":
-
-									//not needed here because parent would be body
-									break;
-								case"VariableDeclarator":
-									return;
-								default:
-									return;
+								});
 							}
 
-						}
-					} else if (parent === null) {
-						return;
-					}
-					//if there is a variable declaration of any type inside a for loop
-					if (isForLoopAccess(node, parent)
-						&& node.type === "VariableDeclaration"
-					) {
-						node.declarations.forEach((e: VariableDeclarator) => {
-							extractRequireDataForAccess(e, extractBestModuleName, ns);
-						});
-					}
+							return;
+						case "MemberExpression":
+							parent.object = access_replaceID;
+							return;
+						case "AssignmentExpression":
+							parent.right = access_replaceID;
+							return;
+						case "VariableDeclarator":
+							if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
+								// return VisitorOption.Remove
+								js.getInfoTracker().addDeconsId(access_replaceID)
+							} else if (parent.id.type === "ObjectPattern") {
+								parent.init = access_replaceID
+								//return VisitorOption.Remove;
+							} else {
+								return node;
+							}
 
-				} ,
-				leave: (node, parentNode) => {
-					if (node.type === "VariableDeclaration"
-						&& node.declarations[0]
-						&& node.declarations[0].id.type === "ObjectPattern"
-						&& (!node.declarations[0].init)
-					) {
-						return VisitorOption.Remove;
+					}
+				} else {
+					switch (parent.type) {
+						case "NewExpression":
+						case "IfStatement":
+						case"WhileStatement":
+						case"DoWhileStatement":
+						case "ForStatement":
+						case "LogicalExpression":
+						case  "ConditionalExpression":
+						case "SwitchCase":
+							return access_replaceID;
+							break;
+						case "FunctionDeclaration" :
+						case "FunctionExpression" :
+						case "ArrowFunctionExpression":
+
+							//not needed here because parent would be body
+							break;
+						case"VariableDeclarator":
+							return;
+						default:
+							return;
 					}
 
 				}
-			};
+			} else if (parent === null) {
+				return;
+			}
+			//if there is a variable declaration of any type inside a for loop
+			if (isForLoopAccess(node, parent)
+				&& node.type === "VariableDeclaration"
+			) {
+				node.declarations.forEach((e: VariableDeclarator) => {
+					extractRequireDataForAccess(e, extractBestModuleName, names);
+				});
+			}
+
+		} ,
+		leave: (node, parentNode) => {
+			if (node.type === "VariableDeclaration"
+				&& node.declarations[0]
+				&& node.declarations[0].id.type === "ObjectPattern"
+				&& (!node.declarations[0].init)
+			) {
+				return VisitorOption.Remove;
+			}
+
+		}
+	};
 
 
 
@@ -218,11 +189,16 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 		let idName = `${cleanValue(requireStr)}`;
 
 		if (!imports[requireStr]) {
+
 			imports[requireStr] = ns.generateBestName(idName).name
+			// triesCaughtEtc[imports[requireStr]] = requireStr
 			ns.addToNamespace(imports[requireStr])
 		}
+		js.getInfoTracker().insertDeclPair(idName,requireStr)
+
 		return id(imports[requireStr]) //identifier = {type: "Identifier", name: }
 	}
+
 
 
 	replace(js.getAST(), visitor)
@@ -231,7 +207,7 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 			enter: (node, parent) => {
 				if (parent !== null && node.type === "VariableDeclaration") {
 					node.declarations.forEach(e => {
-						extractRequireDataForAccess(e, extractBestModuleName, ns);
+						extractRequireDataForAccess(e, extractBestModuleName, names);
 					})
 				}
 			}
@@ -251,7 +227,213 @@ function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns
 	// 	})
 	// });
 	// return imports;
+	// deconstructDeconstructors(js)
+
+	// js.getInfoTracker().getRPI_()
+	populateAccessDecls(js, imports, js.getAST().body, names)
+
+	// if(js.getRelative().includes('index')){
+	// 	console.log(   generate(js.getAST())    )
+	// 	process.exit(0)
+	// }
 }
+
+function populateAccessDecls(js: JSFile, reqStrMap: RequireAccessIDs, body: Node[], names: Namespace) {
+	let reverse: VariableDeclaration[] = []
+	for (const reqStr in reqStrMap) {
+		let vName: string = reqStrMap[reqStr];
+		reverse[reqStr] = vName;
+		names.addToNamespace(vName)
+
+		reverse.push(createRequireDecl(vName, reqStr, "const"))
+	}
+	reverse.reverse().forEach(e => {
+		body.splice(0, 0, e)
+	})
+
+}
+
+interface RequireAccessIDs {
+	[key: string]: string
+ }
+
+
+
+// function runTraversal(imports: RequireAccessIDs, requireTracker: InfoTracker, ns: Namespace, js: JSFile) {
+//  	console.log(js.getRelative())
+// 	let visitor: Visitor = {
+// 		enter: (node: Node, parent: Node | null) => {
+//
+// 				let access_replaceID: Identifier
+//
+//
+// 				if (isARequire(node)) {
+// 					let require: Require = node as Require
+// 					let requireString: string = (require.arguments[0] as Literal).value.toString();
+// // imports
+// 					let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
+// 					console.log(`acc   ${idStr}`
+// 					)
+// 					if (!idStr) {
+// 						if (imports[requireString]) { //already have made import string
+// 							access_replaceID = id(imports[requireString])
+// 						} else {// make import string
+// 							access_replaceID = extractBestModuleName(requireString, ns)
+// 							// imports[requireString] = idStr
+// 						}
+// 					}  else
+// 						{
+// 							//made import string during declarations
+// 							access_replaceID = id(idStr)
+// 						}
+//
+// 						//check is call expression and not single-identifier declarator
+// 						if (parent && "CallExpression" === parent.type ||
+// 							"MemberExpression" === parent.type ||
+// 							"AssignmentExpression" === parent.type ||
+// 							("VariableDeclarator" === parent.type && parent.id.type === "ObjectPattern")) {
+//
+//
+// 							switch (parent.type) {
+// 								case "CallExpression":
+// 									if (node === parent.callee) {
+// 										parent.callee = access_replaceID;
+// 									} else {
+// 										parent.arguments.forEach((elem: Expression | SpreadElement, index: number, array: Node[]) => {
+// 											if (elem === node) {
+// 												array[index] = access_replaceID;
+// 											}
+// 										});
+// 									}
+//
+// 									return;
+// 								case "MemberExpression":
+// 									parent.object = access_replaceID;
+// 									return;
+// 								case "AssignmentExpression":
+// 									parent.right = access_replaceID;
+// 									return;
+// 								case "VariableDeclarator":
+// 									if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
+// 										// return VisitorOption.Remove
+// 										js.getInfoTracker().addDeconsId(access_replaceID)
+// 									} else if (parent.id.type === "ObjectPattern") {
+// 										parent.init = access_replaceID
+// 										//return VisitorOption.Remove;
+// 									} else {
+// 										return node;
+// 									}
+//
+// 							}
+// 						} else {
+// 							switch (parent.type) {
+// 								case "NewExpression":
+// 								case "IfStatement":
+// 								case"WhileStatement":
+// 								case"DoWhileStatement":
+// 								case "ForStatement":
+// 								case "LogicalExpression":
+// 								case  "ConditionalExpression":
+// 								case "SwitchCase":
+// 									return access_replaceID;
+// 									break;
+// 								case "FunctionDeclaration" :
+// 								case "FunctionExpression" :
+// 								case "ArrowFunctionExpression":
+//
+// 									//not needed here because parent would be body
+// 									break;
+// 								case"VariableDeclarator":
+// 									return;
+// 								default:
+// 									return;
+// 							}
+//
+// 						}
+// 					} else if (parent === null) {
+// 						return;
+// 					}
+// 					//if there is a variable declaration of any type inside a for loop
+// 					if (isForLoopAccess(node, parent)
+// 						&& node.type === "VariableDeclaration"
+// 					) {
+// 						node.declarations.forEach((e: VariableDeclarator) => {
+// 							extractRequireDataForAccess(e, extractBestModuleName, ns);
+// 						});
+// 					}
+//
+// 				} ,
+// 				leave: (node, parentNode) => {
+// 					if (node.type === "VariableDeclaration"
+// 						&& node.declarations[0]
+// 						&& node.declarations[0].id.type === "ObjectPattern"
+// 						&& (!node.declarations[0].init)
+// 					) {
+// 						return VisitorOption.Remove;
+// 					}
+//
+// 				}
+// 			};
+//
+//
+//
+// 	// function extractBestIdentifier(requireStr: string, ns: Namespace): Identifier {
+// 	// 	let cleaned = cleanValue(requireStr);
+// 	// 	let idName = `_moduleAccess_${cleaned}`
+// 	// 	let identifier: Identifier;
+// 	// 	if (!imports[requireStr]) {
+// 	// 		identifier = ns.generateBestName(idName);
+// 	// 		// identifier = {type:"Identifier", name:imports[requireStr]}
+// 	// 		imports[requireStr] = identifier.name;
+// 	// 	} else {
+// 	// 		identifier = {type: "Identifier", name: imports[requireStr]}
+// 	// 	}
+// 	// 	return identifier;
+// 	// }
+//
+//
+// 	function extractBestModuleName(requireStr: string, ns: Namespace): Identifier {
+// 		// let cleaned = cleanValue(requireStr);
+// 		let idName = `${cleanValue(requireStr)}`;
+//
+// 		if (!imports[requireStr]) {
+// 			imports[requireStr] = ns.generateBestName(idName).name
+// 			ns.addToNamespace(imports[requireStr])
+// 		}
+// 		js.getInfoTracker().insertDeclPair(idName,requireStr)
+//
+// 		return id(imports[requireStr]) //identifier = {type: "Identifier", name: }
+// 	}
+//
+//
+//
+// 	replace(js.getAST(), visitor)
+// 	js.getAST().body.forEach(e => {
+// 		traverse(e, {
+// 			enter: (node, parent) => {
+// 				if (parent !== null && node.type === "VariableDeclaration") {
+// 					node.declarations.forEach(e => {
+// 						extractRequireDataForAccess(e, extractBestModuleName, ns);
+// 					})
+// 				}
+// 			}
+// 		})
+// 	});
+// 	// replace(ast, visitor)
+// 	// TODO IS THIS NECESSARY?
+// 	// ast.body.forEach(e => {
+// 	// 	traverse(e, {
+// 	// 		enter: (node, parent) => {
+// 	// 			if (parent !== null && node.type === "VariableDeclaration") {
+// 	// 				node.declarations.forEach(e => {
+// 	// 					extractRequireDataForAccess(e, extract , ns);
+// 	// 				})
+// 	// 			}
+// 	// 		}
+// 	// 	})
+// 	// });
+// 	// return imports;
+// }
 
 
 function cleanValue(requireStr: string): string {

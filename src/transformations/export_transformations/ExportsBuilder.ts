@@ -27,7 +27,24 @@ export interface ExportTypes {
 }
 
 
-export class ExportBuilder {
+interface ExportBuilderI {
+	clear(): void;
+
+	/**
+	 * case where there is an expression but no name... names is the default test_resources.export name for the 'named' portion.
+	 * @param names named test_resources.export name.
+	 * @param value expression/declaration value
+	 */
+	registerDefault(names: Identifier): void;
+
+	registerObjectLiteral(obj: ObjectExpression): void;
+
+	registerName(spec: ExportSpecifier): void;
+
+	build(): void;
+}
+
+export class ExportBuilder implements ExportBuilderI {
 	private infoTracker: InfoTracker;
 	private js : JSFile;
 	getBuilt(): ExportTypes {
@@ -42,7 +59,7 @@ export class ExportBuilder {
 	private api: API = null;
 	private builtVals: ExportTypes = null
 
-	constructor(js:JSFile, infoTracker:InfoTracker, api_type: API_TYPE.default_only | API_TYPE.synthetic_named = undefined) {
+	constructor(js:JSFile, infoTracker:InfoTracker, api_type: API_TYPE.default_only  = undefined) {
 		this.infoTracker = infoTracker
 		this.js = js;
 		if (api_type) {
@@ -106,7 +123,7 @@ export class ExportBuilder {
 
 	registerName(spec: ExportSpecifier) {
 		if (this.exportNameValue[spec.exported.name]) {
-			console.log(spec.exported.name+" exists ")
+			console.log(spec.exported.name + " exists ")
 			return;
 		}
 		// let exportsTmp:ExportSpecifier = {
@@ -119,10 +136,10 @@ export class ExportBuilder {
 
 	build(): void {
 
- 		//noExports
-		  if (!this.defaultExport && !this.exportList.length) {
+		//noExports
+		if (!this.defaultExport && !this.exportList.length) {
 			this.builtVals = {type: API_TYPE.none};
-			  this.api = new API(API_TYPE.none ,null)
+			this.api = new API(API_TYPE.none, null)
 			return;
 		}
 		//no preferred api type
@@ -130,7 +147,7 @@ export class ExportBuilder {
 			this.api_type = this.defaultExport ? API_TYPE.default_only : API_TYPE.named_only
 		}
 		this.generateAPI();
-		this.buildExports( );
+		this.buildExports();
 	}
 
 

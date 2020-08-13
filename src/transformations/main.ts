@@ -76,13 +76,13 @@ import {sanitize} from "../transformations/sanitizing/sanitize_project";
 //     isModule: false,
 //     write_status: inPlace ? "in-place" : "copy"
 // }
-export function runTransform(source:string, opts:ProjConstructionOpts) {
-    let projectManager = new ProjectManager(source, opts)
-    sanitize(projectManager)
-    importTransforms(projectManager)
-    projectManager.forEachSource(transformBaseExports)
-    projectManager.writeOut()
-    console.log("finished.")
-}
+// export function runTransform(source:string, opts:ProjConstructionOpts) {
+//     let projectManager = new ProjectManager(source, opts)
+//     sanitize(projectManager)
+//     importTransforms(projectManager)
+//     projectManager.forEachSource(transformBaseExports)
+//     projectManager.writeOut()
+//     console.log("finished.")
+// }
 
 // runTransform();

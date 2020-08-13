@@ -14,7 +14,7 @@ export interface ProjConstructionOpts {
 	target_dir: string
 	suffix: string
 	isModule?: boolean
-	isNamed:boolean
+	isNamed: boolean
 	copy_node_modules?: boolean
 }
 
@@ -82,7 +82,6 @@ export class ProjectManager {
 	}
 
 
-
 	private loadFileClassLists() {
 		this.root.visit(
 			node => {
@@ -103,8 +102,18 @@ export class ProjectManager {
 			})
 	}
 
-	forEachSource(func: (value: JSFile) => void): void {
-		this.jsFiles.forEach(e => func(e))
+	forEachSource(func: (value: JSFile ) => void,tfName:string): void {
+		let curr:string
+		try {
+			this.jsFiles.forEach(e => {
+				curr = e.getRelative()
+				console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
+				func(e)
+			})
+		} catch (e) {
+			console.log(`EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}`)
+			throw e;
+		}
 	}
 
 	getJS(name: string): JSFile {
@@ -175,7 +184,7 @@ export class ProjectManager {
 			try {
 				console.log(root_dir)
 				writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData)
-			} catch(ex) {
+			} catch (ex) {
 				console.log(`root dir: ${root_dir}`)
 				console.log(`filename relative: ${file.getRelative()}`)
 				console.log(`filename absolute: ${file.getAbsolute()}`)
@@ -190,7 +199,7 @@ export class ProjectManager {
 		for (let filename in this.additions) {
 			let serialized: SerializedJSData = this.additions[filename].makeSerializable()
 			let file = join(root_dir, serialized.relativePath)
-			console.log(`writing out file R: ${ serialized.relativePath}`)
+			console.log(`writing out file R: ${serialized.relativePath}`)
 			console.log(`writing out file : ${file}`)
 			// require('fs').open(file,'w',(e,f)=>{
 
@@ -312,15 +321,16 @@ export class ProjectManager {
 		}
 
 	}
-	getJSNames(includeAdditions= true){
-		let retVal:AbstractDataFile[] = [];
-		this.dataFiles.forEach(e=>retVal.push(e))
-		for (let added in this.additions){
+
+	getJSNames(includeAdditions = true) {
+		let retVal: AbstractDataFile[] = [];
+		this.dataFiles.forEach(e => retVal.push(e))
+		for (let added in this.additions) {
 			retVal.push(this.additions[added])
 		}
-		return retVal.filter(e=>(e.getType() === FileType.js ||e.getType()=== FileType.cjs)).sort(
-			 (a,b)=>a.getRelative().localeCompare(b.getRelative()))
- 	}
+		return retVal.filter(e => (e.getType() === FileType.js || e.getType() === FileType.cjs)).sort(
+			(a, b) => a.getRelative().localeCompare(b.getRelative()))
+	}
 
 
 //TODO DELETE ONCE FIXED JSONREQUIRE

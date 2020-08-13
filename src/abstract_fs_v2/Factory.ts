@@ -1,162 +1,171 @@
-import {API} from "../transformations/export_transformations/API";
-import {Dir} from "./Dirv2";
-import {basename, extname, join, normalize, relative, resolve} from "path";
-import {CJSBuilderData, FileType, MetaData} from "./interfaces";
 import {lstatSync, Stats} from "fs";
+import path, {basename, extname, join, normalize, relative, resolve} from "path";
+import {_initBuiltins, API} from "../transformations/export_transformations/API";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
+import {Dir} from "./Dirv2";
+import {CJSBuilderData, FileType, MetaData} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {ProjectManager} from "./ProjectManager";
-import path from 'path'
-export class ModuleAPIMap{
-    apiKey:{[moduleSpecifier:string]:API} = {} ;
-    resolveSpecifier(moduleSpecifier:string, jsFile:JSFile|CJSToJSON):API {
 
-        let _path = jsFile.getRelative()
-
-
-        _path = join(path.dirname(_path), moduleSpecifier)
-        return this.apiKey[_path]
-    }
-    addSelf(api:API, jsFile:JSFile|CJSToJSON){
-        this.apiKey[jsFile.getRelative()] = api
-    }
+export interface API_KeyMap {
+	[moduleSpecifier: string]: API
 }
+
+export class ModuleAPIMap {
+	apiKey: API_KeyMap = _initBuiltins();
+
+	resolveSpecifier(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): API {
+
+		let _path = jsFile.getRelative()
+
+
+		_path = join(path.dirname(_path), moduleSpecifier)
+		return this.apiKey[_path]
+	}
+
+	addSelf(api: API, jsFile: JSFile | CJSToJSON) {
+		this.apiKey[jsFile.getRelative()] = api
+	}
+}
+
 export class FileFactory {
-    readonly root_dir: Dir
-    readonly rootPath: string
-    readonly target_dir: string | null;
-    readonly isModule: boolean
-    readonly pm: ProjectManager;
-    readonly rc:ModuleAPIMap = new ModuleAPIMap();
-    private uses_names: boolean;
-    constructor(path: string,uses_names:boolean, isModule?: boolean, pm: ProjectManager = null) {
-        this.isModule = isModule;
-        this.rootPath = resolve(path);
-        this.pm = pm;
-        this.root_dir = this.createRoot();
-    }
+	readonly root_dir: Dir
+	readonly rootPath: string
+	readonly target_dir: string | null;
+	readonly isModule: boolean
+	readonly pm: ProjectManager;
+	readonly rc: ModuleAPIMap = new ModuleAPIMap();
+	private readonly uses_names: boolean;
+
+	constructor(path: string, uses_names: boolean, isModule?: boolean, pm: ProjectManager = null) {
+		this.isModule = isModule;
+		this.rootPath = resolve(path);
+		this.pm = pm;
+		this.root_dir = this.createRoot();
+		this.uses_names = uses_names
+	}
 
 
-    getRoot() {
-        return this.root_dir;
-    }
+	getRoot() {
+		return this.root_dir;
+	}
 
-    createPackageCJSRequire(data: CJSBuilderData) {
-        let resolved = normalize( data.cjsFileName )
-        let metaData: MetaData = {
-            moduleAPIMap:this.rc,
-            target_dir: this.target_dir,
-            stat: null,
-            type: FileType.cjs,
-            ext: '.cjs',
-            isRoot: this.rootPath === resolved,
-            rootDir: this.rootPath,
-            path_abs: resolved,
-            path_relative: relative( this.rootPath, data.cjsFileName),//data.dir .getRootDirPath() ,
-            uses_names:this.uses_names
-        };
-        let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)
-        // if (this.pm) {
-        //     this.pm.receiveFactoryUpdate(newestMember, FileType.cjs, this)
-        // }
-        this.pm.addSource(newestMember)
-        return newestMember
-    }
+	createPackageCJSRequire(data: CJSBuilderData) {
+		let resolved = normalize(data.cjsFileName)
+		let metaData: MetaData = {
+			moduleAPIMap: this.rc,
+			target_dir: this.target_dir,
+			stat: null,
+			type: FileType.cjs,
+			ext: '.cjs',
+			isRoot: this.rootPath === resolved,
+			rootDir: this.rootPath,
+			path_abs: resolved,
+			path_relative: relative(this.rootPath, data.cjsFileName),//data.dir .getRootDirPath() ,
+			uses_names: this.uses_names
+		};
+		let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)
+		// if (this.pm) {
+		//     this.pm.receiveFactoryUpdate(newestMember, FileType.cjs, this)
+		// }
+		this.pm.addSource(newestMember)
+		return newestMember
+	}
 
-    createFile(path: string, parent: Dir) {
-        let data: MetaData;
+	createFile(path: string, parent: Dir) {
+		let data: MetaData;
 
-        let resolved = resolve(path)
-        let stat = lstatSync(resolved)
-        data = this.getData(stat, resolved)
+		let resolved = resolve(path)
+		let stat = lstatSync(resolved)
+		data = this.getData(stat, resolved)
 
-        let child = this.getFileFromType(path, data, parent)
-        if (!child) {
-            return;
-        }
-        if (parent) {
-            parent.addChild(child)
-        }
-
-
-        return child;
-
-    }
+		let child = this.getFileFromType(path, data, parent)
+		if (!child) {
+			return;
+		}
+		if (parent) {
+			parent.addChild(child)
+		}
 
 
-    private createRoot(): Dir {
-        let resolved = resolve(this.rootPath)
-        let stat = lstatSync(resolved)
-        let data: MetaData = this.getData(stat, resolved)
-        return new Dir(this.rootPath, data, null, this, this.rc);
-    };
+		return child;
+
+	}
 
 
-    private getData(stat: Stats, resolved: string): MetaData {
-        // let parent_f = createGetParent(parent)
-        return {
-            moduleAPIMap:this.rc,
-            target_dir: this.target_dir,
-            stat: stat,
-            type: this.determineType(resolved, stat),
-            ext: extname(resolved),
+	private createRoot(): Dir {
+		let resolved = resolve(this.rootPath)
+		let stat = lstatSync(resolved)
+		let data: MetaData = this.getData(stat, resolved)
+		return new Dir(this.rootPath, data, null, this, this.rc);
+	};
 
-            // parent: parent_f ,
-            isRoot: this.rootPath === resolved,
 
-            rootDir: this.rootPath,
-            path_abs: resolved,
-            path_relative: this.rootPath === resolved ? '.' : relative(this.rootPath, resolved),
-            uses_names:this.uses_names
-        };
-    }
+	private getData(stat: Stats, resolved: string): MetaData {
+		// let parent_f = createGetParent(parent)
+		return {
+			moduleAPIMap: this.rc,
+			target_dir: this.target_dir,
+			stat: stat,
+			type: this.determineType(resolved, stat),
+			ext: extname(resolved),
 
-    private getFileFromType(path: string, data: MetaData, parent: Dir): AbstractFile | AbstractDataFile {
-        switch (data.type) {
+			// parent: parent_f ,
+			isRoot: this.rootPath === resolved,
 
-            case FileType.dir:
-                return new Dir(path, data, parent, this, this.rc)
-                break;
-            case FileType.js:
-                return new JSFile(path, data, parent, this.isModule)
-                break;
-            case FileType.package:
-                return new PackageJSON(path, data, parent)
-                break;
-            default:
-                return null;
-        }
-    }
+			rootDir: this.rootPath,
+			path_abs: resolved,
+			path_relative: this.rootPath === resolved ? '.' : relative(this.rootPath, resolved),
+			uses_names: this.uses_names
+		};
+	}
 
-    private determineType(path: string, stat): FileType {
+	private getFileFromType(path: string, data: MetaData, parent: Dir): AbstractFile | AbstractDataFile {
+		switch (data.type) {
 
-        if (stat.isDirectory()) {
-            return FileType.dir
-        } else if (stat.isFile()) {
-            return determineFileType(path)
-        } else {
-            return FileType.OTHER
-        }
+			case FileType.dir:
+				return new Dir(path, data, parent, this, this.rc)
+				break;
+			case FileType.js:
+				return new JSFile(path, data, parent, this.isModule)
+				break;
+			case FileType.package:
+				return new PackageJSON(path, data, parent)
+				break;
+			default:
+				return null;
+		}
+	}
 
-        function determineFileType(path: string): FileType {
-            let ext: string = extname(path).toLowerCase()
+	private determineType(path: string, stat): FileType {
 
-            switch (ext) {
-                case ".json":
-                    if (basename(path, '.json') === "package") {
-                        return FileType.package
-                    } else {
-                        return FileType.json
-                    }
-                case ".js":
-                    return FileType.js
+		if (stat.isDirectory()) {
+			return FileType.dir
+		} else if (stat.isFile()) {
+			return determineFileType(path)
+		} else {
+			return FileType.OTHER
+		}
 
-                default:
-                    return FileType.OTHER
-            }
+		function determineFileType(path: string): FileType {
+			let ext: string = extname(path).toLowerCase()
 
-        }
-    }
+			switch (ext) {
+				case ".json":
+					if (basename(path, '.json') === "package") {
+						return FileType.package
+					} else {
+						return FileType.json
+					}
+				case ".js":
+					return FileType.js
+
+				default:
+					return FileType.OTHER
+			}
+
+		}
+	}
 
 }
