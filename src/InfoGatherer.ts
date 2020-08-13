@@ -1,11 +1,9 @@
-import {generate} from "escodegen";
 import {parseScript} from "esprima";
 import {traverse} from "estraverse";
 import {Identifier, Node, Program, VariableDeclarator} from "estree";
-import {id} from "./abstract_fs_v2/interfaces";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
-import list = Mocha.reporters.Base.list;
+// import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
 // function containsNode(nodelist: Node[], n: Node): boolean {
@@ -268,7 +266,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	// console.log(JSON.stringify(listOfVars))
 	getReqPropertiesAccessed(ast, listOfVars, rpis, shadows);
 	getPropsCalledOrAccd(ast, rpis, shadows);
-	let forcedDefault = getReassignedProps(ast,listOfVars, rpis)
+	let forcedDefault = getReassignedProps(ast, listOfVars, rpis)
 	requireMgr.setForcedDecl(forcedDefault)
 
 	// let test = hasLocationVar__(js.getAST())
@@ -486,23 +484,27 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 }
 
-export function getOneOffForcedDefaults(ast:Program, listOfImportIds:string[]){
-	let fdMap:{[id:string ]:boolean} = {}
-	traverse(ast,{
-		enter:(node,parent)=>{
-			if (node.type === "Identifier" ){}
+export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[]) {
+	let fdMap: { [id: string]: boolean } = {}
+	traverse(ast, {
+		enter: (node, parent) => {
+			if (node.type === "Identifier") {
+			}
 
 		}
 	})
 
 
-
-	return fdMap ;
+	return fdMap;
 }
-console.log(generate(`
+
+parseScript(`
  (x || fs)
  x ? fs : x2  
-`))
+`).body.forEach(e => {
+	console.log(e)
+
+})
 
 
 
