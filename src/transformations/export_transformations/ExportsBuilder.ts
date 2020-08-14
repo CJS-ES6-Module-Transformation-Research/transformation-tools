@@ -116,7 +116,7 @@ export class ExportBuilder implements ExportBuilderI {
 			// 	object:this.defaultExport,
 			// 	property:(prop.value as Identifier)
 			// }
-			console.log(generate({type: "ExportSpecifier", exported, local}))
+			// console.log(generate({type: "ExportSpecifier", exported, local}))
 			this.registerName({type: "ExportSpecifier", exported, local})
 		});
 	}

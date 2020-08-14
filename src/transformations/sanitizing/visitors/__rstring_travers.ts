@@ -24,7 +24,9 @@ import {dirname,join} from 'path'
 
 
                 let literal = node.arguments[0]
-                 let requireString: string = requireStringTF.getTransformed(literal.value.toString())
+                 // console.log(`RELATIVE: computing ... ${js.getRelative()}`)
+                let requireString: string = requireStringTF.getTransformed(literal.value.toString())
+                // console.log(`Done: computing ...   `)
                  literal.value = requireString
                 literal.raw = `'${requireString}'`
 
