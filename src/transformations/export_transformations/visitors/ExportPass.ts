@@ -1,3 +1,4 @@
+import exp from "constants";
 import {replace, Visitor} from "estraverse";
 import {
 	AssignmentExpression,
@@ -11,6 +12,7 @@ import {
 	ModuleDeclaration,
 	Node,
 	ObjectExpression,
+	Property,
 	Statement,
 	VariableDeclaration,
 	VariableDeclarator
@@ -89,6 +91,10 @@ function makeExSpecifier(local: string, exported: string): ExportSpecifier {
 	}
 }
 
+interface ExportReturns {
+	api: API,
+	declaration: ExportNamedDeclaration | ExportDefaultDeclaration
+}
 
 class ExportPass {
 
@@ -105,10 +111,24 @@ class ExportPass {
 		this.namespace = namespace
 	}
 
-	build(): { api: API, declaration: ExportNamedDeclaration | ExportDefaultDeclaration } {
+	build(): ExportReturns {
 		let api: API
 
 		let declaration: ExportNamedDeclaration | ExportDefaultDeclaration
+
+		function createProperty(es: ExportSpecifier): Property {
+			return {
+				kind: 'init',
+				method: false,
+				type: "Property",
+				key: es.exported,
+				value: es.local,
+				shorthand: false,
+				computed: false
+			}
+
+		}
+
 		switch (this.tracker.type) {
 			case "default":
 				declaration = {
@@ -119,24 +139,45 @@ class ExportPass {
 				return {api, declaration}
 			case "named":
 
-				let names: string[] = []
-				let specifiers: ExportSpecifier[] = []
-				for (let name in this.tracker.names) {
-					let val: ExportSpecifier = this.tracker.names[name]
-					names.push(val.exported.name)
-					specifiers.push(val)
-				}
-				api = new API(API_TYPE.named_only, names)
-				declaration = {
-					type: "ExportNamedDeclaration", specifiers: specifiers
-				}
+				let  __ret: ExportReturns
 
-				return {api, declaration}
-				break;
+				if (this.forcedDefault) {
+					let objExpr: ObjectExpression = {type: "ObjectExpression", properties: []}
+					let names:string[] = []
+					for (let name in this.tracker.names) {
+						let exported = this.tracker.names[name]
+						objExpr.properties.push(createProperty(exported))
+						names.push(exported.exported.name )
+					}
+				let declaration:ExportDefaultDeclaration  = {
+					type:"ExportDefaultDeclaration",
+					declaration:objExpr
+				}
+					let api = new API(API_TYPE.default_only,names, false )
+					__ret = {api, declaration}
+				}else{
+					__ret=  this.createNamedExports();
+				}
+				return __ret
+
 			default:
 				api = new API(API_TYPE.none)
 				return {api, declaration: null}
 		}
+	}
+
+	private createNamedExports(): ExportReturns {
+		let names: string[] = []
+		let specifiers: ExportSpecifier[] = []
+
+		for (let name in this.tracker.names) {
+			let val: ExportSpecifier = this.tracker.names[name]
+			names.push(val.exported.name)
+			specifiers.push(val)
+		}
+		let api = new API(API_TYPE.named_only, names)
+		let declaration: ExportNamedDeclaration = {type: "ExportNamedDeclaration", specifiers: specifiers}
+		return {api, declaration};
 	}
 
 	getLocalID(exported: string) {
@@ -209,6 +250,9 @@ export function __exports(js: JSFile) {
 	let namespace: Namespace = js.getNamespace();
 	let expType = infoTracker.getExportType() === API_TYPE.default_only
 	let __default_exports_id: Identifier = null;
+	// if (js.getAPIMap().forceMap()[js.getRelative()]) {
+	// 	expType = true ;//fixme
+	// }
 	let exportPass: ExportPass = new ExportPass(expType, namespace)
 	let indicesToRemove: number[] = []
 	type adder = (e: (Directive | Statement | ModuleDeclaration)) => void
@@ -385,7 +429,7 @@ export function __exports(js: JSFile) {
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
 		js.getAST().body.push(ex_decl)
 	} else {
-		console.log('')
+		// console.log('')
 	}
 	js.setAPI(exData.api)
 ///////////////////////////////////// 	exReplace(js)
@@ -401,7 +445,7 @@ export function __exports(js: JSFile) {
 		}
 		js.getAST().body.splice(0, 0, decl)
 	}
-	console.log(exData.api.getType())
+	// console.log(exData.api.getType())
 	// if(js.getRelative().includes('main')){
 	// // console.log(   generate(js.getAST())    )
 	// 	process.exit(0)

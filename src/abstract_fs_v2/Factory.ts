@@ -27,6 +27,11 @@ export class ModuleAPIMap {
 	addSelf(api: API, jsFile: JSFile | CJSToJSON) {
 		this.apiKey[jsFile.getRelative()] = api
 	}
+
+	// private _forceMap: {[key:string]:boolean } = {}
+	// forceMap() {
+	// 	return this._forceMap
+	// }
 }
 
 export class FileFactory {

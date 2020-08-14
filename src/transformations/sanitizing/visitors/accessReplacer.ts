@@ -52,7 +52,7 @@ export function accessReplace(js: JSFile) {
 
 
 
-	console.log(js.getRelative())
+	// console.log(js.getRelative())
 	let visitor: Visitor = {
 		enter: (node: Node, parent: Node | null) => {
 
@@ -64,8 +64,8 @@ export function accessReplace(js: JSFile) {
 				let requireString: string = (require.arguments[0] as Literal).value.toString();
 
 				let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
-				console.log(`acc   ${idStr}`
-				)
+				// console.log(`acc   ${idStr}`
+				// )
 				if (!idStr) {
 					if (imports[requireString]) { //already have made import string
 						access_replaceID = id(imports[requireString])

@@ -1,6 +1,8 @@
+import {generate} from "escodegen";
 import {parseScript} from "esprima";
 import {traverse} from "estraverse";
 import {Identifier, Node, Program, VariableDeclarator} from "estree";
+import path, {join} from "path";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
 // import list = Mocha.reporters.Base.list;
@@ -56,7 +58,7 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs:
 						&& listOfVars.includes(decl.init.name)
 						&& decl.id.type === "ObjectPattern"
 					) {
-
+throw new Error('todo?')
 					}
 					break;
 				case "MemberExpression":
@@ -84,7 +86,7 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs:
 							&& parent.type === "AssignmentExpression"
 							&& parent.left === node
 						) {
-							// console.log(`svar_: forcedef ${name}`)
+							// console.log(`FORCED_DEFAULT:  ${name} in _ `)
 
 							mapOfRPIs[name].forceDefault = true
 						}
@@ -241,6 +243,9 @@ function getReassignedProps(ast: Program, listofVarse, mapOfRPIs: { [id: string]
 				if (mapOfRPIs[name]
 				) {
 					forcedDefault = true;
+					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
+					// console.log (`----- ${name} ${generate(node)}`)
+
 				}
 
 			}
@@ -253,10 +258,10 @@ function getReassignedProps(ast: Program, listofVarse, mapOfRPIs: { [id: string]
 export const reqPropertyInfoGather = (js: JSFile) => {
 	let ast = js.getAST()
 	let requireMgr: InfoTracker = js.getInfoTracker();
-	let listOfVars: string[] = []
+	let listOfVars: string[] = getListOfVars(requireMgr);
 
 
-	setListOfVars();
+
 	// getIDs().forEach(e => {
 	// 	listOfVars.push(e)
 	// })
@@ -267,66 +272,9 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	getReqPropertiesAccessed(ast, listOfVars, rpis, shadows);
 	getPropsCalledOrAccd(ast, rpis, shadows);
 	let forcedDefault = getReassignedProps(ast, listOfVars, rpis)
+
 	requireMgr.setForcedDecl(forcedDefault)
 
-	// let test = hasLocationVar__(js.getAST())
-	//
-	//
-	// let _url:Identifier, _path:Identifier
-	// let urlExists = requireMgr.getDeMap().fromSpec['url']
-	// if (!urlExists) {
-	// 	let id = js.getNamespace().generateBestName('url')
-	// 	_url = id
-	// 	js.getNamespace().addToNamespace(id.name)
-	// 	urlExists = id.name
-	// 	js.getAST().body.push({
-	// 		type: "VariableDeclaration", kind: "var", declarations: [
-	// 			{type:"VariableDeclarator",
-	// 			id: id,
-	// 			init: {
-	// 				type: "CallExpression",
-	// 				callee: {type: "Identifier", name: "require"},
-	// 				arguments: [{type: "Literal", value: "url"}]
-	// 			}}
-	// 		 ]
-	// 	})
-	// }
-	// let pathExists = requireMgr.getDeMap().fromSpec['path']
-	// if (!urlExists) {
-	// 	let id = js.getNamespace().generateBestName('path')
-	// 	_path = id
-	// 	js.getNamespace().addToNamespace(id.name)
-	// 	pathExists = id.name
-	// 	js.getAST().body.push({
-	// 		type: "VariableDeclaration", kind: "var", declarations: [
-	// 			{type:"VariableDeclarator",
-	// 				id: id,
-	// 				init: {
-	// 					type: "CallExpression",
-	// 					callee: {type: "Identifier", name: "require"},
-	// 					arguments: [{type: "Literal", value: "path"}]
-	// 				}}
-	// 		]
-	// 	})
-	// }
-	//
-	// if (test === "__dirname") {
-	//
-	// 	isnsertIt(urlExists, 'fileURLToPath')
-	// 	isnsertIt(pathExists, 'dirname')
-	//
-	// } else if (test === "__filename") {
-	// 	isnsertIt(urlExists, 'fileURLToPath')
-	//
-	// }
-
-	// __dirnameHandlerPlusPlus(js,{
-	// 	fileUrlToPath:id('fileURLToPath'),
-	// 	dirname:id('dirname'),
-	// 	path:_path,
-	// 	url:_url,
-	// 	isNamed:false
-	// })
 	listOfVars.forEach((id: string) => {
 		if (rpis[id]) {
 			// console.log(`rpis of id: ${id}`)
@@ -341,7 +289,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 			// console.log("NOD IDS FOR ID: " + id)
 			rpis[id] = {
 				allAccessedProps: [],
-				forceDefault: true,
+				forceDefault: false,
 				potentialPrimProps: [],
 				refTypeProps: []
 			}
@@ -357,6 +305,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				rpi.potentialPrimProps.includes(prop);
 			}
 		});
+
 	}
 
 	function isnsertIt(mod: string, prop: string) {
@@ -372,20 +321,6 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 			rpis[mod] = {refTypeProps: [prop], allAccessedProps: [prop], forceDefault: false, potentialPrimProps: []}
 		}
 	}
-
-
-	//protect data
-	function setListOfVars() {
-		// console.log("LIST OF VARS: ")
-
-		let ids = requireMgr.getDeMap().fromId
-		for (let id in ids) {
-			listOfVars.push(id)
-			// console.log(id)
-		}
-	}
-
-
 	requireMgr.setReqPropsAccessedMap(rpis);
 
 
@@ -484,6 +419,27 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 }
 
+export function __fd_2x(js:JSFile){
+	let amap = js.getAPIMap()
+	// let fm = amap.forceMap()
+	let infoTracker = js.getInfoTracker()
+	// let lov = getListOfVars(infoTracker)
+	// console.log(JSON.stringify(lov ))
+
+	// let kv = getOneOffForcedDefaults(js.getAST(),lov )
+	// console.log(JSON.stringify(kv ))
+	// let fromId = infoTracker.getDeMap().fromId
+// 	for( let id  in kv) {
+// 		if (kv[id]){
+// console.log(id +"    "+kv[id])
+//
+// 	 		let spec = fromId[id]
+// 	let 	_path = join(path.dirname( js.getRelative()), spec)
+// 			fm[_path] = true;
+// 		}
+// 	}
+}
+
 export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[]) {
 	let fdMap: { [id: string]: boolean } = {}
 	traverse(ast, {
@@ -498,13 +454,22 @@ export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[])
 	return fdMap;
 }
 
-parseScript(`
- (x || fs)
- x ? fs : x2  
-`).body.forEach(e => {
-	console.log(e)
-
-})
-
+// parseScript(`
+//  (x || fs)
+//  x ? fs : x2
+// `).body.forEach(e => {
+// 	console.log(e)
+//
+// })
+//protect data
+export function getListOfVars(infoTracker:InfoTracker) {
+	// console.log("LIST OF VARS: ")
+	let idVars:string[] = []
+	let ids = infoTracker.getDeMap().fromId
+	for (let id in ids) {
+		idVars.push(id)
+		// console.log(id)
+	}return idVars
+}
 
 

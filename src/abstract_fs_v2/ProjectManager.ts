@@ -107,7 +107,7 @@ export class ProjectManager {
 		try {
 			this.jsFiles.forEach(e => {
 				curr = e.getRelative()
-				console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
+				// console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
 				func(e)
 			})
 		} catch (e) {
@@ -182,7 +182,7 @@ export class ProjectManager {
 
 
 			try {
-				console.log(root_dir)
+				// console.log(root_dir)
 				writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData)
 			} catch (ex) {
 				console.log(`root dir: ${root_dir}`)
@@ -199,8 +199,8 @@ export class ProjectManager {
 		for (let filename in this.additions) {
 			let serialized: SerializedJSData = this.additions[filename].makeSerializable()
 			let file = join(root_dir, serialized.relativePath)
-			console.log(`writing out file R: ${serialized.relativePath}`)
-			console.log(`writing out file : ${file}`)
+			// console.log(`writing out file R: ${serialized.relativePath}`)
+			// console.log(`writing out file : ${file}`)
 			// require('fs').open(file,'w',(e,f)=>{
 
 			writeFileSync(file, serialized.fileData)

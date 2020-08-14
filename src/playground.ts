@@ -1,10 +1,6 @@
 // #!/usr/local/bin/ts-node
-import {generate} from "escodegen";
-import {parseScript} from "esprima";
-import {traverse} from "estraverse";
-import {Identifier, Node, Program} from 'estree'
-import {JSFile} from "./abstract_fs_v2/JSv2";
-import {InfoTracker} from "./InfoTracker";
+import {parseModule} from "esprima";
+import {ExportDefaultDeclaration, ObjectExpression, Program} from 'estree'
 
 let ast: Program
 
@@ -175,3 +171,17 @@ let ast: Program
 // 	console.log(`${key} size is: ${value.objs.size}`)
 // 	value.objs.forEach(e => console.log(`${key}: ${e}`))
 // }
+
+ast = parseModule(`
+var x = 3,y = 4
+export default {a:x,b:y}
+`)
+let b = (ast.body[1] as ExportDefaultDeclaration).declaration as ObjectExpression
+console.log(b )
+
+
+
+
+
+
+

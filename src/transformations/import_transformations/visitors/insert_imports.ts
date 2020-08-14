@@ -2,7 +2,9 @@ import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from "estraverse";
 import * as ESTree from "estree";
 import {Identifier, ImportSpecifier} from "estree";
+import {id} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {getListOfVars, getOneOffForcedDefaults} from "../../../InfoGatherer";
 import {Imports, InfoTracker, WithPropNames} from "../../../InfoTracker";
 import {API} from "../../export_transformations/API";
 import {API_TYPE} from "../../export_transformations/ExportsBuilder";
@@ -16,16 +18,18 @@ export function insertImports(js: JSFile) {
 	// console.log(`calling insertImports on jsfile : ${js.getRelative()} `)
 
 	let infoTracker = js.getInfoTracker();
+	let listOfVars = getListOfVars(infoTracker)
 	let MAM = js.getAPIMap()
 	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier(mspec, js)), MAM, js.getInfoTracker())
 	js.setImports(_imports)
 	let demap = infoTracker.getDeMap()
-
+	let one_offs = getOneOffForcedDefaults(js.getAST(), listOfVars)
 	let propNameReplaceMap: { [base: string]: { [property: string]: string } } = {}//replaceName
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
 		let rpi = js.getInfoTracker().getRPI(init.name)
 		if (rpi && rpi.forceDefault) {
+			console.log(` _________ forceDefault: ${rpi.forceDefault}`)
 			return false;
 		}
 		let mod_map = js.getAPIMap()
@@ -43,13 +47,13 @@ export function insertImports(js: JSFile) {
 			let api //= fetchAPI()
 			try {
 				api = fetchAPI(moduleSpecifier)
-				if (api.getType() === API_TYPE.default_only) {
+				if (api && api.getType() === API_TYPE.default_only) {
 					isNamespace = false;
 				} else {
 					isNamespace = true;
 				}
 			} catch (e) {
-				console.log(`api exception: ${js.getParent()} ${req}  ${moduleSpecifier.replace(/^\.{0,2}\//, '')} `)
+				console.log(`api exception: ${js.getParent().getRelative()} ${req}  ${moduleSpecifier.replace(/^\.{0,2}\//, '')} `)
 				throw e
 			}
 		} else {
@@ -88,7 +92,7 @@ export function insertImports(js: JSFile) {
 						// let clean = cleanModuleSpecifier(module_specifier)
 						// if(api && api.getType() ===API_TYPE.named_only){
 						// }
-						let _id = node.declarations[0].id.name
+						let  _id = node.declarations[0].id.name
 						let module_specifier = node.declarations[0].init.arguments[0].value.toString()
 						let wpn: WithPropNames = _imports.getWPN()
 						let api = wpn.api[module_specifier];
@@ -101,25 +105,28 @@ export function insertImports(js: JSFile) {
 							isNamedAPI = (api.getType() === API_TYPE.named_only )
 						}
 
-						if (js.getRelative().includes("import_stuff.js")) {
-							console.log("MODULESPECIFIER")
-							console.log(module_specifier)
-							// console.log(api)
-							// console.log(api.getType())
-							console.log(node.declarations[0].id.name)
-							console.log(`Full value named:${js.usesNamed()
-							&& isNamespace
-							&& (isBuiltin
-								|| isNamedAPI)}`)
-							console.log(
-								`Full value named:${js.usesNamed()}
-isNamespace:${isNamespace} 
-api type: ${api ? (api.getType() === API_TYPE.named_only) : "api not good"}`);
-
-							// console.log(module_specifier)
-							// console.log(node.declarations[0].id.name)
-						}
-						if (js.usesNamed() && isNamespace &&(isBuiltin || isNamedAPI)) {
+// 						if (js.getRelative().includes("import_stuff.js")) {
+// 							// console.log("MODULESPECIFIER")
+// 							// console.log(module_specifier)
+// 							// console.log(api)
+// 							// console.log(api.getType())
+// 							console.log(node.declarations[0].id.name)
+// 							console.log(`Full value named:${js.usesNamed()
+// 							&& isNamespace
+// 							&& (isBuiltin
+// 								|| isNamedAPI)}`)
+// 							console.log(
+// 								`Full value named:${js.usesNamed()}
+// isNamespace:${isNamespace}
+// api type: ${api ? (api.getType() === API_TYPE.named_only) : "api not good"}`);
+//
+// 							// console.log(module_specifier)
+// 							// console.log(node.declarations[0].id.name)
+// 						}
+						one_offs = null ;
+						console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed() } && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
+						// let isOneOff = one_offs[_id]
+						if (js.usesNamed() && isNamespace &&(isBuiltin || isNamedAPI)&&( !one_offs)) {
 							// console.log('named imports ' + api.getType() + " "+isNamespace)
 							namedImports(info, _id, module_specifier, api, wpn)
 						} else {

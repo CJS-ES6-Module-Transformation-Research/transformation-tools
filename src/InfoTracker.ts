@@ -280,7 +280,7 @@ try {
 	_api[spec] = apiGetter(spec.replace(/^\.{0,2}\//, ''))
 	po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
 }catch (e) {
-	console.log(map.fromSpec[spec] )
+	console.log(`err:  ${map.fromSpec[spec]}` )
 }
 		}
 		;
