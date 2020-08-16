@@ -1,7 +1,7 @@
 import {ProjectManager} from "./abstract_fs_v2/ProjectManager";
 import {__fd_2x, getDeclaredModuleImports, reqPropertyInfoGather} from "./InfoGatherer";
-import { __exports} from "./transformations/export_transformations/visitors/ExportPass";
-import {hacker_defaults} from "./transformations/import_transformations/visitors/hack";
+import { __exports} from "./transformations/export_transformations/ExportPass";
+import {hacker_defaults} from "./transformations/import_transformations/visitors/copyPassByValue";
 import {insertImports} from "./transformations/import_transformations/visitors/insert_imports";
 //require strings x2
 import {accessReplace, flattenDecls, jsonRequire, requireStringSanitizer} from "./transformations/sanitizing/visitors";

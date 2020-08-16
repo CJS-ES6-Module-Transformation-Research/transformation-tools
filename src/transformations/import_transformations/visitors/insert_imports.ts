@@ -18,6 +18,7 @@ export function insertImports(js: JSFile) {
 	let infoTracker = js.getInfoTracker();
 	let listOfVars = getListOfVars(infoTracker)
 	let MAM = js.getAPIMap()
+	js.getAPIMap()
 	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier( js,mspec)), MAM, js.getInfoTracker())
 	js.setImports(_imports)
 	let demap = infoTracker.getDeMap()
@@ -132,7 +133,7 @@ export function insertImports(js: JSFile) {
 // 							// console.log(node.declarations[0].id.name)
 // 						}
 						one_offs = null;
-						console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed()} && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
+						// console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed()} && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
 						// let isOneOff = one_offs[_id]
 						if (js.usesNamed() && isNamespace && (isBuiltin || isNamedAPI) && (!one_offs)) {
 							// console.log('named imports ' + api.getType() + " "+isNamespace)

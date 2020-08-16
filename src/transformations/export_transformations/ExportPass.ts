@@ -16,11 +16,11 @@ import {
 	VariableDeclaration,
 	VariableDeclarator
 } from "estree";
-import {id} from "../../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {Namespace} from "../../../abstract_fs_v2/Namespace";
-import {InfoTracker} from "../../../InfoTracker";
-import {API, API_TYPE} from "../API";
+import {id} from "../../abstract_fs_v2/interfaces";
+import {JSFile} from "../../abstract_fs_v2/JSv2";
+import {Namespace} from "../../abstract_fs_v2/Namespace";
+import {InfoTracker} from "../../InfoTracker";
+import {API, API_TYPE} from "./API";
 
 export interface ExportTypes {
 	type: exportType
@@ -106,7 +106,7 @@ class ExportPass {
 		this.js = js
 		// this.api = js.getAPIMap().resolveSpecifier(js)
 		if (js.getRelative() === 'lib/main.js') {
-			console.log(`____ ${''}`)
+			// console.log(`____ ${''}`)
 		}
 	}
 
@@ -133,13 +133,13 @@ class ExportPass {
 		}
 
 		if (this.js.getRelative() === 'lib/main.js') {
-			console.log(`____ ${this.tracker.type}`)
+			// console.log(`____ ${this.tracker.type}`)
 		}
 		switch (this.tracker.type) {
 
 			case "default":
 				if (this.js.getRelative() === 'lib/main.js') {
-					console.log(`____ ${this.tracker.type}`)
+					// console.log(`____ ${this.tracker.type}`)
 				}
 				declaration = {
 					type: "ExportDefaultDeclaration",
@@ -150,7 +150,7 @@ class ExportPass {
 				return declaration
 			case "named":
 				if (this.js.getRelative() === 'lib/main.js') {
-					console.log(`____ ${this.tracker.type}`)
+					// console.log(`____ ${this.tracker.type}`)
 				}
 
 				if (this.forcedDefault) {
@@ -166,7 +166,9 @@ class ExportPass {
 						declaration: objExpr
 					}
 					// let api = new API(API_TYPE.default_only,names, false )
-					this.getAPI().setType(API_TYPE.default_only)
+					let z = this.getAPI()
+						z.setType(API_TYPE.default_only)
+					console.log(`z: ==== ${z.getType()}`)
 					this.getAPI().setNames(names)
 					return declaration
 				} else {
@@ -188,8 +190,12 @@ class ExportPass {
 		// let api = new API(API_TYPE.named_only, names)
 		this.getAPI().setType(API_TYPE.named_only)
 		this.getAPI() .setNames(names)
+		let z = this.getAPI()
+		// z.setType(API_TYPE)
+		console.log(`z: ==== ${z.getType()}`)
+
 		if (this.js.getRelative() === 'lib/main.js') {
-			console.log(`____ ${this.tracker.type}`)
+			// console.log(`____ ${this.tracker.type}`)
 		}
 		let declaration: ExportNamedDeclaration = {type: "ExportNamedDeclaration", specifiers: specifiers}
 		return declaration
@@ -445,6 +451,7 @@ export function __exports(js: JSFile) {
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
 		js.getAST().body.push(ex_decl)
 	}
+	js.getAPIMap().display()
 	///////////////////////////////////// 	exReplace(js)
 	if (__default_exports_id) {
 		let decl: VariableDeclaration = {

@@ -61,9 +61,17 @@ export class JSFile extends AbstractDataFile {
 
 	public createCJSFromIdentifier(moduleID: string): string {
 		let parent: Dir = this.parent();
+		let json_loc =  join( dirname(this.getAbsolute()), moduleID)
+
 		let parentDir = parent.getAbsolute()
+		console.log(`${this.getRelative()}   spec:${moduleID}    parent:${parentDir}   ${json_loc}`)
+
+
 		let base = basename(moduleID, ".json");
+
 		let cjsName = `${base}.cjs`
+
+console.log ()
 		if (existsSync(join(parentDir, cjsName))) {
 			let i = 0;
 			let cjsName = `${base}_${i}.cjs`
@@ -80,19 +88,22 @@ export class JSFile extends AbstractDataFile {
 		dirRelativeToRoot = dirname(this.getRelative())
 // console.log(this.parent().getRootDirPath())
 // console.log("JOIN ")
-		console.log(`${join(this.parent().getRootDirPath(), basename(json))}.cjs`)
+// 		console.log(`${(json_loc)}.cjs`)
+		let loc = `${(json_loc)}.cjs`
 		let builder = {//${dirRelativeToRoot}/
-			cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
+			// cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
+			cjsFileName:loc,
 			jsonFileName: relative(this.parent().getRootDirPath(), json),
 			dataAsString: `module.exports = require('./${basename(moduleID)}');`,
 			dir: parent
 
 		}
+		let x
 
 
 		let spawn = this.parent().spawnCJS(builder)
 
-		return join(dirname(moduleID), basename(spawn))
+		return moduleID+'.cjs'// join()
 
 	}
 

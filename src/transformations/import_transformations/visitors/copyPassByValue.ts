@@ -1,7 +1,6 @@
 import {replace} from "estraverse";
 import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
-// test_resources.import {IdAndMemex} from "../../../InfoTracker.js";
 
 
 export let hacker_defaults = (js: JSFile) => {

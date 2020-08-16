@@ -149,7 +149,7 @@ function isBoth(path: string) {
 function isJS(path: string) {
 	let isjs = (extname(path) === _JS
 		|| existsSync(path + _JS))
-	console.log(path + " -- " + isjs)
+	// console.log(path + " -- " + isjs)
 	return isjs
 }
 

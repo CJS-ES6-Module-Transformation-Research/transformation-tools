@@ -1,10 +1,6 @@
 import {API_KeyMap} from "../../abstract_fs_v2/Factory";
 
-export enum API_TYPE {
-	default_only = "default_only",
-	named_only = "named_only",
-	none="none"
-}
+
 export class API {
 	private isForced: boolean=false ;
 	constructor(type: API_TYPE, names: string[] = [], isBuiltin = false) {
@@ -46,9 +42,16 @@ export class API {
 	setNames(names: string[]) {
 		this.exports=names
 	}
+	toString(){
+		return `${this.type}, ${this.isForced}`
+	}
 }
 
-
+export enum API_TYPE {
+	default_only = "default_only",
+	named_only = "named_only",
+	none="none"
+}
 export function _initBuiltins(): API_KeyMap {
 	let apis: API_KeyMap = {}
 
