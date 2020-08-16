@@ -1,7 +1,12 @@
 import {API_KeyMap} from "../../abstract_fs_v2/Factory";
-import {API_TYPE} from "./ExportsBuilder";
 
+export enum API_TYPE {
+	default_only = "default_only",
+	named_only = "named_only",
+	none="none"
+}
 export class API {
+	private isForced: boolean=false ;
 	constructor(type: API_TYPE, names: string[] = [], isBuiltin = false) {
 		this.type = type,
 			this.exports = []
@@ -14,7 +19,7 @@ export class API {
 		return this.exports
  	}
 
-	getType() {
+	getType( ) {
 		return this.type
 	}
 
@@ -28,8 +33,19 @@ export class API {
 
 	private readonly _isBuiltin: boolean;
 	private readonly non_api: boolean;
-	private readonly exports: string[];
-	private readonly type: API_TYPE;
+	private  exports: string[];
+	private type: API_TYPE;
+
+	setType(_type: API_TYPE, isForced=false) {
+		this.isForced =this.isForced||  isForced ;
+		if(!this.isForced){
+			this.type = _type ;
+		}
+	}
+
+	setNames(names: string[]) {
+		this.exports=names
+	}
 }
 
 

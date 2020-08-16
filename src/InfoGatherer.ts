@@ -1,10 +1,8 @@
-import {generate} from "escodegen";
-import {parseScript} from "esprima";
 import {traverse} from "estraverse";
-import {Identifier, Node, Program, VariableDeclarator} from "estree";
-import path, {join} from "path";
+import {Expression, Identifier, Node, Program, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
+import {API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -34,7 +32,7 @@ function isShadowVariable(varName: string, stack: string[], shadows: ShadowVaria
 }
 
 
-function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
+function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
 	// let listOfProps = [];
 	let fctStack: string[] = [];
 
@@ -58,7 +56,7 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], mapOfRPIs:
 						&& listOfVars.includes(decl.init.name)
 						&& decl.id.type === "ObjectPattern"
 					) {
-throw new Error('todo?')
+						throw new Error('todo?')
 					}
 					break;
 				case "MemberExpression":
@@ -88,7 +86,7 @@ throw new Error('todo?')
 						) {
 							// console.log(`FORCED_DEFAULT:  ${name} in _ `)
 
-							mapOfRPIs[name].forceDefault = true
+							_forcedDefault[name] = true
 						}
 						if (!mapOfRPIs[name].allAccessedProps.includes(node.property.name)) {
 							mapOfRPIs[name].allAccessedProps.push(node.property.name)
@@ -229,11 +227,45 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 }
 
 
-function getReassignedProps(ast: Program, listofVarse, mapOfRPIs: { [id: string]: ReqPropInfo }) {
+function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }) {
 	let forcedDefault: boolean = false;
 
 	traverse(ast, {
 		enter: (node: Node, parent: Node | null) => {
+			if (node.type === "AssignmentExpression") {
+				// if (node.right.type === "")
+				let right: Expression = node.right
+				let seen = false// todo maybe use to implement expresion children with logical grandparents
+				// traverse(left,)
+				traverse(right, {
+					enter: (e: Node, p: Node | null) => {
+						if ((e.type === "Identifier" && p) && (p.type === "LogicalExpression" || p.type === "ConditionalExpression")) {
+							let name = e.name
+							if (listofVarse.includes(name)) {
+								_forcedDefault[name] = true;
+
+							}
+
+						}
+					}, leave: () => {
+					}
+				})
+
+
+				if (node.left.type === "MemberExpression"
+					&& node.left.object.type === "Identifier"
+					&& node.left.property.type === "Identifier") {
+					let name = node.left.object.name;
+					let prop = node.left.property.name;
+					if (mapOfRPIs[name]
+					) {
+						forcedDefault = true;
+						// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
+						// console.log (`----- ${name} ${generate(node)}`)
+
+					}
+				}
+			}
 			if (node.type === "AssignmentExpression"
 				&& node.left.type === "MemberExpression"
 				&& node.left.object.type === "Identifier"
@@ -259,20 +291,21 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	let ast = js.getAST()
 	let requireMgr: InfoTracker = js.getInfoTracker();
 	let listOfVars: string[] = getListOfVars(requireMgr);
+	let def_aults: ForcedDefaultMap = {}
+	//init assume false;
+	listOfVars.forEach(e => def_aults[e] = false)
 
 
-
-	// getIDs().forEach(e => {
-	// 	listOfVars.push(e)
-	// })
 	// console.log(`list of vars:  ${listOfVars}`)
 	let rpis: { [id: string]: ReqPropInfo } = {};
 	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
-	// console.log(JSON.stringify(listOfVars))
-	getReqPropertiesAccessed(ast, listOfVars, rpis, shadows);
-	getPropsCalledOrAccd(ast, rpis, shadows);
-	let forcedDefault = getReassignedProps(ast, listOfVars, rpis)
 
+	getReqPropertiesAccessed(ast, listOfVars, def_aults, rpis, shadows);
+	getPropsCalledOrAccd(ast, rpis, shadows);
+	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
+	if (forcedDefault){
+		js.getAPIMap().resolveSpecifier(js).setType(API_TYPE.default_only, true)
+	}
 	requireMgr.setForcedDecl(forcedDefault)
 
 	listOfVars.forEach((id: string) => {
@@ -320,10 +353,20 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		} else {
 			rpis[mod] = {refTypeProps: [prop], allAccessedProps: [prop], forceDefault: false, potentialPrimProps: []}
 		}
+
 	}
+
 	requireMgr.setReqPropsAccessedMap(rpis);
-
-
+	let mmp = js.getAPIMap()
+	let demap = requireMgr.getDeMap()
+for (let forced in def_aults) {
+	if (def_aults[forced]){
+		let specD = demap.fromId[forced]
+		mmp.resolveSpecifier(js ,specD).setType(API_TYPE.default_only, true )
+		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
+	}
+		// throw new Error("see above todo ")
+}
 }
 
 interface ShadowVariableMap {
@@ -377,15 +420,14 @@ function getShadowVars(ast: Program, listOfVars: string[]): ShadowVariableMap {
 
 export interface ReqPropInfo {
 	forceDefault: boolean;
-	// listOfAllPropsAccessed: string[];
 	allAccessedProps: string[];
-	// listOfPropsCalledOrAccessed: { key: string, value: string }[];
 	refTypeProps: string[];
 	potentialPrimProps: string[];
 }
 
-// console.log(JSON.stringify(parseScript(`var {a, c:d} = x;  `),null,3))
-
+interface ForcedDefaultMap {
+	[id: string]: boolean
+}
 
 export function getDeclaredModuleImports(js: JSFile) {
 	traverse(js.getAST(),
@@ -419,7 +461,7 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 }
 
-export function __fd_2x(js:JSFile){
+export function __fd_2x(js: JSFile) {
 	let amap = js.getAPIMap()
 	// let fm = amap.forceMap()
 	let infoTracker = js.getInfoTracker()
@@ -446,30 +488,22 @@ export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[])
 		enter: (node, parent) => {
 			if (node.type === "Identifier") {
 			}
-
 		}
 	})
-
-
 	return fdMap;
 }
 
-// parseScript(`
-//  (x || fs)
-//  x ? fs : x2
-// `).body.forEach(e => {
-// 	console.log(e)
-//
-// })
+
 //protect data
-export function getListOfVars(infoTracker:InfoTracker) {
+export function getListOfVars(infoTracker: InfoTracker) {
 	// console.log("LIST OF VARS: ")
-	let idVars:string[] = []
+	let idVars: string[] = []
 	let ids = infoTracker.getDeMap().fromId
 	for (let id in ids) {
 		idVars.push(id)
 		// console.log(id)
-	}return idVars
+	}
+	return idVars
 }
 
 

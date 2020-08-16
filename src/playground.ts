@@ -1,6 +1,6 @@
 // #!/usr/local/bin/ts-node
 import {parseModule} from "esprima";
-import {ExportDefaultDeclaration, ObjectExpression, Program} from 'estree'
+import {ExportDefaultDeclaration, ExpressionStatement, ObjectExpression, Program} from 'estree'
 
 let ast: Program
 
@@ -173,10 +173,9 @@ let ast: Program
 // }
 
 ast = parseModule(`
-var x = 3,y = 4
-export default {a:x,b:y}
+require('mocha');
 `)
-let b = (ast.body[1] as ExportDefaultDeclaration).declaration as ObjectExpression
+let b = (ast.body[0 ] as ExpressionStatement).expression
 console.log(b )
 
 

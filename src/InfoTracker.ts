@@ -3,8 +3,7 @@ import {Identifier, ImportDeclaration} from "estree";
 import {ModuleAPIMap} from "./abstract_fs_v2/Factory";
 import {RequireDeclaration, RequireExpression} from "./abstract_fs_v2/interfaces";
 import {ReqPropInfo} from "./InfoGatherer";
-import {API} from "./transformations/export_transformations/API";
-import {API_TYPE} from "./transformations/export_transformations/ExportsBuilder";
+import {API, API_TYPE} from "./transformations/export_transformations/API";
 
 interface ToDeclMap {
 	[id: string]: requireDecl
@@ -120,7 +119,7 @@ export class InfoTracker {
 
 	private specifiers: string[] = []
 
-	private conditonalAdd(spec: string) {
+	private conditionalAdd(spec: string) {
 		if (!this.specifiers.includes(spec)) {
 			this.specifiers.push(spec)
 		}
@@ -130,7 +129,7 @@ export class InfoTracker {
 
 
 		for (let spec in this.fromModuleMap) {
-			this.conditonalAdd(spec)
+			this.conditionalAdd(spec)
 		}
 		return this.specifiers;
 	}
@@ -164,7 +163,7 @@ export class InfoTracker {
 
 		// console.log(`${this.filename}----${id.name}----${moduleIdentifier} \t\t${generate(stmt)}`)
 		if (id) {
-			this.conditonalAdd(moduleIdentifier)// only add if we have an id
+			this.conditionalAdd(moduleIdentifier)// only add if we have an id
 			this.addToImportIDs(id.name)
 			let decl: requireDecl = {identifier: id, module_identifier: moduleIdentifier}
 			this.fromVarIDMap[id.name] = decl;

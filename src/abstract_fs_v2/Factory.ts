@@ -1,9 +1,10 @@
 import {lstatSync, Stats} from "fs";
 import path, {basename, extname, join, normalize, relative, resolve} from "path";
-import {_initBuiltins, API} from "../transformations/export_transformations/API";
+import {_initBuiltins, API, API_TYPE} from "../transformations/export_transformations/API";
+import {cleanMIS} from "../transformations/import_transformations/visitors/insert_imports";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
-import {CJSBuilderData, FileType, MetaData} from "./interfaces";
+import {built_ins, builtins_funcs, CJSBuilderData, FileType, MetaData} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {ProjectManager} from "./ProjectManager";
@@ -15,23 +16,88 @@ export interface API_KeyMap {
 export class ModuleAPIMap {
 	apiKey: API_KeyMap = _initBuiltins();
 
-	resolveSpecifier(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): API {
+	submitNodeModule(moduleSpecifier: string): API {
+		moduleSpecifier = cleanMIS(moduleSpecifier )
+		let builtin: boolean = built_ins.includes(moduleSpecifier)
+		let funcs: boolean = builtins_funcs.includes(moduleSpecifier)
+		if ((!builtin) && (!funcs)) {
+			if (!this.apiKey[moduleSpecifier]) {
+				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only)
+			}
+			return this.apiKey[moduleSpecifier]
+		} else {
+			console.log(`logic error: ${moduleSpecifier} be an insantlled module! `)
+		}
 
-		let _path = jsFile.getRelative()
-
-
-		_path = join(path.dirname(_path), moduleSpecifier)
-		return this.apiKey[_path]
 	}
 
-	addSelf(api: API, jsFile: JSFile | CJSToJSON) {
-		this.apiKey[jsFile.getRelative()] = api
+	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string = ''): API {
+
+		if(moduleSpecifier){
+
+			moduleSpecifier = cleanMIS(moduleSpecifier)
+			console.log(`accessing ${moduleSpecifier} which ${this.apiKey[moduleSpecifier] ? 'existed':'must be created '}`)
+		}
+
+		let builtin: boolean = built_ins.includes(moduleSpecifier)
+		let funcs: boolean = builtins_funcs.includes(moduleSpecifier)
+		if (builtin && (!funcs)) {
+			//check
+			if (!this.apiKey[moduleSpecifier]) {
+				let isnamed = (jsFile as JSFile).usesNamed()
+				this.apiKey[moduleSpecifier] = new API(isnamed ? API_TYPE.named_only : API_TYPE.default_only, [], true)
+			}
+			return this.apiKey[moduleSpecifier]
+		} else if (builtin || funcs) {//should be and, but safer and effective with or
+			//default
+			if (!this.apiKey[moduleSpecifier]) {
+
+				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, [], true)
+			}
+			return this.apiKey[moduleSpecifier];
+		} else {
+			let _path
+
+			if (!moduleSpecifier) {
+
+				_path = jsFile.getRelative( )
+				if (!this.apiKey[_path]) {
+					this.apiKey[_path] = new API(API_TYPE.none)
+				}
+			} else {
+				//resolve
+
+				_path = join(path.dirname(jsFile.getRelative()), moduleSpecifier)
+				if (!this.apiKey[_path]) {
+					this.apiKey[_path] = new API(API_TYPE.none)
+				}
+			}
+
+
+			return this.apiKey[_path];
+
+
+		}
 	}
+
+	// addSelf(api: API, jsFile: JSFile | CJSToJSON) {
+	// 	this.apiKey[jsFile.getRelative()] = api
+	// }
 
 	// private _forceMap: {[key:string]:boolean } = {}
 	// forceMap() {
 	// 	return this._forceMap
 	// }
+
+	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
+
+		return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
+
+	}
+
+	register(jsFile: JSFile | CJSToJSON, api: API) {
+		return this.apiKey[cleanMIS(join(path.dirname(jsFile.getRelative())))] = api
+	}
 }
 
 export class FileFactory {
@@ -174,3 +240,4 @@ export class FileFactory {
 	}
 
 }
+

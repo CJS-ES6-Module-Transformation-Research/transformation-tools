@@ -1,13 +1,11 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
-import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
-import {API} from "../transformations/export_transformations/API";
+import {API, API_TYPE} from "../transformations/export_transformations/API";
 // test_resources.import {ExportRegistry} from "../transformations/export_transformations/ExportRegistry.js";
-import {API_TYPE, ExportBuilder} from "../transformations/export_transformations/ExportsBuilder";
-import {ImportManager} from "../transformations/import_transformations/ImportManager";
 import {AbstractDataFile} from './Abstractions'
 import {Dir} from './Dirv2'
 import {ModuleAPIMap} from "./Factory";
@@ -18,14 +16,10 @@ type script_or_module = "script" | "module"
 
 
 export class JSFile extends AbstractDataFile {
-	setAPI(api: API) {
-		this.api = api
-		this.apiMap.addSelf(this.api, this)
-	}
+
 
 	private api: API;
 	private apiMap: ModuleAPIMap;
-	private importList: ImportDeclaration[] = [];
 	private readonly _usesNames: boolean;
 
 
@@ -42,12 +36,8 @@ export class JSFile extends AbstractDataFile {
 	private toAddToBottom: (Directive | Statement | ModuleDeclaration)[] = []
 
 	private stringReplace: { [key: string]: string } = {};
-	private replacer: (s: string) => string = (s) => s;
 
-	private imports: ImportManager
-	// private exports: ExportBuilder;
 	private to_insert_copyByValue: VariableDeclaration[] = []
-	// private exportRegistry:ExportRegistry
 
 	private namespace: Namespace
 	private moduleType: script_or_module;
@@ -65,6 +55,7 @@ export class JSFile extends AbstractDataFile {
 		this.removeStrict();
 		this.namespace = Namespace.create(this.ast)
 		this.apiMap = b.moduleAPIMap
+		this.apiMap.register(this, new API(API_TYPE.none))
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 
@@ -185,19 +176,14 @@ export class JSFile extends AbstractDataFile {
 			body.splice(0, 0, e)
 		})
 
-		// this.getImportManager().buildDeclList().forEach(e => {
-		// 	newAST.body.splice(0, 0, e)
-		// })
-		this.importList.forEach(e => {
-			newAST.body.splice(0, 0, e)
-		})
 
-		//MUST BE LAST
-		if (this.isStrict && this.ast.sourceType !== "module") {
-			this.ast.body.splice(0, 0,
-				JSFile.useStrict
-			);
-		}
+
+		// //MUST BE LAST
+		// if (this.isStrict && this.ast.sourceType !== "module") {
+		// 	this.ast.body.splice(0, 0,
+		// 		JSFile.useStrict
+		// 	);
+		// }
 		return newAST;
 	}
 
@@ -281,19 +267,19 @@ export class JSFile extends AbstractDataFile {
 		return this.namespace;
 	}
 
-
-	/**
-	 * gets the JSFiles ImportManager.
-	 */
-	getImportManager(): ImportManager {
-		if (!this.imports) {
-			let apiFunc = (e: string) => {
-				return this.apiMap.resolveSpecifier(e, this)
-			}
-			this.imports = new ImportManager(this.apiMap, apiFunc, this);
-		}
-		return this.imports;
-	}
+	//
+	// /**
+	//  * gets the JSFiles ImportManager.
+	//  */
+	// getImportManager(): ImportManager {
+	// 	if (!this.imports) {
+	// 		let apiFunc = (e: string) => {
+	// 			return this.apiMap.resolveSpecifier(e, this)
+	// 		}
+	// 		this.imports = new ImportManager(this.apiMap, apiFunc, this);
+	// 	}
+	// 	return this.imports;
+	// }
 
 
 	// getExportBuilder(exportType: API_TYPE.default_only | API_TYPE.synthetic_named = null): ExportBuilder {
@@ -364,20 +350,6 @@ export class JSFile extends AbstractDataFile {
 		};
 	}
 
-	// getAPI(moduleSpecifier: string) {
-	// 	return this.parent().getModMap().resolveSpecifier(moduleSpecifier, this)
-	// }
-
-	registerAPI() {
-		console.log('registering api')
-		// if (!(this.exports.getBuilt())) {
-		// 	throw new Error("ERROR")
-		// }
-		// this.api = this.exports.getAPI()
-		this.apiMap.addSelf(this.api, this)
-
-	}
-
 	insertCopyByValue(copiedValue: VariableDeclaration) {
 		this.to_insert_copyByValue.push(copiedValue)
 	}
@@ -416,11 +388,8 @@ export class JSFile extends AbstractDataFile {
 		return this._usesNames;
 	}
 
-	addAnImport(_import: ImportDeclaration) {
-		this.importList.push(_import)
-	}
 
-	data_based_imports: Imports;
+	private  data_based_imports: Imports;
 
 	setImports(imports: Imports) {
 		this.data_based_imports = imports

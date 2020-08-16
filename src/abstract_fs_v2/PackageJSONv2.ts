@@ -1,6 +1,5 @@
-import {API} from "../transformations/export_transformations/API";
-import {API_TYPE} from "../transformations/export_transformations/ExportsBuilder";
-import {AbstractDataFile} from './Abstractions'
+import {API, API_TYPE} from "../transformations/export_transformations/API";
+ import {AbstractDataFile} from './Abstractions'
 import {Dir} from "./Dirv2";
 import {MetaData, SerializedJSData} from "./interfaces";
 
@@ -64,7 +63,8 @@ export class CJSToJSON extends AbstractDataFile {
 	constructor(path: string, metadata: MetaData, parent: Dir, data: string) {
 		super(path, metadata, parent, data);
 		let api = new API(API_TYPE.default_only,['default'])
-		metadata.moduleAPIMap.addSelf(api, this)
+		metadata.moduleAPIMap.resolveSpecifier( this, path).setType(API_TYPE.default_only )
+		// metadata.moduleAPIMap.addSelf(api, this)
 	}
 
 }

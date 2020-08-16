@@ -1,11 +1,12 @@
 import {ProjectManager} from "./abstract_fs_v2/ProjectManager";
 import {__fd_2x, getDeclaredModuleImports, reqPropertyInfoGather} from "./InfoGatherer";
-import {__exports} from "./transformations/export_transformations/visitors/ExportPass";
+import { __exports} from "./transformations/export_transformations/visitors/ExportPass";
 import {hacker_defaults} from "./transformations/import_transformations/visitors/hack";
 import {insertImports} from "./transformations/import_transformations/visitors/insert_imports";
 //require strings x2
 import {accessReplace, flattenDecls, jsonRequire, requireStringSanitizer} from "./transformations/sanitizing/visitors";
 import {add__dirname} from "./transformations/sanitizing/visitors/__dirname";
+import {deconsFlatten} from "./transformations/sanitizing/visitors/patternFlatten";
 
 function toModule(projectManager: ProjectManager) {
 	projectManager.forEachSource(js => {
@@ -41,7 +42,7 @@ function _sanitize(projectManager: ProjectManager) {
 	projectManager.forEachSource(requireStringSanitizer, "string sanitize")
 	projectManager.forEachSource(jsonRequire, "JSON require sanitize")
 
-	// projectManager.forEachSource(deconsFlatten ,'dc flt')
+	projectManager.forEachSource(deconsFlatten ,'dc flt')
 	// todo rewrite for the fwk
 	projectManager.forEachSource(flattenDecls, "Declaration Flattener")
 

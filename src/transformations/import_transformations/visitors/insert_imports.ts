@@ -1,18 +1,16 @@
-import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from "estraverse";
 import * as ESTree from "estree";
 import {Identifier, ImportSpecifier} from "estree";
-import {id} from "../../../abstract_fs_v2/interfaces";
+import {built_ins, builtins_funcs} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {getListOfVars, getOneOffForcedDefaults} from "../../../InfoGatherer";
 import {Imports, InfoTracker, WithPropNames} from "../../../InfoTracker";
-import {API} from "../../export_transformations/API";
-import {API_TYPE} from "../../export_transformations/ExportsBuilder";
-import {built_ins, builtins_funcs} from "../ImportManager";
+import {API, API_TYPE} from "../../export_transformations/API";
 
-function cleanModuleSpecifier(moduleSpecifier: string): string {
+export function cleanMIS(moduleSpecifier: string): string {
 	return moduleSpecifier.replace(/^\.{0,2}\//, '')
 }
+
 
 export function insertImports(js: JSFile) {
 	// console.log(`calling insertImports on jsfile : ${js.getRelative()} `)
@@ -20,33 +18,43 @@ export function insertImports(js: JSFile) {
 	let infoTracker = js.getInfoTracker();
 	let listOfVars = getListOfVars(infoTracker)
 	let MAM = js.getAPIMap()
-	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier(mspec, js)), MAM, js.getInfoTracker())
+	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier( js,mspec)), MAM, js.getInfoTracker())
 	js.setImports(_imports)
 	let demap = infoTracker.getDeMap()
 	let one_offs = getOneOffForcedDefaults(js.getAST(), listOfVars)
 	let propNameReplaceMap: { [base: string]: { [property: string]: string } } = {}//replaceName
+	let mod_map = js.getAPIMap()
+	let fetchAPI: (string) => API = (e: string) => {
+		return mod_map.resolveSpecifier(js,e)
+	}
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
 		let rpi = js.getInfoTracker().getRPI(init.name)
 		if (rpi && rpi.forceDefault) {
-			console.log(` _________ forceDefault: ${rpi.forceDefault}`)
+			// console.log(`\\\\\\\\${js.getRelative() } _________ forceDefault: ${rpi.forceDefault}`)
 			return false;
 		}
-		let mod_map = js.getAPIMap()
-		let fetchAPI: (string) => API = (e: string) => {
-			return mod_map.resolveSpecifier(e, js)
-		}
+
 		let isNamespace: boolean;
 		if (built_ins.includes(moduleSpecifier)) {
 			isNamespace = !builtins_funcs.includes(moduleSpecifier);
-			// FIXME?>>? apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
+	1		// FIXME?>>? apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
 		} else if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
-
+			if (moduleSpecifier ==='../lib/main.js'){
+				// console.log(`${'modspec'}\\\\\\\\\\\\\\\\${js.getRelative()}`)
+			}
 			isNamespace = true;
 			let req = moduleSpecifier.replace(/^\.{0,2}\//, '')
 			let api //= fetchAPI()
+			// console.log(req )
 			try {
-				api = fetchAPI(moduleSpecifier)
+
+				api = fetchAPI(req)
+				//  console.log(api.getType() )
+				// console.log(req   )
+				// if (moduleSpecifier ==='../lib/main.js'){
+				// 	// console.log(`<><> ib/main ${api.getType() }${js.getRelative()}${fetchAPI(cleanMIS('../lib/main.js')).getType() }_()_()_${fetchAPI('../lib/main.js').getType() }`)
+				// }
 				if (api && api.getType() === API_TYPE.default_only) {
 					isNamespace = false;
 				} else {
@@ -92,7 +100,7 @@ export function insertImports(js: JSFile) {
 						// let clean = cleanModuleSpecifier(module_specifier)
 						// if(api && api.getType() ===API_TYPE.named_only){
 						// }
-						let  _id = node.declarations[0].id.name
+						let _id = node.declarations[0].id.name
 						let module_specifier = node.declarations[0].init.arguments[0].value.toString()
 						let wpn: WithPropNames = _imports.getWPN()
 						let api = wpn.api[module_specifier];
@@ -100,9 +108,9 @@ export function insertImports(js: JSFile) {
 						let map = js.getAPIMap()
 						let isBuiltin = (built_ins.includes(module_specifier)
 							&& (!builtins_funcs.includes(module_specifier)))
-						let isNamedAPI= false ;
-						if(api){
-							isNamedAPI = (api.getType() === API_TYPE.named_only )
+						let isNamedAPI = false;
+						if (api) {
+							isNamedAPI = (api.getType() === API_TYPE.named_only)
 						}
 
 // 						if (js.getRelative().includes("import_stuff.js")) {
@@ -123,10 +131,10 @@ export function insertImports(js: JSFile) {
 // 							// console.log(module_specifier)
 // 							// console.log(node.declarations[0].id.name)
 // 						}
-						one_offs = null ;
-						console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed() } && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
+						one_offs = null;
+						console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed()} && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
 						// let isOneOff = one_offs[_id]
-						if (js.usesNamed() && isNamespace &&(isBuiltin || isNamedAPI)&&( !one_offs)) {
+						if (js.usesNamed() && isNamespace && (isBuiltin || isNamedAPI) && (!one_offs)) {
 							// console.log('named imports ' + api.getType() + " "+isNamespace)
 							namedImports(info, _id, module_specifier, api, wpn)
 						} else {
@@ -152,6 +160,7 @@ export function insertImports(js: JSFile) {
 						&& node.expression.arguments.length
 						&& node.expression.arguments[0].type === "Literal"
 					) {
+
 						_imports.add({
 							type: "ImportDeclaration",
 							source: node.expression.arguments[0],
@@ -209,7 +218,7 @@ export function insertImports(js: JSFile) {
 
 		let specifiers: ImportSpecifier[] = []
 		if ((!rpi)) {
-			console.log(       )
+			console.log()
 			console.log(`in file: ${js.getRelative()} identifier   ${id}+ had no rpi ${module_specifier}`)
 			throw new Error(`in file: ${js.getRelative()} identifier   ${id}+ had no rpi ${module_specifier}`)
 
@@ -228,12 +237,12 @@ export function insertImports(js: JSFile) {
 			if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][e] === e) {
 				accessed = {type: "Identifier", name: wpn.aliases[module_specifier][e]}
 			} else {
-				let _id=wpn.fromSpec[module_specifier]
+				let _id = wpn.fromSpec[module_specifier]
 				if (_id) {
 					accessed = {type: "Identifier", name: e}
-				}else{
-					throw new Error ('accessed could not find id from spec: '+module_specifier )
-				//js.getNamespace().generateBestName(e)
+				} else {
+					throw new Error('accessed could not find id from spec: ' + module_specifier)
+					//js.getNamespace().generateBestName(e)
 				}
 			}
 			// demap.fromId[id]
