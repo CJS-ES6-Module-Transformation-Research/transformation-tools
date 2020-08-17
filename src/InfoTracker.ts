@@ -178,9 +178,7 @@ export class InfoTracker {
 
 	}
 
-	getRPI_() {
-		console.log(JSON.stringify(this, null, 2))
-	}
+
 
 	importingModule(requireString: string): Identifier {
 

@@ -62,6 +62,7 @@ export class Dir extends AbstractFile {
 				let child = this.factory()
 					.createFile(join(this.path_abs, e), this)
 				if (child && child instanceof Dir) {
+					this.factory().getDirmap()[child.getRelative()] = child;
 					child.buildTree()
 				}
 			})
@@ -153,6 +154,11 @@ export class Dir extends AbstractFile {
 
 	}
 
+
+
+	getDir(_rel: string) {
+		return this.factory().getDir(_rel )
+	}
 }
 
 

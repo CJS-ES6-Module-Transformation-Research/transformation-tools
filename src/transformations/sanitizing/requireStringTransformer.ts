@@ -1,6 +1,7 @@
-import {extname, resolve} from 'path'
 import {existsSync, lstatSync} from 'fs'
+import {dirname, extname, join, resolve} from 'path'
 import relative from "relative";
+import {JSFile} from "../../abstract_fs_v2/JSv2";
 
 
 const _JS = ".js";
@@ -10,73 +11,86 @@ const _JSON = ".json";
  * Require String object transformer that generates the expected ES6 version of the require string.
  */
 export class RequireStringTransformer {
-    private dirname: string;
-    private main:string
-    constructor(dirname: string,main:string) {
-        this.dirname = dirname
-        this.main = main
-    }
+	private readonly dirname: string;
+	private js: JSFile
 
-    private absPath(path: string) {
-        return resolve(this.dirname, path)
-    }
+	constructor(js: JSFile) {
+		this.dirname = dirname(js.getAbsolute())
+		this.js = js;
+	}
 
-    /**
-     * Transforms require string to ES6 string based on project.
-     * @param path require string.
-     */
-    getTransformed(path: string) {
-        let absolute: string = this.absPath(path)
-        let computedPath: string
+	private computeMain(_path: string) {
+		return this.js.getParent().getDir(
+			join(
+				this.js.getParent().getRelative(),
+				dirname(_path)))
+			.getPackageJSON()
+			.getMain()
+	}
 
+	private absPath(path: string) {
+		return resolve(this.dirname, path)
+	}
 
-        if (path.charAt(0) !== '.' && path.charAt(0) !== '/') {
-            return path
-        } else if ((isBoth(absolute) && path.lastIndexOf('/') !== (path.length - 1))
-            || !isDir(absolute)) {
+	/**
+	 * Transforms require string to ES6 string based on project.
+	 * @param _path require string.
+	 */
+	getTransformed(_path: string) {
 
-            if (isJS(absolute)) {
-                computedPath = extname(absolute) !== "" ? absolute : absolute + _JS
-            } else if (isJSON(absolute)) {
-                computedPath = extname(absolute) !== "" ? absolute : absolute + _JSON
-            } else {
-                computedPath = absolute
-            }
-        } else {//directory
-            computedPath =  `${absolute}/${this.main? this.main:'index.js'}`
-        }
- 
-        let relativized: string = relative(this.dirname, computedPath,null); 
+		let absolute: string = this.absPath(_path)
+		let computedPath: string
+		let main = this.computeMain(_path)
 
-        if (!(relativized.charAt(0) === '.') && !(relativized.charAt(0) === '/')) {
-            relativized = "./" + relativized
-        }
+		if (_path.charAt(0) !== '.' && _path.charAt(0) !== '/') {
+			//todo: many more cases here /
+			//  node submodules
+			return _path
+		} else if ((isBoth(absolute) && _path.lastIndexOf('/') !== (_path.length - 1))
+			|| !isDir(absolute)) {
 
-        function isBoth(path: string) {
+			if (isJS(absolute)) {
+				computedPath = extname(absolute) !== "" ? absolute : absolute + _JS
+			} else if (isJSON(absolute)) {
+				computedPath = extname(absolute) !== "" ? absolute : absolute + _JSON
+			} else {
+				computedPath = absolute
+			}
+		} else {//directory
+			computedPath = `${absolute}/${main}`
+		}
 
-            return ((isJS(path) || isJSON(path))
-                && isDir(path))
-        }
+		let relativized: string = relative(this.dirname, computedPath, null);
 
-        function isJS(path: string) {
-            return extname(path) === _JS
-                || existsSync(path + _JS)
-        }
+		if (!(relativized.charAt(0) === '.') && !(relativized.charAt(0) === '/')) {
+			relativized = "./" + relativized
+		}
 
-        function isJSON(path: string) {
-            return extname(path) === _JSON || existsSync(path + _JSON)
-        }
+		function isBoth(path: string) {
 
-        function isDir(path: string) {
-            try {
-                return lstatSync(path).isDirectory()
-            } catch (err) {
-                return false;
-            }
-        }
+			return ((isJS(path) || isJSON(path))
+				&& isDir(path))
+		}
 
-        return relativized;
-    }
+		function isJS(path: string) {
+			return extname(path) === _JS
+				|| existsSync(path + _JS)
+		}
+
+		function isJSON(path: string) {
+			return extname(path) === _JSON || existsSync(path + _JSON)
+		}
+
+		function isDir(path: string) {
+			try {
+				return lstatSync(path).isDirectory()
+			} catch (err) {
+				return false;
+			}
+		}
+
+		return relativized;
+	}
 
 
 }

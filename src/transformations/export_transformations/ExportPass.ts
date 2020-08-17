@@ -168,7 +168,7 @@ class ExportPass {
 					// let api = new API(API_TYPE.default_only,names, false )
 					let z = this.getAPI()
 						z.setType(API_TYPE.default_only)
-					console.log(`z: ==== ${z.getType()}`)
+					// console.log(`z: ==== ${z.getType()}`)
 					this.getAPI().setNames(names)
 					return declaration
 				} else {
@@ -192,7 +192,7 @@ class ExportPass {
 		this.getAPI() .setNames(names)
 		let z = this.getAPI()
 		// z.setType(API_TYPE)
-		console.log(`z: ==== ${z.getType()}`)
+		// console.log(`z: ==== ${z.getType()}`)
 
 		if (this.js.getRelative() === 'lib/main.js') {
 			// console.log(`____ ${this.tracker.type}`)

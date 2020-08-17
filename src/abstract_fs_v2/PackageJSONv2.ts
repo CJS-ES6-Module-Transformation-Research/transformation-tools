@@ -34,7 +34,7 @@ export class PackageJSON extends AbstractDataFile {
 	}
 
 	getMain(): string {
-		return this.main;
+		return this.main || "index.js";
 	}
 
 

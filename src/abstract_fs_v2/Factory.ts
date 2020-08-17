@@ -16,7 +16,8 @@ export interface API_KeyMap {
 
 export class ModuleAPIMap {
 	apiKey: API_KeyMap = {} //_initBuiltins ();
-	readonly id:number = Math.floor(Math.random() * 100)
+	readonly id: number = Math.floor(Math.random() * 100)
+
 	submitNodeModule(moduleSpecifier: string): API {
 		moduleSpecifier = cleanMIS(moduleSpecifier)
 		let builtin: boolean = built_ins.includes(moduleSpecifier)
@@ -32,15 +33,14 @@ export class ModuleAPIMap {
 
 	}
 
-	display(){
-		for (let key in this.apiKey){
-			console.log(`key: ${key} : apistring: ${this.apiKey[key]}`)
+	display() {
+		for (let key in this.apiKey) {
+			// console.log(`key: ${key} : apistring: ${this.apiKey[key]}`)
 		}
 	}
 
 	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string = ''): API {
 		// console.log(`call to resolve specifier from ${jsFile.getRelative()} to module specifier ${moduleSpecifier || 'intended to be itself'}`)
-		console.log(this.id )
 		let builtin: boolean = built_ins.includes(moduleSpecifier)
 		let funcs: boolean = builtins_funcs.includes(moduleSpecifier)
 
@@ -51,21 +51,21 @@ export class ModuleAPIMap {
 		// 	moduleSpecifier = cleanMIS(moduleSpecifier)
 		// 	// console.log(`accessing ${moduleSpecifier} which ${this.apiKey[moduleSpecifier] ? 'existed':'must be created '}`)
 		// }else
-		if (moduleSpecifier && (!builtin)&&( !(moduleSpecifier.startsWith('.')|| moduleSpecifier.startsWith('/')))) {
+		if (moduleSpecifier && (!builtin) && (!(moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')))) {
 			this.apiKey[moduleSpecifier] = this.apiKey[moduleSpecifier] || new API(API_TYPE.default_only)
 			// console.log('installed: ' + moduleSpecifier)
 			return this.apiKey[moduleSpecifier]
-		} else if (moduleSpecifier&&builtin && (!funcs)) {
+		} else if (moduleSpecifier && builtin && (!funcs)) {
 			//check
 			assert(moduleSpecifier)
-			if( (!this.apiKey[moduleSpecifier])) {
+			if ((!this.apiKey[moduleSpecifier])) {
 				let isnamed = (jsFile as JSFile).usesNamed()
 				this.apiKey[moduleSpecifier] = new API(isnamed ? API_TYPE.named_only : API_TYPE.default_only, [], true)
 			}
 			// console.log(`GET  api for ${moduleSpecifier || 'self'} with api type of ${this.apiKey[moduleSpecifier].getType()}`)
 			return this.apiKey[moduleSpecifier]
 		} else if (isBuiltin) {//should be and, but safer and effective with or
-			assert (moduleSpecifier)
+			assert(moduleSpecifier)
 			//default
 			if (!this.apiKey[moduleSpecifier]) {
 
@@ -137,6 +137,11 @@ export class FileFactory {
 		this.uses_names = uses_names
 	}
 
+	getDirmap() {
+		return this.dirmap
+	}
+
+	private dirmap: { [key: string]: Dir } = {}
 
 	getRoot() {
 		return this.root_dir;
@@ -189,7 +194,9 @@ export class FileFactory {
 		let resolved = resolve(this.rootPath)
 		let stat = lstatSync(resolved)
 		let data: MetaData = this.getData(stat, resolved)
-		return new Dir(this.rootPath, data, null, this, this.rc);
+		let dir = new Dir(this.rootPath, data, null, this, this.rc);
+		this.dirs['.'] = dir
+		return dir
 	};
 
 
@@ -216,7 +223,9 @@ export class FileFactory {
 		switch (data.type) {
 
 			case FileType.dir:
-				return new Dir(path, data, parent, this, this.rc)
+				let dir = new Dir(path, data, parent, this, this.rc)
+				this.dirs[dir.getRelative()] = dir;
+				return dir
 				break;
 			case FileType.js:
 				return new JSFile(path, data, parent, this.isModule)
@@ -228,6 +237,12 @@ export class FileFactory {
 				return null;
 		}
 	}
+
+	getDir(dir: string) {
+		return this.dirs[dir]
+	}
+
+	private dirs: { [dir: string]: Dir } = {}
 
 	private determineType(path: string, stat): FileType {
 
@@ -258,6 +273,7 @@ export class FileFactory {
 
 		}
 	}
+
 
 }
 
