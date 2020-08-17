@@ -1,5 +1,5 @@
 import {mkdirSync, readdirSync} from "fs";
-import {basename, join} from "path";
+import path, {basename, join} from "path";
 import {API} from "../transformations/export_transformations/API";
 import {AbstractFile} from "./Abstractions";
 import {FileFactory, ModuleAPIMap} from "./Factory";
@@ -29,12 +29,33 @@ export class Dir extends AbstractFile {
 		this.children.push(child)
 	}
 
-	constructor(path: string, b: MetaData, parent: Dir, factory: FileFactory, rc: ModuleAPIMap) {
+	constructor(path: string, b: MetaData, parent: Dir, factory: FileFactory, rc: ModuleAPIMap, ignored:string[]=[] ) {
 		super(path, b, parent);
 		this.modMap = rc;
 		this.factory = () => factory;
 		this.childrenNames = readdirSync(this.path_abs)
-		this.root = factory.rootPath
+		let hasBeen:string=''
+		let illegal = ''
+		let x = []
+		this.childrenNames.forEach((child)=>{
+			ignored.forEach((ig:string) => {
+				let rel = require('path').relative(ig,   join(this.path_abs, child))
+				if (!rel){
+					hasBeen= ig
+					illegal = child
+				}else {
+					hasBeen=''
+				}
+
+				x.push (illegal)
+			})
+			// if (hasBeen){
+			// 	ignored.splice(ignored.indexOf(hasBeen),1)
+			// }
+		})
+
+
+ 		this.root = factory.rootPath
 		this.apiMap = {};
 	}
 
@@ -57,6 +78,7 @@ export class Dir extends AbstractFile {
 			this.children = [];
 			return;
 		}
+
 		readdirSync(this.getAbsolute())
 			.forEach(e => {
 				let child = this.factory()

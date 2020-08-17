@@ -65,14 +65,12 @@ export class JSFile extends AbstractDataFile {
 		let json_loc =  join( dirname(this.getAbsolute()), moduleID)
 
 		let parentDir = parent.getAbsolute()
-		console.log(`${this.getRelative()}   spec:${moduleID}    parent:${parentDir}   ${json_loc}`)
 
 
 		let base = basename(moduleID, ".json");
 
 		let cjsName = `${base}.cjs`
 
-console.log ()
 		if (existsSync(join(parentDir, cjsName))) {
 			let i = 0;
 			let cjsName = `${base}_${i}.cjs`
@@ -87,9 +85,7 @@ console.log ()
 
 		//FIXME
 		dirRelativeToRoot = dirname(this.getRelative())
-// console.log(this.parent().getRootDirPath())
-// console.log("JOIN ")
-// 		console.log(`${(json_loc)}.cjs`)
+
 		let loc = `${(json_loc)}.cjs`
 		let builder = {//${dirRelativeToRoot}/
 			// cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
@@ -341,7 +337,7 @@ getApi(){
 			console.log(`CAUGHT generate in file ${this.path_relative} with exception: ${e}`)
 			// console.log(JSON.stringify(program,null,3)	)
 
-			console.log()
+			// console.log()
 			throw e
 			// process.exit(-1)
 		}
@@ -351,7 +347,7 @@ getApi(){
 
 		for (let key in this.stringReplace) {
 			let value = this.stringReplace[key];
-			console.log(`replacing ${key} with ${value}`)
+			// console.log(`replacing ${key} with ${value}`)
 			//like test_resources.import.meta.url
 			if (!programString) {
 				throw new Error(`FAILED: pre replace `)

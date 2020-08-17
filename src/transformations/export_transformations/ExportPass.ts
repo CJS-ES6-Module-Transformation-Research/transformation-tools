@@ -321,10 +321,10 @@ export function __exports(js: JSFile) {
 				if (exportPass.hasLocalID(exported.name)) {
 					preexisting = exportPass.getLocalID(exported.name)
 					if (preexisting) {
-						console.log(`_exname: ${preexisting.name}`)
+						// console.log(`_exname: ${preexisting.name}`)
 						node.expression.left = preexisting
 					}
-					console.log(`exname: ${preexisting.name}`)
+					// console.log(`exname: ${preexisting.name}`)
 				}
 				if (rhs.type === "Identifier") {
 
@@ -347,10 +347,10 @@ export function __exports(js: JSFile) {
 						if (!(exportPass.hasLocalID(exported.name))) {
 
 							local = namespace.generateBestName(exported.name)
-							console.log(`reset local b/c haslocalid of exported.name: ${local.name}`)
+							// console.log(`reset local b/c haslocalid of exported.name: ${local.name}`)
 						} else {
-							console.log(`exported: ${exported.name}`)
-							console.log(`local: ${local.name}`)
+							// console.log(`exported: ${exported.name}`)
+							// console.log(`local: ${local.name}`)
 
 						}
 						// console.log(`localized: ${local.name}`)
@@ -446,8 +446,8 @@ export function __exports(js: JSFile) {
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
 		js.getAST().body.push(ex_decl)
 	}
-	console.log()
-	js.getAPIMap().display()
+	// console.log()
+	// js.getAPIMap().display()
 	///////////////////////////////////// 	exReplace(js)
 	if (__default_exports_id) {
 		let decl: VariableDeclaration = {

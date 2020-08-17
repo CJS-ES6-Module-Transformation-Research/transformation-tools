@@ -171,12 +171,12 @@ let ast: Program
 // 	console.log(`${key} size is: ${value.objs.size}`)
 // 	value.objs.forEach(e => console.log(`${key}: ${e}`))
 // }
-
-ast = parseModule(`
-require('mocha');
-`)
-let b = (ast.body[0 ] as ExpressionStatement).expression
-console.log(b )
+//
+// ast = parseModule(`
+// require('mocha');
+// `)
+// let b = (ast.body[0 ] as ExpressionStatement).expression
+// console.log(b )
 
 
 

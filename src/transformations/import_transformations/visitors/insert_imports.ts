@@ -183,17 +183,9 @@ export function insertImports(js: JSFile) {
 		// }
 		// let id = node.declarations[0].id.name
 		let rpi = info.getRPI(id);
-		// info.getRPI_()
-		// console.log(`${js.getRelative()}ID:${id}||`)
-		// console.loog(`api type of variable ${id} importing ${module_specifier} is ${isNamespace?  "named":"default"}`)
 
 		let specifiers: ImportSpecifier[] = []
-		if ((!rpi)) {
-			console.log()
-			console.log(`in file: ${js.getRelative()} identifier   ${id}+ had no rpi ${module_specifier}`)
-			throw new Error(`in file: ${js.getRelative()} identifier   ${id}+ had no rpi ${module_specifier}`)
 
-		}
 		// let apiexports = api.getExports()
 
 		let accessables: string[] = rpi.allAccessedProps// .filter(e => apiexports.includes(e))

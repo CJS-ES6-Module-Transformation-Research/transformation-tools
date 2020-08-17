@@ -348,14 +348,11 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 for (let forced in def_aults) {
 	if (def_aults[forced]){
 		let specD = demap.fromId[forced]
-		console.log('create or set forced default:   '+ specD )
-		let e:API;
+ 		let e:API;
 		mmp.createOrSet(js,  specD, (a)=> {
 			a.setType(API_TYPE.default_only, true)
 		},API_TYPE.default_only, true )
-		console.log(`river bridge ${''   }`)
-		console.log(JSON.stringify(js.getAPIMap().apiKey,null,3  ))
-		console.log ("XUA_FD  resolve: "+ js.getRelative()+"\t" +mmp.resolve(specD, js))
+
 		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 	}
 		// throw new Error("see above todo ")

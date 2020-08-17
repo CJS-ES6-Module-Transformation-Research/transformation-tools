@@ -13,21 +13,11 @@ const cwd = process.cwd()
 type naming = "default" | "named"
 let {input, output, suffix, operation, naming_format,ignored } = getOptionData();
 
+if (input) {
+	executioner(new ProjectManager(input,
+		getProjConstructionOpts(suffix, output, operation, naming_format, ignored)))
 
-executioner(new ProjectManager(input,
-	getProjConstructionOpts(suffix, output, operation, naming_format,ignored)))
-
-// interface _named{
-// 	named:
-// }
-// interface  x extends InferredOptionTypes<any> {
-// 	named?:{type: "boolean"}
-// 	'default'?:{type: "boolean"}
-// 	ignored?: {type: "string"}
-//
-// }
-// type PA = x & ProgramArgs
-
+}
 export interface ProgramArgs {
 	source: string
 	dest?: string
@@ -48,7 +38,7 @@ export function getProjConstructionOpts(suffix, output, operation, naming_format
 		write_status: operation,
 		copy_node_modules: false, //TODO
 		isNamed: naming_format === "named",
-		// ignored
+		ignored:ignored
 	};
 }
 

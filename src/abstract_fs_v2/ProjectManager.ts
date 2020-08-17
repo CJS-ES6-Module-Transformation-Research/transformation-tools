@@ -16,6 +16,7 @@ export interface ProjConstructionOpts {
 	isModule?: boolean
 	isNamed: boolean
 	copy_node_modules?: boolean
+	ignored?: string[]
 }
 
 export class ProjectManager {
@@ -54,7 +55,7 @@ export class ProjectManager {
 
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 
-		this.factory = new FileFactory(path, this.uses_names, opts.isModule, this);
+		this.factory = new FileFactory(path, this.uses_names, opts.isModule,opts.ignored, this);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
