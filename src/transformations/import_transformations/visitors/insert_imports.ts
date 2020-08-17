@@ -19,75 +19,26 @@ export function insertImports(js: JSFile) {
 	let listOfVars = getListOfVars(infoTracker)
 	let MAM = js.getAPIMap()
 	js.getAPIMap()
-	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier( js,mspec)), MAM, js.getInfoTracker())
+	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier(js, mspec)), MAM, js.getInfoTracker())
 	js.setImports(_imports)
 	let demap = infoTracker.getDeMap()
 	let one_offs = getOneOffForcedDefaults(js.getAST(), listOfVars)
 	let propNameReplaceMap: { [base: string]: { [property: string]: string } } = {}//replaceName
 	let mod_map = js.getAPIMap()
-	let fetchAPI: (string) => API = (e: string) => {
-		return mod_map.resolveSpecifier(js,e)
-	}
+
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
 		let rpi = js.getInfoTracker().getRPI(init.name)
-		if (rpi && rpi.forceDefault) {
-			if (js.getRelative().includes('formatter.test')){
-				console.log('fdfdXX formatter && '+ 'req'  +" " )
-			}
-			// console.log(`\\\\\\\\${js.getRelative() } _________ forceDefault: ${rpi.forceDefault}`)
+	try {
+		let api = js.getAPIMap().resolveSpecifier(js, moduleSpecifier)
+
+		if (api.getType() !== API_TYPE.named_only) {
 			return false;
 		}
-		if (js.getRelative().includes('formatter.test')){
-			console.log('XX formatter && '+ 'req'  +" " )
-		}
-		let isNamespace: boolean;
-
-		if (built_ins.includes(moduleSpecifier)) {
-			if (js.getRelative().includes('formatter.test')){
-				console.log('?? formatter && '+ 'req'  +" " )
-			}
-			isNamespace = !builtins_funcs.includes(moduleSpecifier);
-	 		// FIXME?>>? apiMap.apiKey["apiKey"] = new API(API_TYPE.named_only,[],true)
-		} else if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
-
-			isNamespace = true;
-			let req = moduleSpecifier.replace(/^\.{0,2}\//, '')
-			let api //= fetchAPI()
-			// console.log(req )
-			try {
-
-				// api = fetchAPI(req)
-				api = js.getAPIMap().resolveSpecifier(js,req )
-				//  console.log(api.getType() )
-				// console.log(req   )
-				// if (moduleSpecifier ==='../lib/main.js'){
-				// 	// console.log(`<><> ib/main ${api.getType() }${js.getRelative()}${fetchAPI(cleanMIS('../lib/main.js')).getType() }_()_()_${fetchAPI('../lib/main.js').getType() }`)
-				// }
-				if (js.getRelative().includes('formatter.test')){
-					console.log('  zztp formatter && '+ 'req'  +" " +api.getType())
-				}
-				if (api && api.getType() === API_TYPE.default_only) {
-					console.log(js.getRelative()+" api is default "+req )
-					if (js.getRelative().includes('formatter.test')){
-						console.log('idn=f formatter && '+ 'req'  +" " )
-					}
-					isNamespace = false;
-					return false;
-				} else {
-					if (js.getRelative().includes('formatter.test')){
-						console.log('isn=t  formatter && '+ 'req'  +" " )
-					}
-					isNamespace = true;
-				}
-			} catch (e) {
-				console.log(`api exception: ${js.getParent().getRelative()} ${req}  ${moduleSpecifier.replace(/^\.{0,2}\//, '')} `)
-				throw e
-			}
-		} else {
-			isNamespace = false;
-		}
-		return isNamespace;
+	}catch (e) {
+		console.log('failed on '+js.getRelative()+"      " +moduleSpecifier)
+	}
+		return true;
 	}
 
 

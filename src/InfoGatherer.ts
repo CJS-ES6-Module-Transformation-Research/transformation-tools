@@ -2,7 +2,7 @@ import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
-import {API_TYPE} from "./transformations/export_transformations/API";
+import {API, API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -304,7 +304,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	getPropsCalledOrAccd(ast, rpis, shadows);
 	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
 	if (forcedDefault){
-		js.getAPIMap().resolveSpecifier(js).setType(API_TYPE.default_only, true)
+		js.getApi().setType(API_TYPE.default_only, true)
 	}
 	requireMgr.setForcedDecl(forcedDefault)
 
@@ -341,20 +341,6 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	}
 
-	function isnsertIt(mod: string, prop: string) {
-		if (rpis[mod]) {
-			if (!rpis[mod].allAccessedProps.includes(prop)) {
-				rpis[mod].allAccessedProps.push(prop)
-				rpis[mod].refTypeProps.push(prop)
-			} else {
-				rpis[mod].allAccessedProps.push(prop)
-				rpis[mod].refTypeProps.push(prop)
-			}
-		} else {
-			rpis[mod] = {refTypeProps: [prop], allAccessedProps: [prop], forceDefault: false, potentialPrimProps: []}
-		}
-
-	}
 
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
@@ -362,7 +348,14 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 for (let forced in def_aults) {
 	if (def_aults[forced]){
 		let specD = demap.fromId[forced]
-		mmp.resolveSpecifier(js ,specD).setType(API_TYPE.default_only, true )
+		console.log('create or set forced default:   '+ specD )
+		let e:API;
+		mmp.createOrSet(js,  specD, (a)=> {
+			a.setType(API_TYPE.default_only, true)
+		},API_TYPE.default_only, true )
+		console.log(`river bridge ${''   }`)
+		console.log(JSON.stringify(js.getAPIMap().apiKey,null,3  ))
+		console.log ("XUA_FD  resolve: "+ js.getRelative()+"\t" +mmp.resolve(specD, js))
 		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 	}
 		// throw new Error("see above todo ")
@@ -461,26 +454,6 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 }
 
-export function __fd_2x(js: JSFile) {
-	let amap = js.getAPIMap()
-	// let fm = amap.forceMap()
-	let infoTracker = js.getInfoTracker()
-	// let lov = getListOfVars(infoTracker)
-	// console.log(JSON.stringify(lov ))
-
-	// let kv = getOneOffForcedDefaults(js.getAST(),lov )
-	// console.log(JSON.stringify(kv ))
-	// let fromId = infoTracker.getDeMap().fromId
-// 	for( let id  in kv) {
-// 		if (kv[id]){
-// console.log(id +"    "+kv[id])
-//
-// 	 		let spec = fromId[id]
-// 	let 	_path = join(path.dirname( js.getRelative()), spec)
-// 			fm[_path] = true;
-// 		}
-// 	}
-}
 
 export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[]) {
 	let fdMap: { [id: string]: boolean } = {}

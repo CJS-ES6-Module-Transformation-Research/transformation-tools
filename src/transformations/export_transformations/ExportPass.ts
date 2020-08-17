@@ -108,11 +108,12 @@ class ExportPass {
 		if (js.getRelative() === 'lib/main.js') {
 			// console.log(`____ ${''}`)
 		}
+		this.api = this.js.getApi()
 	}
-
-	private getAPI(): API {
-		return this.js.getAPIMap().resolveSpecifier(this.js)
-	}
+	//
+	// private getAPI(): API {
+	// 	return .resolveSpecifier(this.js)
+	// }
 
 	build(): ExportNamedDeclaration | ExportDefaultDeclaration | null | undefined {
 
@@ -146,7 +147,7 @@ class ExportPass {
 					declaration: this.tracker.defaultIdentifier
 				}
 				// api = new API(API_TYPE.default_only)
-				this.getAPI().setType(API_TYPE.default_only)
+				this.api.setType(API_TYPE.default_only)
 				return declaration
 			case "named":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -165,11 +166,8 @@ class ExportPass {
 						type: "ExportDefaultDeclaration",
 						declaration: objExpr
 					}
-					// let api = new API(API_TYPE.default_only,names, false )
-					let z = this.getAPI()
-						z.setType(API_TYPE.default_only)
-					// console.log(`z: ==== ${z.getType()}`)
-					this.getAPI().setNames(names)
+					this.api.setType(API_TYPE.default_only)
+					this.api.setNames(names)
 					return declaration
 				} else {
 					return this.createNamedExports();
@@ -188,11 +186,8 @@ class ExportPass {
 			specifiers.push(val)
 		}
 		// let api = new API(API_TYPE.named_only, names)
-		this.getAPI().setType(API_TYPE.named_only)
-		this.getAPI() .setNames(names)
-		let z = this.getAPI()
-		// z.setType(API_TYPE)
-		// console.log(`z: ==== ${z.getType()}`)
+		this.api.setType(API_TYPE.named_only)
+		this.api.setNames(names)
 
 		if (this.js.getRelative() === 'lib/main.js') {
 			// console.log(`____ ${this.tracker.type}`)
@@ -451,6 +446,7 @@ export function __exports(js: JSFile) {
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
 		js.getAST().body.push(ex_decl)
 	}
+	console.log()
 	js.getAPIMap().display()
 	///////////////////////////////////// 	exReplace(js)
 	if (__default_exports_id) {

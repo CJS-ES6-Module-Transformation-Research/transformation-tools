@@ -55,7 +55,8 @@ export class JSFile extends AbstractDataFile {
 		this.removeStrict();
 		this.namespace = Namespace.create(this.ast)
 		this.apiMap = b.moduleAPIMap
-		this.apiMap.register(this, new API(API_TYPE.none))
+		this.api = new API(API_TYPE.none)
+		this.apiMap.initJS(this, this.api)
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 
@@ -115,6 +116,9 @@ console.log ()
 		}
 	}
 
+getApi(){
+		return this.api ;
+}
 
 	public addToTop(toAdd: Directive | Statement | ModuleDeclaration) {
 		this.toAddToTop.push(toAdd)
@@ -140,6 +144,10 @@ console.log ()
 		this.potentialPrims = decls
 	}
 
+
+	getJS(js:string):JSFile {
+		return this.getParent().getJS(js)
+	}
 
 	public registerReplace(replace: string, value: string): void {
 		// this.stringReplace.set(replace, value);

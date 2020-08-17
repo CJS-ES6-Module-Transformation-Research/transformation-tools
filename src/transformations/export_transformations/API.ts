@@ -3,13 +3,13 @@ import {API_KeyMap} from "../../abstract_fs_v2/Factory";
 
 export class API {
 	private isForced: boolean=false ;
-	constructor(type: API_TYPE, names: string[] = [], isBuiltin = false) {
+	constructor(type: API_TYPE, isBuiltin = false, names: string[] = []) {
 		this.type = type,
 			this.exports = []
 		this._isBuiltin = isBuiltin
 		this.non_api = this.type === API_TYPE.none
 	}
-
+	readonly id: number = Math.floor(Math.random() * 1000)
 
 	getExports(): string[] {
 		return this.exports
@@ -33,10 +33,18 @@ export class API {
 	private type: API_TYPE;
 
 	setType(_type: API_TYPE, isForced=false) {
-		this.isForced =this.isForced||  isForced ;
-		if(!this.isForced){
-			this.type = _type ;
+		if (this.isForced){
+			return
 		}
+		if (isForced){
+			this.isForced = true;
+			this.type = _type
+		}
+		this.type = _type
+		// this.isForced =this.isForced||  isForced ;
+		// if(!this.isForced){
+		// 	this.type = _type ;
+		// }
 	}
 
 	setNames(names: string[]) {
@@ -124,7 +132,7 @@ export function _initBuiltins(): API_KeyMap {
 			"worker_threads",
 			"zlib"].forEach(e => {
 			let _type = (_default_only.includes(e) ? API_TYPE.default_only : API_TYPE.named_only)
-			apis[e] = new API(_type, [], true)
+			apis[e] = new API(_type,   true)
 		})
 
 	)

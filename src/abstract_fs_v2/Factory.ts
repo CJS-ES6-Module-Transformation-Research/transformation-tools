@@ -1,4 +1,3 @@
-import assert from "assert";
 import {lstatSync, Stats} from "fs";
 import path, {basename, extname, join, normalize, relative, resolve} from "path";
 import {API, API_TYPE} from "../transformations/export_transformations/API";
@@ -34,70 +33,136 @@ export class ModuleAPIMap {
 	}
 
 	display() {
-		for (let key in this.apiKey) {
-			// console.log(`key: ${key} : apistring: ${this.apiKey[key]}`)
+		// for (let key in this.apiKey) {
+		// 	console.log(`key: ${key} : apistring: ${this.apiKey[key]}`)
+		// }
+	}
+
+	initJS(js: JSFile | CJSToJSON, api: API) {
+		this.apiKey[js.getRelative()] = api;
+	}
+
+	initModSpec() {
+
+	}
+
+	getResolve(js: JSFile) {
+
+		return function (moduleSpecifier: string) {
+			moduleSpecifier = join(path.dirname(js.getRelative()), moduleSpecifier)
+			if (this.apiKey[moduleSpecifier]) {
+				return this.apiKey[moduleSpecifier]
+			}
 		}
 	}
 
-	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string = ''): API {
-		// console.log(`call to resolve specifier from ${jsFile.getRelative()} to module specifier ${moduleSpecifier || 'intended to be itself'}`)
-		let builtin: boolean = built_ins.includes(moduleSpecifier)
-		let funcs: boolean = builtins_funcs.includes(moduleSpecifier)
-
-		let isBuiltin = builtin || funcs
-
-		// if(moduleSpecifier) ){
-		//
-		// 	moduleSpecifier = cleanMIS(moduleSpecifier)
-		// 	// console.log(`accessing ${moduleSpecifier} which ${this.apiKey[moduleSpecifier] ? 'existed':'must be created '}`)
-		// }else
-		if (moduleSpecifier && (!builtin) && (!(moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')))) {
-			this.apiKey[moduleSpecifier] = this.apiKey[moduleSpecifier] || new API(API_TYPE.default_only)
-			// console.log('installed: ' + moduleSpecifier)
-			return this.apiKey[moduleSpecifier]
-		} else if (moduleSpecifier && builtin && (!funcs)) {
-			//check
-			assert(moduleSpecifier)
-			if ((!this.apiKey[moduleSpecifier])) {
-				let isnamed = (jsFile as JSFile).usesNamed()
-				this.apiKey[moduleSpecifier] = new API(isnamed ? API_TYPE.named_only : API_TYPE.default_only, [], true)
-			}
-			// console.log(`GET  api for ${moduleSpecifier || 'self'} with api type of ${this.apiKey[moduleSpecifier].getType()}`)
-			return this.apiKey[moduleSpecifier]
-		} else if (isBuiltin) {//should be and, but safer and effective with or
-			assert(moduleSpecifier)
-			//default
-			if (!this.apiKey[moduleSpecifier]) {
-
-				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, [], true)
-				// console.log(`GET  api for ${moduleSpecifier || 'self'} with api type of ${this.apiKey[moduleSpecifier].getType()}`)
-
-			}
-			return this.apiKey[moduleSpecifier];
+	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
+		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
+			return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 		} else {
-			let _path
-
-			if (!moduleSpecifier) {
-				_path = jsFile.getRelative()
-				if (!this.apiKey[_path]) {
-					this.apiKey[_path] = new API(API_TYPE.none)
-
-				}
-			} else {
-				//resolve
-
-				_path = join(path.dirname(jsFile.getRelative()), moduleSpecifier)
-				if (!this.apiKey[_path]) {
-					this.apiKey[_path] = new API(API_TYPE.none)
-				}
-			}
-
-			// console.log(`GET api for ${_path || 'self'} with api type of ${this.apiKey[_path].getType()}`)
-
-			return this.apiKey[_path];
-
-
+			return moduleSpecifier
 		}
+
+	}
+
+	specifierExists(moduleSpecifier: string) {
+		return
+	}
+
+	createOrSet(js: JSFile, moduleSpecifier: string, createSet: (api: API) => void,_type:API_TYPE,isForced) {
+		let resolved = this.resolve(moduleSpecifier, js)
+		if (!(this.apiKey[resolved])){
+			console.log(resolved)
+			this.apiKey[resolved] = new API(API_TYPE.none)
+		}
+		this.apiKey[resolved].setType(_type,isForced)
+		// createSet( this.apiKey[resolved])
+		console.log(this.apiKey[resolved].getType() )
+	}
+
+	private builtinDefault = (x: string) => builtins_funcs.includes(x)
+	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
+
+	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
+
+		//is not bare
+		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
+			let resolved = this.resolve(moduleSpecifier, jsFile)
+			return this.apiKey[resolved]
+		} else {
+			if (this.builtinDefault(moduleSpecifier)) {
+				console.log('builtin default: ' +moduleSpecifier)
+				return new API(API_TYPE.default_only, true)
+
+			} else if (this.builtInReg(moduleSpecifier)) {
+				// throw new Error("TODO add info")
+				if (!this.apiKey[moduleSpecifier]){
+					console.log('_INIT: z>  ' +moduleSpecifier)
+
+				let _type = (jsFile as JSFile).usesNamed() ? API_TYPE.named_only :API_TYPE.default_only
+					this.apiKey[moduleSpecifier] = new API(_type,true )
+				}
+				// for (let key in this.apiKey) {
+				// 	console.log(`key: ${key} : apistring: ${this.apiKey[key]}`)
+				// }
+					console.log('_READ: A>  ' +moduleSpecifier + (this.apiKey[moduleSpecifier] || 'fail') )
+				return this.apiKey[moduleSpecifier]
+
+
+			} else {
+				return new API(API_TYPE.default_only, false)
+			}
+		}
+		//
+		// if ((!this.builtInReg(moduleSpecifier)) && (!)) {
+		// 	this.apiKey[moduleSpecifier] = this.apiKey[moduleSpecifier] || new API(API_TYPE.default_only)
+		// 	// console.log('installed: ' + moduleSpecifier)
+		// 	return this.apiKey[moduleSpecifier]
+		// } else if (moduleSpecifier && builtin && (!funcs)) {
+		// 	//check
+		// 	assert(moduleSpecifier)
+		// 	if ((!this.apiKey[moduleSpecifier])) {
+		// 		let isnamed = (jsFile as JSFile).usesNamed()
+		// 		this.apiKey[moduleSpecifier] = new API(isnamed ? API_TYPE.named_only : API_TYPE.default_only, [], true)
+		// 	}
+		// 	// console.log(`GET  api for ${moduleSpecifier || 'self'} with api type of ${this.apiKey[moduleSpecifier].getType()}`)
+		// 	return this.apiKey[moduleSpecifier]
+		// } else if (isBuiltin) {//should be and, but safer and effective with or
+		// 	assert(moduleSpecifier)
+		// 	//default
+		// 	if (!this.apiKey[moduleSpecifier]) {
+		//
+		// 		this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, [], true)
+		// 		// console.log(`GET  api for ${moduleSpecifier || 'self'} with api type of ${this.apiKey[moduleSpecifier].getType()}`)
+		//
+		// 	}
+		// 	return this.apiKey[moduleSpecifier];
+		// } else {
+		// 	let _path
+		//
+		// 	if (!moduleSpecifier) {
+		// 		console.log("abc" + JSON.stringify(this.apiKey, null, 3))
+		// 		_path = jsFile.getRelative()
+		// 		if (!this.apiKey[_path]) {
+		// 			this.apiKey[_path] = new API(API_TYPE.none)
+		//
+		// 		}
+		// 	} else {
+		// 		//resolve
+		//
+		// 		_path = join(path.dirname(jsFile.getRelative()), moduleSpecifier)
+		// 		console.log("xyz" + JSON.stringify(this.apiKey, null, 3))
+		// 		if (!this.apiKey[_path]) {
+		// 			this.apiKey[_path] = new API(API_TYPE.none)
+		// 		}
+		// 	}
+		//
+		// 	// console.log(`GET api for ${_path || 'self'} with api type of ${this.apiKey[_path].getType()}`)
+		//
+		// 	return this.apiKey[_path];
+		//
+		//
+		// }
 	}
 
 	// addSelf(api: API, jsFile: JSFile | CJSToJSON) {
@@ -109,11 +174,6 @@ export class ModuleAPIMap {
 	// 	return this._forceMap
 	// }
 
-	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
-
-		return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
-
-	}
 
 	register(jsFile: JSFile | CJSToJSON, api: API) {
 		return this.apiKey[cleanMIS(join(path.dirname(jsFile.getRelative())))] = api
@@ -165,6 +225,7 @@ export class FileFactory {
 		// if (this.pm) {
 		//     this.pm.receiveFactoryUpdate(newestMember, FileType.cjs, this)
 		// }
+		// this.jsMap[newestMember.getRelative()] = newestMember
 		this.pm.addSource(newestMember)
 		return newestMember
 	}
@@ -228,7 +289,9 @@ export class FileFactory {
 				return dir
 				break;
 			case FileType.js:
-				return new JSFile(path, data, parent, this.isModule)
+				let jsn = new JSFile(path, data, parent, this.isModule)
+				this.jsMap[jsn.getRelative()] = jsn
+				return jsn
 				break;
 			case FileType.package:
 				return new PackageJSON(path, data, parent)
@@ -274,6 +337,10 @@ export class FileFactory {
 		}
 	}
 
+	private jsMap: { [js: string]: JSFile } = {}
 
+	getJS(jsname: string): JSFile {
+		return this.jsMap[jsname]
+	}
 }
 

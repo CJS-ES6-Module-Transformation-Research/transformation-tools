@@ -154,6 +154,10 @@ export class Dir extends AbstractFile {
 
 	}
 
+getJS(js:string):JSFile{
+		return this.factory().getJS(js)
+}
+
 
 
 	getDir(_rel: string) {

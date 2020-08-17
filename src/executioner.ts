@@ -1,6 +1,6 @@
 import {ProjectManager} from "./abstract_fs_v2/ProjectManager";
-import {__fd_2x, getDeclaredModuleImports, reqPropertyInfoGather} from "./InfoGatherer";
-import { __exports} from "./transformations/export_transformations/ExportPass";
+import {getDeclaredModuleImports, reqPropertyInfoGather} from "./InfoGatherer";
+import {__exports} from "./transformations/export_transformations/ExportPass";
 import {hacker_defaults} from "./transformations/import_transformations/visitors/copyPassByValue";
 import {insertImports} from "./transformations/import_transformations/visitors/insert_imports";
 //require strings x2
@@ -25,7 +25,7 @@ export default function (projectManager: ProjectManager) {
 
 //declare undeclared requires, use InfoTracker to minimize additions
 	projectManager.forEachSource(reqPropertyInfoGather, "Property Access Info Gather")
-	projectManager.forEachSource(__fd_2x, "Info Gather part 2 ")
+	// projectManager.forEachSource(__fd_2x, "Info Gather part 2 ")
 	projectManager.forEachSource(__exports, "Export Transformation and module.exports removal")
 //
 	toModule(projectManager);
