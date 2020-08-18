@@ -350,6 +350,7 @@ for (let forced in def_aults) {
 		let specD = demap.fromId[forced]
  		let e:API;
 		mmp.createOrSet(js,  specD, (a)=> {
+			console.log(`in ${js.getRelative()}  force-default on ${specD}`)
 			a.setType(API_TYPE.default_only, true)
 		},API_TYPE.default_only, true )
 

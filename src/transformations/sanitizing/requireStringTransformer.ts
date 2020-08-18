@@ -20,12 +20,14 @@ export class RequireStringTransformer {
 	}
 
 	private computeMain(_path: string) {
-		return this.js.getParent().getDir(
+		let dir = this.js.getParent().getDir(
 			join(
 				this.js.getParent().getRelative(),
 				dirname(_path)))
-			.getPackageJSON()
-			.getMain()
+
+		return dir	.getPackageJSON()
+					.getMain()
+
 	}
 
 	private absPath(path: string) {

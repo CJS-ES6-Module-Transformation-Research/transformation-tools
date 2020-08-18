@@ -33,7 +33,6 @@ export class ModuleAPIMap {
 	}
 
 
-
 	initJS(js: JSFile | CJSToJSON, api: API) {
 		this.apiKey[js.getRelative()] = api;
 	}
@@ -65,12 +64,13 @@ export class ModuleAPIMap {
 		return
 	}
 
-	createOrSet(js: JSFile, moduleSpecifier: string, createSet: (api: API) => void,_type:API_TYPE,isForced) {
+
+	createOrSet(js: JSFile, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
-		if (!(this.apiKey[resolved])){
- 			this.apiKey[resolved] = new API(API_TYPE.none)
+		if (!(this.apiKey[resolved])) {
+			this.apiKey[resolved] = new API(API_TYPE.none)
 		}
-		this.apiKey[resolved].setType(_type,isForced)
+		this.apiKey[resolved].setType(_type, isForced)
 		// createSet( this.apiKey[resolved])
 		// console.log(this.apiKey[resolved].getType() )
 	}
@@ -86,14 +86,15 @@ export class ModuleAPIMap {
 			return this.apiKey[resolved]
 		} else {
 			if (this.builtinDefault(moduleSpecifier)) {
- 				return new API(API_TYPE.default_only, true)
+
+				return new API(API_TYPE.default_only, true)
 
 			} else if (this.builtInReg(moduleSpecifier)) {
 				// throw new Error("TODO add info")
-				if (!this.apiKey[moduleSpecifier]){
+				if (!this.apiKey[moduleSpecifier]) {
 
-				let _type = (jsFile as JSFile).usesNamed() ? API_TYPE.named_only :API_TYPE.default_only
-					this.apiKey[moduleSpecifier] = new API(_type,true )
+					let _type = API_TYPE.named_only
+					this.apiKey[moduleSpecifier] = new API(_type, true)
 				}
 
 				return this.apiKey[moduleSpecifier]
@@ -180,12 +181,12 @@ export class FileFactory {
 	private readonly uses_names: boolean;
 	private ignored: string[];
 
-	constructor(path: string, uses_names: boolean, isModule?: boolean,ignored:string[]=[],  pm: ProjectManager = null) {
+	constructor(path: string, uses_names: boolean, isModule?: boolean, ignored: string[] = [], pm: ProjectManager = null) {
 		this.isModule = isModule;
 		this.rootPath = resolve(path);
 		this.pm = pm;
 		this.ignored = ignored
- 		this.uses_names = uses_names
+		this.uses_names = uses_names
 		this.root_dir = this.createRoot();
 	}
 
@@ -224,7 +225,7 @@ export class FileFactory {
 
 	createFile(path: string, parent: Dir) {
 		let data: MetaData;
- 		let resolved = resolve(path)
+		let resolved = resolve(path)
 		let stat = lstatSync(resolved)
 		data = this.getData(stat, resolved)
 
@@ -248,7 +249,7 @@ export class FileFactory {
 		let resolved = resolve(this.rootPath)
 		let stat = lstatSync(resolved)
 		let data: MetaData = this.getData(stat, resolved)
-		let dir = new Dir(this.rootPath, data, null, this, this.rc,this.ignored);
+		let dir = new Dir(this.rootPath, data, null, this, this.rc, this.ignored);
 		this.dirs['.'] = dir
 		return dir
 	};
@@ -274,23 +275,23 @@ export class FileFactory {
 	}
 
 	private getFileFromType(path: string, data: MetaData, parent: Dir): AbstractFile | AbstractDataFile {
-			let escape = false;
-		if (this.ignored){
-			this.ignored.forEach(e=>{
-				if (!(relative( e, data.path_relative))){
+		let escape = false;
+		if (this.ignored) {
+			this.ignored.forEach(e => {
+				if (!(relative(e, data.path_relative))) {
 					escape = true;
 				}
 			})
 
 		}
 
-		if (escape){
+		if (escape) {
 			return null;
 		}
 		switch (data.type) {
 
 			case FileType.dir:
-				let dir = new Dir(path, data, parent, this, this.rc, this.ignored )
+				let dir = new Dir(path, data, parent, this, this.rc, this.ignored)
 				this.dirs[dir.getRelative()] = dir;
 				return dir
 				break;
