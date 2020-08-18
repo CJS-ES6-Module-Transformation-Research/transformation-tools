@@ -1,6 +1,7 @@
 import {DirSupplier, FileType, FileVisitor, MetaData, SerializedJSData} from "./interfaces";
 import {Dir} from "./Dirv2";
 import {readFileSync, Stats} from "fs";
+import {Reporter} from "./Reporter";
 
 export abstract class AbstractFile {
 
@@ -33,7 +34,13 @@ export abstract class AbstractFile {
     protected path_abs: string;
     protected readonly path_relative: string;
 
-
+    protected reporter:Reporter;
+    setReporter(reporter:Reporter){
+        this.reporter = reporter
+    }
+    getReporter(){
+        return this.reporter
+    }
     getType(): FileType {
         return this.type
     }

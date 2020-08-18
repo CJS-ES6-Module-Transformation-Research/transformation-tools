@@ -8,6 +8,7 @@ import {built_ins, builtins_funcs, CJSBuilderData, FileType, MetaData} from "./i
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {ProjectManager} from "./ProjectManager";
+import {Reporter} from "./Reporter";
 
 export interface API_KeyMap {
 	[moduleSpecifier: string]: API
@@ -180,8 +181,10 @@ export class FileFactory {
 	readonly rc: ModuleAPIMap = new ModuleAPIMap();
 	private readonly uses_names: boolean;
 	private ignored: string[];
+	private reporter: Reporter;
 
-	constructor(path: string, uses_names: boolean, isModule?: boolean, ignored: string[] = [], pm: ProjectManager = null) {
+	constructor(path: string, uses_names: boolean, isModule?: boolean, ignored: string[] = [], pm: ProjectManager = null, reporter: Reporter=null ) {
+		this.reporter = reporter
 		this.isModule = isModule;
 		this.rootPath = resolve(path);
 		this.pm = pm;
@@ -251,6 +254,7 @@ export class FileFactory {
 		let data: MetaData = this.getData(stat, resolved)
 		let dir = new Dir(this.rootPath, data, null, this, this.rc, this.ignored);
 		this.dirs['.'] = dir
+		dir.setReporter(this.reporter)
 		return dir
 	};
 
@@ -293,15 +297,20 @@ export class FileFactory {
 			case FileType.dir:
 				let dir = new Dir(path, data, parent, this, this.rc, this.ignored)
 				this.dirs[dir.getRelative()] = dir;
+				dir.setReporter(this.reporter)
 				return dir
 				break;
 			case FileType.js:
 				let jsn = new JSFile(path, data, parent, this.isModule)
 				this.jsMap[jsn.getRelative()] = jsn
+				jsn.setReporter(this.reporter)
 				return jsn
 				break;
 			case FileType.package:
-				return new PackageJSON(path, data, parent)
+
+				let pkgJ = new PackageJSON(path, data, parent)
+				pkgJ .setReporter(this.reporter)
+				return pkgJ
 				break;
 			default:
 				return null;

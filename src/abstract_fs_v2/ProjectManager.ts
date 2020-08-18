@@ -8,6 +8,7 @@ import {FileFactory} from "./Factory";
 import {FileType, SerializedJSData, write_status} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {PackageJSON} from "./PackageJSONv2";
+import {Reporter} from "./Reporter";
 
 export interface ProjConstructionOpts {
 	write_status: write_status
@@ -45,6 +46,7 @@ export class ProjectManager {
 	private includeGit: boolean = false;
 	private includeNodeModules: boolean = false;
 	private uses_names: boolean;
+	private reporter: Reporter;
 
 
 	constructor(path: string, opts: ProjConstructionOpts) {
@@ -52,10 +54,10 @@ export class ProjectManager {
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
-
+		this.reporter = new Reporter(process.cwd() )
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 
-		this.factory = new FileFactory(path, this.uses_names, opts.isModule,opts.ignored, this);
+		this.factory = new FileFactory(path, this.uses_names, opts.isModule,opts.ignored, this,this.reporter);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
@@ -120,7 +122,9 @@ export class ProjectManager {
 	getJS(name: string): JSFile {
 		return this.jsMap[name]
 	};
-
+report(){
+	this.reporter.writeOut()
+}
 	public writeOut() {
 
 		if (this.write_status === "in-place") {
@@ -130,6 +134,7 @@ export class ProjectManager {
 		} else {
 			throw new Error('write status not set!')
 		}
+
 	}
 
 

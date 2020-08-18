@@ -11,11 +11,17 @@ const cwd = process.cwd()
 
 
 type naming = "default" | "named"
-let {input, output, suffix, operation, naming_format,ignored } = getOptionData();
+let {input, output, suffix, operation, naming_format,ignored,tf_args } = getOptionData();
 
 if (input) {
-	executioner(new ProjectManager(input,
-		getProjConstructionOpts(suffix, output, operation, naming_format, ignored)))
+	let pm:ProjectManager
+	pm = new ProjectManager(input,
+		getProjConstructionOpts(suffix, output, operation, naming_format, ignored))
+	executioner(pm)
+	// if(tf_args._.includes('jsreport')){
+	// 	repo
+	// }
+	pm.report()
 
 }
 export interface ProgramArgs {
@@ -83,7 +89,7 @@ function getOptionData() {
 		}
 	});
 
-	return {input, output, suffix, operation, naming_format, ignored};
+	return {input, output, suffix, operation, naming_format, ignored,tf_args};
 }
 
 function copyCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {

@@ -136,7 +136,9 @@ class ExportPass {
 		if (this.js.getRelative() === 'lib/main.js') {
 			// console.log(`____ ${this.tracker.type}`)
 		}
-		switch (this.tracker.type) {
+		let reporter = this.js.getReporter()
+		let mli = reporter.addMultiLine('export_name_report','exp_name_header')
+ 		switch (this.tracker.type) {
 
 			case "default":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -148,6 +150,7 @@ class ExportPass {
 				}
 				// api = new API(API_TYPE.default_only)
 				this.api.setType(API_TYPE.default_only)
+				mli.data[this.js.getRelative()] = ['default']
 				return declaration
 			case "named":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -166,6 +169,7 @@ class ExportPass {
 						type: "ExportDefaultDeclaration",
 						declaration: objExpr
 					}
+					mli.data[this.js.getRelative()] = ['default']
 					this.api.setType(API_TYPE.default_only)
 					this.api.setNames(names)
 					return declaration
@@ -179,7 +183,7 @@ class ExportPass {
 	private createNamedExports(): ExportNamedDeclaration {
 		let names: string[] = []
 		let specifiers: ExportSpecifier[] = []
-
+  		let mli = this.js.getReporter().addMultiLine('export_name_report','exp_name_header')
 		for (let name in this.tracker.names) {
 			let val: ExportSpecifier = this.tracker.names[name]
 			names.push(val.exported.name)
@@ -188,6 +192,7 @@ class ExportPass {
 		// let api = new API(API_TYPE.named_only, names)
 		this.api.setType(API_TYPE.named_only)
 		this.api.setNames(names)
+		mli.data[this.js.getRelative()] = names
 
 		if (this.js.getRelative() === 'lib/main.js') {
 			// console.log(`____ ${this.tracker.type}`)
