@@ -302,6 +302,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	getReqPropertiesAccessed(ast, listOfVars, def_aults, rpis, shadows);
 	getPropsCalledOrAccd(ast, rpis, shadows);
+
 	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
 	if (forcedDefault){
 		js.getApi().setType(API_TYPE.default_only, true)
@@ -335,11 +336,19 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		let rpi = rpis[id];
 		rpi.allAccessedProps.forEach((prop: string) => {
 			if (!rpi.refTypeProps.includes(prop)) {
-				rpi.potentialPrimProps.includes(prop);
+				rpi.potentialPrimProps.push(prop)
 			}
 		});
 
 	}
+	console.log(js.getRelative())
+	for (let rpi in rpis){
+		console.log(`rpi:${rpi}
+		all:${rpis[rpi].allAccessedProps}
+		refs:${rpis[rpi].refTypeProps}
+		prims:${rpis[rpi].potentialPrimProps} `)
+	}
+	console.log('\n')
 
 
 	requireMgr.setReqPropsAccessedMap(rpis);

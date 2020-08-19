@@ -334,7 +334,9 @@ export function __exports(js: JSFile) {
 				if (rhs.type === "Identifier") {
 
 					if (rhs.name === exported.name) {
-						arr.splice(index, 1)
+						// arr.splice(index, 1)
+						arr[index] = {type:"EmptyStatement" }
+						exportPass.registerName(rhs.name,exported.name )
 					} else {
 
 						exported = namespace.generateBestName(exported.name)
