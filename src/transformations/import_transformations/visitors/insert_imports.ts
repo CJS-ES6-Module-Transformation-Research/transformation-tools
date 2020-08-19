@@ -1,6 +1,15 @@
+import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from "estraverse";
 import * as ESTree from "estree";
-import {Identifier, ImportSpecifier} from "estree";
+import {
+	Identifier,
+	ImportDeclaration,
+	ImportSpecifier,
+	Literal,
+	RegExpLiteral,
+	SimpleLiteral,
+	VariableDeclarator
+} from "estree";
 import {built_ins, builtins_funcs} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {getListOfVars, getOneOffForcedDefaults} from "../../../InfoGatherer";
@@ -29,15 +38,15 @@ export function insertImports(js: JSFile) {
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
 		let rpi = js.getInfoTracker().getRPI(init.name)
-	try {
-		let api = js.getAPIMap().resolveSpecifier(js, moduleSpecifier)
+		try {
+			let api = js.getAPIMap().resolveSpecifier(js, moduleSpecifier)
 
-		if (api.getType() !== API_TYPE.named_only) {
-			return false;
+			if (api.getType() !== API_TYPE.named_only) {
+				return false;
+			}
+		} catch (e) {
+			console.log('failed on ' + js.getRelative() + "      " + moduleSpecifier)
 		}
-	}catch (e) {
-		console.log('failed on '+js.getRelative()+"      " +moduleSpecifier)
-	}
 		return true;
 	}
 
@@ -66,13 +75,32 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.arguments
 						&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
-						let isNamespace = computeType(js, node.declarations[0].id, node.declarations[0].init.arguments[0].value.toString())
-
-						// let clean = cleanModuleSpecifier(module_specifier)
-						// if(api && api.getType() ===API_TYPE.named_only){
-						// }
+						let isNamespace = computeType(js,  node.declarations[0].id, (node.declarations[0].init.arguments[0] as SimpleLiteral).value.toString())
 						let _id = node.declarations[0].id.name
-						let module_specifier = node.declarations[0].init.arguments[0].value.toString()
+						let q = node.declarations[0].init
+						let lit: Literal
+						let args = q.arguments[0]
+						try {
+							// let clean = cleanModuleSpecifier(module_specifier)
+							// if(api && api.getType() ===API_TYPE.named_only){
+							// }
+
+
+							if (args.type === "Literal" && (!((args as RegExpLiteral ).regex ) ) ) {
+								lit = args
+							}else{
+								throw new Error(generate(args))
+							}
+
+						}catch
+							(e)
+							{
+								console.log(js.getRelative())
+								throw exports
+							}
+
+
+						let module_specifier = lit.value.toString()
 						let wpn: WithPropNames = _imports.getWPN()
 						let api = wpn.api[module_specifier];
 						let info = js.getInfoTracker();
@@ -109,16 +137,29 @@ export function insertImports(js: JSFile) {
 							// console.log('named imports ' + api.getType() + " "+isNamespace)
 							namedImports(info, _id, module_specifier, api, wpn)
 						} else {
+							let idecl:ImportDeclaration
+							if (isNamespace) {
+								idecl = {
+									type: "ImportDeclaration",
+									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
+									specifiers: [{
+										type: "ImportNamespaceSpecifier",
+										local: ((node.declarations as VariableDeclarator[])[0] as VariableDeclarator).id as Identifier
+									}]
 
-							_imports.add({
+								}
+							}else{
+								idecl = {
 								type: "ImportDeclaration",
-								source: node.declarations[0].init.arguments[0],
+								source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
 								specifiers: [{
-									type: isNamespace ? "ImportNamespaceSpecifier" : "ImportDefaultSpecifier",
-									local: node.declarations[0].id
+									type: "ImportDefaultSpecifier",
+									local: ((node.declarations as VariableDeclarator[])[0] as VariableDeclarator).id as Identifier
 								}]
 
-							});
+							}
+							}
+							_imports.add(idecl);
 						}
 						//always
 						return VisitorOption.Remove;
@@ -134,7 +175,7 @@ export function insertImports(js: JSFile) {
 
 						_imports.add({
 							type: "ImportDeclaration",
-							source: node.expression.arguments[0],
+							source: (node.expression.arguments[0] as Literal),
 							specifiers: []
 						})
 						return VisitorOption.Remove;

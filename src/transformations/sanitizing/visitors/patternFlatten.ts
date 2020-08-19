@@ -11,7 +11,7 @@ import {
 	Node,
 	Program,
 	Property,
-	RestElement,
+	RestElement, SimpleLiteral,
 	Statement,
 	VariableDeclaration,
 	VariableDeclarator
@@ -53,7 +53,7 @@ export function deconsFlatten(js: JSFile) {
 					// let ns = js.getNamespace()
 					// let objPat: ObjectPattern = declarator.id as ObjectPattern
 					let requireCall: CallExpression = declarator.init as CallExpression
-					let requireString: string = node.declarations[0].init.arguments[0].value.toString()
+					let requireString: string = (node.declarations[0].init.arguments[0] as SimpleLiteral).value.toString()
 
 					let specifiers: ImportSpecifier[] = []
 

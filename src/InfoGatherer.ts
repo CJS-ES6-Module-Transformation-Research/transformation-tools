@@ -1,5 +1,5 @@
 import {traverse} from "estraverse";
-import {Expression, Identifier, Node, Program, VariableDeclarator} from "estree";
+import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {InfoTracker} from "./InfoTracker.js";
 import {API, API_TYPE} from "./transformations/export_transformations/API";
@@ -350,7 +350,7 @@ for (let forced in def_aults) {
 		let specD = demap.fromId[forced]
  		let e:API;
 		mmp.createOrSet(js,  specD, (a)=> {
-			console.log(`in ${js.getRelative()}  force-default on ${specD}`)
+			// console.log(`in ${js.getRelative()}  force-default on ${specD}`)
 			a.setType(API_TYPE.default_only, true)
 		},API_TYPE.default_only, true )
 
@@ -442,7 +442,7 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 					) {
 						// console.log(generate(decl))
-						js.getInfoTracker().insertDeclPair(decl.id.name, decl.init.arguments[0].value.toString())
+						js.getInfoTracker().insertDeclPair( decl.id.name, (decl.init.arguments[0]as SimpleLiteral).value.toString())
 						// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
 					}
 				}

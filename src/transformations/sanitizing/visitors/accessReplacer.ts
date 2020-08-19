@@ -16,7 +16,7 @@ import {
 	Program,
 	Property,
 	RestElement,
-	SimpleCallExpression,
+	SimpleCallExpression, SimpleLiteral,
 	SpreadElement,
 	Statement,
 	VariableDeclaration,
@@ -251,7 +251,7 @@ function getRequireStringFromDecl(node: VariableDeclarator) {
 		&& node.init.callee.name === "require"
 		&& node.init.arguments && node.init.arguments[0] !== null
 		&& node.init.arguments[0].type === "Literal") {
-		return node.init.arguments[0].value.toString();
+		return (node.init.arguments[0]as SimpleLiteral ).value.toString();
 	}
 }
 
