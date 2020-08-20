@@ -319,7 +319,7 @@ export function insertImports(js: JSFile) {
 			//
 			// }
 		}
-	}
+	// }
 
 }
 
