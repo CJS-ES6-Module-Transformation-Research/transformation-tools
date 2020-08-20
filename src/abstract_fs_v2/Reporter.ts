@@ -2,21 +2,26 @@ import {writeFile, writeFileSync} from "fs";
 import {join} from "path";
 
 export class Reporter {
+	static readonly ExportNames= 'export_name_report'
+	static readonly copyPrimCount = 'copy_prim_count'
+	static readonly forcedDefault = 'forced_default_count'
 	private singleLines: {[key:string]:SingleLineItem }={}
 	private multiLines: {[key:string]:MultiLineItem }={}
 	private path: string;
-	constructor(_path:string) {
+	private isActive: boolean;
+	constructor(_path:string,active:boolean) {
+		this.isActive = active
 		this.path = _path
 	}
-	addSingleLine(name:string, header:string):SingleLineItem{
+	addSingleLine(name:string ):SingleLineItem{
 		if (!this.singleLines[name] ) {
-			this.singleLines[name] = {header: header, data: {}}
+			this.singleLines[name] = { data: {}}
 		}
 		return this.singleLines[name]
 	}
-	addMultiLine(name:string, header:string):MultiLineItem{
+	addMultiLine(name:string ):MultiLineItem{
 		if (!this.multiLines[name]) {
-			this.multiLines[name] = {header: header, data: {}}
+			this.multiLines[name] = {  data: {}}
 		}
 		return this.multiLines[name]
 	}
@@ -66,12 +71,10 @@ export class Reporter {
 }
 
 interface SingleLineItem{
-	header:string
-	data:{[key:string]:any}
+ 	data:{[key:string]:any}
 }
 interface MultiLineItem{
-	header:string
-	data:{[key:string]:string[]}
+ 	data:{[key:string]:string[]}
 }
 // let r = new Reporter(process.cwd())
 // let sl = r.addSingleLine('name1', 'header')

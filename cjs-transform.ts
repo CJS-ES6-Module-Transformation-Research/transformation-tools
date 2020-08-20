@@ -4,7 +4,7 @@ import * as yargs from "yargs";
 import {Argv, CommandModule, InferredOptionType, InferredOptionTypes} from "yargs";
 import {write_status} from "./src/abstract_fs_v2/interfaces";
 import {ProjConstructionOpts, ProjectManager} from "./src/abstract_fs_v2/ProjectManager";
-import executioner from "./src/executioner";
+import executioner from "./src/executor";
 
 
 const cwd = process.cwd()
@@ -21,8 +21,9 @@ if (input) {
 	// if(tf_args._.includes('jsreport')){
 	// 	repo
 	// }
-	pm.report()
-
+	if (tf_args.report) {
+		pm.report()
+	}
 }
 export interface ProgramArgs {
 	source: string
@@ -44,7 +45,8 @@ export function getProjConstructionOpts(suffix, output, operation, naming_format
 		write_status: operation,
 		copy_node_modules: false, //TODO
 		isNamed: naming_format === "named",
-		ignored:ignored
+		ignored:ignored,
+		report:tf_args.report
 	};
 }
 
@@ -54,6 +56,7 @@ function getOptionData() {
 		.command(inPlaceCommandModule())
 		.option('import_type',   {choices: ["named", "default"], nargs: 1})
 		.option(	'ignored', {type: "string", array: true})
+		.option('report',{type:"boolean", nargs:0})
 		// .option({
 		// 	import_type: {choices: ["named", "default"], nargs: 1},
 		//
@@ -89,7 +92,7 @@ function getOptionData() {
 		}
 	});
 
-	return {input, output, suffix, operation, naming_format, ignored,tf_args};
+	return {input, output, suffix, operation, naming_format, ignored, tf_args};
 }
 
 function copyCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {

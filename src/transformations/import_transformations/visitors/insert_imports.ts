@@ -5,15 +5,17 @@ import {
 	Identifier,
 	ImportDeclaration,
 	ImportSpecifier,
-	Literal,
+	Literal, MemberExpression,
 	RegExpLiteral,
 	SimpleLiteral,
+	VariableDeclaration,
 	VariableDeclarator
 } from "estree";
 import {built_ins, builtins_funcs} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {Reporter} from "../../../abstract_fs_v2/Reporter";
 import {getListOfVars, getOneOffForcedDefaults} from "../../../InfoGatherer";
-import {Imports, InfoTracker, WithPropNames} from "../../../InfoTracker";
+import {Imports, WithPropNames} from "../../../InfoTracker";
 import {API, API_TYPE} from "../../export_transformations/API";
 
 export function cleanMIS(moduleSpecifier: string): string {
@@ -23,14 +25,14 @@ export function cleanMIS(moduleSpecifier: string): string {
 
 export function insertImports(js: JSFile) {
 	// console.log(`calling insertImports on jsfile : ${js.getRelative()} `)
-
-	let infoTracker = js.getInfoTracker();
-	let listOfVars = getListOfVars(infoTracker)
+	let last: number = 0;
+	let info = js.getInfoTracker();
+	let listOfVars = getListOfVars(info)
 	let MAM = js.getAPIMap()
 	js.getAPIMap()
 	let _imports: Imports = new Imports(js.getInfoTracker().getDeMap(), ((mspec: string) => MAM.resolveSpecifier(js, mspec)), MAM, js.getInfoTracker())
 	js.setImports(_imports)
-	let demap = infoTracker.getDeMap()
+	let demap = info.getDeMap()
 	let one_offs = getOneOffForcedDefaults(js.getAST(), listOfVars)
 	let propNameReplaceMap: { [base: string]: { [property: string]: string } } = {}//replaceName
 	let mod_map = js.getAPIMap()
@@ -42,7 +44,10 @@ export function insertImports(js: JSFile) {
 			let api = js.getAPIMap().resolveSpecifier(js, moduleSpecifier)
 
 			if (api.getType() !== API_TYPE.named_only) {
+				console.log(js.getRelative() + " " + api.getType())
 				return false;
+			} else {
+				return true;
 			}
 		} catch (e) {
 			console.log('failed on ' + js.getRelative() + "      " + moduleSpecifier)
@@ -75,7 +80,7 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.arguments
 						&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
-						let isNamespace = computeType(js,  node.declarations[0].id, (node.declarations[0].init.arguments[0] as SimpleLiteral).value.toString())
+						let isNamespace = computeType(js, node.declarations[0].id, (node.declarations[0].init.arguments[0] as SimpleLiteral).value.toString())
 						let _id = node.declarations[0].id.name
 						let q = node.declarations[0].init
 						let lit: Literal
@@ -86,58 +91,41 @@ export function insertImports(js: JSFile) {
 							// }
 
 
-							if (args.type === "Literal" && (!((args as RegExpLiteral ).regex ) ) ) {
+							if (args.type === "Literal" && (!((args as RegExpLiteral).regex))) {
 								lit = args
-							}else{
+							} else {
 								throw new Error(generate(args))
 							}
 
-						}catch
-							(e)
-							{
-								console.log(js.getRelative())
-								throw exports
-							}
+						} catch
+							(e) {
+							console.log(js.getRelative())
+							throw exports
+						}
 
 
 						let module_specifier = lit.value.toString()
 						let wpn: WithPropNames = _imports.getWPN()
-						let api = wpn.api[module_specifier];
-						let info = js.getInfoTracker();
 						let map = js.getAPIMap()
+						let api = map.resolveSpecifier(js, module_specifier)
+						// let api = wpn.api[module_specifier];
+						let info = js.getInfoTracker();
+						// console.log(map.apiKey)
 						let isBuiltin = (built_ins.includes(module_specifier)
 							&& (!builtins_funcs.includes(module_specifier)))
 						let isNamedAPI = false;
+						// api
 						if (api) {
+							// console.log(js.getRelative()+api.getType() )
 							isNamedAPI = (api.getType() === API_TYPE.named_only)
 						}
 
-// 						if (js.getRelative().includes("import_stuff.js")) {
-// 							// console.log("MODULESPECIFIER")
-// 							// console.log(module_specifier)
-// 							// console.log(api)
-// 							// console.log(api.getType())
-// 							console.log(node.declarations[0].id.name)
-// 							console.log(`Full value named:${js.usesNamed()
-// 							&& isNamespace
-// 							&& (isBuiltin
-// 								|| isNamedAPI)}`)
-// 							console.log(
-// 								`Full value named:${js.usesNamed()}
-// isNamespace:${isNamespace}
-// api type: ${api ? (api.getType() === API_TYPE.named_only) : "api not good"}`);
-//
-// 							// console.log(module_specifier)
-// 							// console.log(node.declarations[0].id.name)
-// 						}
-						one_offs = null;
-						// console.log(`${js.getRelative()}: >>>>  usesNames:${js.usesNamed()} && isNamesPace${isNamespace} && builtin  or namedApi  (${isBuiltin} OR ${isNamedAPI}) `)
-						// let isOneOff = one_offs[_id]
-						if (js.usesNamed() && isNamespace && (isBuiltin || isNamedAPI) && (!one_offs)) {
-							// console.log('named imports ' + api.getType() + " "+isNamespace)
-							namedImports(info, _id, module_specifier, api, wpn)
+
+						// }
+						if (js.usesNamed() && isNamespace && (isBuiltin || isNamedAPI)) {
+							namedImports(_id, module_specifier, api)
 						} else {
-							let idecl:ImportDeclaration
+							let idecl: ImportDeclaration
 							if (isNamespace) {
 								idecl = {
 									type: "ImportDeclaration",
@@ -148,16 +136,16 @@ export function insertImports(js: JSFile) {
 									}]
 
 								}
-							}else{
+							} else {
 								idecl = {
-								type: "ImportDeclaration",
-								source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
-								specifiers: [{
-									type: "ImportDefaultSpecifier",
-									local: ((node.declarations as VariableDeclarator[])[0] as VariableDeclarator).id as Identifier
-								}]
+									type: "ImportDeclaration",
+									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
+									specifiers: [{
+										type: "ImportDefaultSpecifier",
+										local: ((node.declarations as VariableDeclarator[])[0] as VariableDeclarator).id as Identifier
+									}]
 
-							}
+								}
 							}
 							_imports.add(idecl);
 						}
@@ -187,9 +175,12 @@ export function insertImports(js: JSFile) {
 	}
 
 	replace(js.getAST(), visitor)
-	_imports.getDeclarations().reverse().forEach(e => {
-		js.getAST().body.splice(0, 0, e)
-	})
+	// _imports.getDeclarations().reverse().forEach(e => {
+	// 	js.getAST().body.splice(0, 0, e)
+	// })
+	// js.addImports(_imports.getDeclarations().reverse())
+
+
 	replace(js.getAST(), {
 		leave: (node, parent) => {
 
@@ -202,62 +193,82 @@ export function insertImports(js: JSFile) {
 				&& propNameReplaceMap[node.object.name][node.property.name]
 			) {
 
-				return {type: "Identifier", name: propNameReplaceMap[node.object.name][node.property.name]}
-			} else if (false) {
-				// if ()
+				let replacement: Identifier = {
+					type: "Identifier",
+					name: propNameReplaceMap[node.object.name][node.property.name]
+				}
+				js.getNamespace().addToNamespace(replacement.name)
+				return replacement
+
 			}
 
-			// else if (node.type ==="Identifier"
-			// && infoTracker.
-			// )
 		}
 	});
 
 
-	function namedImports(info: InfoTracker, id: string, module_specifier: string, api: API, wpn: WithPropNames) {
+	function namedImports(id: string, module_specifier: string, api: API) {
 
+		let wpn: WithPropNames = _imports.getWPN()
 
-		// let api= 	map.resolveSpecifier(module_specifier, js)
-		// let removed = module_specifier
-		// while(removed[0]==='.'||removed[0]==='/'){
-		// 	removed = removed.substr(1, removed.length )
-		// }
-		// let id = node.declarations[0].id.name
 		let rpi = info.getRPI(id);
 
 		let specifiers: ImportSpecifier[] = []
+		let ns = js.getNamespace()
 
-		// let apiexports = api.getExports()
 
-		let accessables: string[] = rpi.allAccessedProps// .filter(e => apiexports.includes(e))
-		accessables.forEach((e, index, arr) => {
+		let primReport: string[] = []
+
+		// let accessables: string[] = rpi.allAccessedProps// .filter(e => apiexports.includes(e))
+		rpi.allAccessedProps.forEach((e, index, arr) => {
 			if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][e] === e) {
-				arr[index] = wpn.aliases[module_specifier][e]
+				throw new Error("UnsupportedOperation?  ")
+				//TODO arr[index] = wpn.aliases[module_specifier][e]
 			}
 		});
-		// rpi.allAccessedProps
-		accessables.forEach((e: string) => {
-			let accessed: Identifier
-			if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][e] === e) {
-				accessed = {type: "Identifier", name: wpn.aliases[module_specifier][e]}
+
+		function getLocalNamedCopy(accessedProp: string ) {
+			let local:Identifier
+			if (!ns.containsName(accessedProp)) {
+				local = {type: "Identifier", name: accessedProp}
+				ns.addToNamespace(accessedProp)
 			} else {
-				let _id = wpn.fromSpec[module_specifier]
-				if (_id) {
-					accessed = {type: "Identifier", name: e}
-				} else {
-					throw new Error('accessed could not find id from spec: ' + module_specifier)
-					//js.getNamespace().generateBestName(e)
-				}
+				local = ns.generateBestName(accessedProp)
 			}
-			// demap.fromId[id]
+			return local;
+		}
+
+// rpi.allAccessedProps
+		rpi.allAccessedProps.forEach((accessedProp: string) => {
+			let imported: Identifier
+			// if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][accessedProp] === accessedProp) {
+			// 	accessed = {type: "Identifier", name: wpn.aliases[module_specifier][accessedProp]}
+			// } else {
+			let _id = wpn.fromSpec[module_specifier]
+			if (_id) {
+				imported = {type: "Identifier", name: accessedProp}
+			} else {
+				throw new Error('accessed could not find id from spec: ' + module_specifier)
+				//js.getNamespace().generateBestName(e)
+			}
+
+			let local: Identifier= getLocalNamedCopy(accessedProp);
+			let prev: Identifier = local
 			if (!propNameReplaceMap[id]) {
 				propNameReplaceMap[id] = {}
 			}
-			propNameReplaceMap[id][e] = accessed.name
+			//todo determine if this can remove prev
+			propNameReplaceMap[id][accessedProp] = local.name
+			if (js.usesNamed() && rpi.potentialPrimProps.includes(accessedProp)) {
+				prev = createCopy(local)()
+				primReport.push(`${prev.name}>>${local.name}`)
+			}
+
+
+
 			let is: ImportSpecifier = {
 				type: "ImportSpecifier",
-				local: accessed,
-				imported: {type: "Identifier", name: e}
+				local: prev,
+				imported: imported
 			}
 
 			specifiers.push(is)
@@ -269,32 +280,47 @@ export function insertImports(js: JSFile) {
 			source: {type: "Literal", value: module_specifier},
 			specifiers: specifiers
 		}))
+		js.getReporter()
+			.addMultiLine(Reporter.copyPrimCount)
+			.data[module_specifier] = primReport
+
+		function createCopy(local: Identifier): ()=>Identifier {
+		 //TODO introduce second type for default version
+			return	() => {
+					let copy = ns.generateBestName(local.name)
+					console.log(`gen ${copy.name}`)
+					js.insertCopyByValue(createAliasedDeclarator(copy, local))
+					return copy
+
+					function createAliasedDeclarator(copy: Identifier, original: Identifier): VariableDeclaration {
+						let declarator: VariableDeclarator = {
+							type: "VariableDeclarator",
+							id: original,
+							init: copy
+						}
+						let declaration: VariableDeclaration = {
+							type: "VariableDeclaration",
+							kind: 'var',
+							declarations: [declarator]
+						}
+						return declaration
+					}
+				}
+			}
+			// else{
+			// 	return ()=>{
+			// 		let declarator: VariableDeclarator = {
+			// 			type: "VariableDeclarator",
+			// 			id: null, // best ,
+			// 			init: local
+			// 		}
+			// 		return null;
+			// 	}
+			//
+			// }
+		}
 	}
+
 }
-
-//
-//
-// let ast: Program
-//
-//
-// ast = parseScript(`
-// var x = require('y');
-// `)
-// traverse(ast, {
-// 	leave: (node, parent) => {
-// 		if (node.type === "VariableDeclaration") {
-// 			console.log(`${node.type} -> ${parent.type}`)
-// 		}
-// 	}, enter: (node, parent) => {
-// 		if (node.type === "VariableDeclaration") {
-// 			console.log(`${node.type} -> ${parent.type}`)
-// 		}
-// 	}
-// })
-//
-//
-//
-
-
 
 

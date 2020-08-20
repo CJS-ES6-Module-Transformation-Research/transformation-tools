@@ -1,7 +1,7 @@
 import {ProjectManager} from "./abstract_fs_v2/ProjectManager";
 import {getDeclaredModuleImports, reqPropertyInfoGather} from "./InfoGatherer";
 import {__exports} from "./transformations/export_transformations/ExportPass";
-import {hacker_defaults} from "./transformations/import_transformations/visitors/copyPassByValue";
+import {hacker_defaults, named_copyByValue} from "./transformations/import_transformations/visitors/copyPassByValue";
 import {insertImports} from "./transformations/import_transformations/visitors/insert_imports";
 //require strings x2
 import {accessReplace, flattenDecls, jsonRequire, requireStringSanitizer} from "./transformations/sanitizing/visitors";
@@ -30,8 +30,11 @@ export default function (projectManager: ProjectManager) {
 //
 	toModule(projectManager);
 	projectManager.forEachSource(insertImports, "Import transform");
-	projectManager.forEachSource(hacker_defaults, "Import 'hacks'")
-
+	if (projectManager.usingNamed()) {
+		projectManager.forEachSource(named_copyByValue, "Import 'hacks'")
+	}else {
+		projectManager.forEachSource(hacker_defaults, "Import 'hacks'")
+	 }
 	projectManager.writeOut()
 
 }

@@ -274,6 +274,8 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 				let prop = node.left.property.name;
 				if (mapOfRPIs[name]
 				) {
+					console.log(mapOfRPIs[name] )
+					_forcedDefault[name] = true;
 					forcedDefault = true;
 					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
 					// console.log (`----- ${name} ${generate(node)}`)
@@ -304,10 +306,10 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	getPropsCalledOrAccd(ast, rpis, shadows);
 
 	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
-	if (forcedDefault){
-		js.getApi().setType(API_TYPE.default_only, true)
-	}
-	requireMgr.setForcedDecl(forcedDefault)
+	// if (forcedDefault){
+	// 	js.getApi().setType(API_TYPE.default_only, true)
+	// }
+	// requireMgr.setForcedDecl(forcedDefault)
 
 	listOfVars.forEach((id: string) => {
 		if (rpis[id]) {
@@ -341,14 +343,14 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		});
 
 	}
-	console.log(js.getRelative())
-	for (let rpi in rpis){
-		console.log(`rpi:${rpi}
-		all:${rpis[rpi].allAccessedProps}
-		refs:${rpis[rpi].refTypeProps}
-		prims:${rpis[rpi].potentialPrimProps} `)
-	}
-	console.log('\n')
+	// console.log(js.getRelative())
+	// for (let rpi in rpis){
+	// 	console.log(`rpi:${rpi}
+	// 	all:${rpis[rpi].allAccessedProps}
+	// 	refs:${rpis[rpi].refTypeProps}
+	// 	prims:${rpis[rpi].potentialPrimProps} `)
+	// }
+	// console.log('\n')
 
 
 	requireMgr.setReqPropsAccessedMap(rpis);
@@ -356,12 +358,15 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	let demap = requireMgr.getDeMap()
 for (let forced in def_aults) {
 	if (def_aults[forced]){
+
 		let specD = demap.fromId[forced]
- 		let e:API;
-		mmp.createOrSet(js,  specD, (a)=> {
-			// console.log(`in ${js.getRelative()}  force-default on ${specD}`)
-			a.setType(API_TYPE.default_only, true)
-		},API_TYPE.default_only, true )
+ 		console.log(specD)
+		let e:API;
+		mmp.resolveSpecifier(js,specD).setType(API_TYPE.default_only, true)
+		// mmp.createOrSet(js,  specD, (a)=> {
+		// 	// console.log(`in ${js.getRelative()}  force-default on ${specD}`)
+		// 	a.setType(API_TYPE.default_only, true)
+		// },API_TYPE.default_only, true )
 
 		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 	}
