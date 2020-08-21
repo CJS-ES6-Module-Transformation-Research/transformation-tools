@@ -1,0 +1,13 @@
+default_natural
+forced_default_or_eq
+forced_default_reassign_builtin
+forced_default_reassign_local
+named_exports
+module_exports_export
+_exports_export
+obj_direct_assign
+func_direct_assign
+class_direct_assign
+identifier_direct_assign
+m_exports_prop_reassign
+

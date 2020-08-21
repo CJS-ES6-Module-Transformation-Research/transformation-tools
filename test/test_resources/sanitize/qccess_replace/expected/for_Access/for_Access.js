@@ -1,5 +1,5 @@
 
-const _moduleAccess_mocha = require('mocha');
-for (let i = _moduleAccess_mocha; true; i++) {
+const mocha = require('mocha');
+for (let i = mocha; true; i++) {
     let x = 3;
 }

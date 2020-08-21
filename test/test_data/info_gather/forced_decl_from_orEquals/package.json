@@ -1,0 +1,12 @@
+{
+  "name": "forced_decl_from_orEquals",
+  "version": "1.0.0",
+  "description": "",
+  "main": "forced_decl_from_orEquals.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

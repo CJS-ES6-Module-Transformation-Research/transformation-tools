@@ -1,0 +1,12 @@
+{
+  "name": "one_default_one_named__named",
+  "version": "1.0.0",
+  "description": "",
+  "main": "one_default_one_named__named.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

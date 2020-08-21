@@ -62,7 +62,7 @@ export class JSFile extends AbstractDataFile {
 
 	public createCJSFromIdentifier(moduleID: string): string {
 		let parent: Dir = this.parent();
-		let json_loc =  join( dirname(this.getAbsolute()), moduleID)
+		let json_loc = join(dirname(this.getAbsolute()), moduleID)
 
 		let parentDir = parent.getAbsolute()
 
@@ -89,7 +89,7 @@ export class JSFile extends AbstractDataFile {
 		let loc = `${(json_loc)}.cjs`
 		let builder = {//${dirRelativeToRoot}/
 			// cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
-			cjsFileName:loc,
+			cjsFileName: loc,
 			jsonFileName: relative(this.parent().getRootDirPath(), json),
 			dataAsString: `module.exports = require('./${basename(moduleID)}');`,
 			dir: parent
@@ -100,7 +100,7 @@ export class JSFile extends AbstractDataFile {
 
 		let spawn = this.parent().spawnCJS(builder)
 
-		return moduleID+'.cjs'// join()
+		return moduleID + '.cjs'// join()
 
 	}
 
@@ -112,9 +112,9 @@ export class JSFile extends AbstractDataFile {
 		}
 	}
 
-getApi(){
-		return this.api ;
-}
+	getApi() {
+		return this.api;
+	}
 
 	public addToTop(toAdd: Directive | Statement | ModuleDeclaration) {
 		this.toAddToTop.push(toAdd)
@@ -141,7 +141,7 @@ getApi(){
 	}
 
 
-	getJS(js:string):JSFile {
+	getJS(js: string): JSFile {
 		return this.getParent().getJS(js)
 	}
 
@@ -190,7 +190,6 @@ getApi(){
 		this.potentialPrims.reverse().forEach((e) => {
 			body.splice(0, 0, e)
 		})
-
 
 
 		// //MUST BE LAST
@@ -253,9 +252,17 @@ getApi(){
 		} else {
 			this.shebang = '';
 		}
-
+		let _program: Program
 		try {
-			let _program: Program = (isModule ? parseModule : parseScript)(program, {loc: true})
+			try {
+				_program = (isModule ? parseModule : parseScript)(program, {loc: true})
+			} catch (e2) {
+				if (this.isTest) {
+					_program = parseModule(program, {loc: true})
+				}else{
+					throw e2;
+				}
+			}
 			return _program
 		} catch (e) {
 			throw new Error(`Esprima Parse ERROR in file ${this.path_abs} on line ${e.lineNumber}:${e.index} with description ${e.description}\n`)
@@ -342,6 +349,7 @@ getApi(){
 			// process.exit(-1)
 		}
 		if (!programString) {
+			// console.log(program.body)
 			throw new Error(`generation issue in file ${this.getRelative()}`)
 		}
 
@@ -404,7 +412,7 @@ getApi(){
 	}
 
 
-	private  data_based_imports: Imports;
+	private data_based_imports: Imports;
 
 	setImports(imports: Imports) {
 		this.data_based_imports = imports

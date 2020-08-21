@@ -7,7 +7,7 @@ import {Dir} from "./Dirv2";
 import {built_ins, builtins_funcs, CJSBuilderData, FileType, MetaData} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
-import {ProjectManager} from "./ProjectManager";
+import {ProjConstructionOpts, ProjectManager} from "./ProjectManager";
 import {Reporter} from "./Reporter";
 
 export interface API_KeyMap {
@@ -66,14 +66,13 @@ export class ModuleAPIMap {
 	}
 
 
-	createOrSet(js: JSFile, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
+	createOrSet(js: JSFile| CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
 		if (!(this.apiKey[resolved])) {
 			this.apiKey[resolved] = new API(API_TYPE.none)
 		}
 		this.apiKey[resolved].setType(_type, isForced)
-		// createSet( this.apiKey[resolved])
-		// console.log(this.apiKey[resolved].getType() )
+
 	}
 
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
@@ -182,14 +181,16 @@ export class FileFactory {
 	private readonly uses_names: boolean;
 	private ignored: string[];
 	private reporter: Reporter;
+	private isTest: boolean;
 
-	constructor(path: string, uses_names: boolean, isModule?: boolean, ignored: string[] = [], pm: ProjectManager = null, reporter: Reporter=null ) {
+	constructor(path: string, uses_names: boolean, opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null ) {
 		this.reporter = reporter
-		this.isModule = isModule;
+		this.isModule =   opts.isModule;
 		this.rootPath = resolve(path);
 		this.pm = pm;
-		this.ignored = ignored
+		this.ignored = opts.ignored
 		this.uses_names = uses_names
+		this.isTest = opts.testing
 		this.root_dir = this.createRoot();
 	}
 
@@ -215,7 +216,8 @@ export class FileFactory {
 			rootDir: this.rootPath,
 			path_abs: resolved,
 			path_relative: relative(this.rootPath, data.cjsFileName),//data.dir .getRootDirPath() ,
-			uses_names: this.uses_names
+			uses_names: this.uses_names,
+			test: this.isTest
 		};
 		let newestMember = new CJSToJSON(resolved, metaData, data.dir, data.dataAsString)
 		// if (this.pm) {
@@ -274,7 +276,8 @@ export class FileFactory {
 			rootDir: this.rootPath,
 			path_abs: resolved,
 			path_relative: this.rootPath === resolved ? '.' : relative(this.rootPath, resolved),
-			uses_names: this.uses_names
+			uses_names: this.uses_names,
+			test: this.isTest
 		};
 	}
 

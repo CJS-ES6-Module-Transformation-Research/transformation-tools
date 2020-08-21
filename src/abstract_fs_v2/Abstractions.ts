@@ -4,10 +4,11 @@ import {readFileSync, Stats} from "fs";
 import {Reporter} from "./Reporter";
 
 export abstract class AbstractFile {
+    protected readonly isTest: boolean;
 
-    protected constructor(path: string, bfd: MetaData, parent: Dir) {
+    protected constructor(path: string, bfd: MetaData, parent: Dir, isTest:boolean) {
 
-
+        this.isTest = isTest;
         this.ext = bfd.ext
         this.stat = bfd.stat
         this.type = bfd.type
@@ -76,7 +77,7 @@ export abstract class AbstractDataFile extends AbstractFile {
     protected readonly data: string
 
     protected constructor(path: string, b: MetaData, parent: Dir, data: string = '') {
-        super(path, b, parent);
+        super(path, b, parent, b.test);
         if (data) {
             this.data = data;
         } else {

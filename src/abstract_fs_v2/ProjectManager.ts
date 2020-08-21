@@ -18,6 +18,7 @@ export interface ProjConstructionOpts {
 	isNamed: boolean
 	copy_node_modules?: boolean
 	ignored?: string[]
+	testing?:boolean
 }
 
 export class ProjectManager {
@@ -57,7 +58,7 @@ export class ProjectManager {
 		this.reporter = new Reporter(process.cwd() )
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 
-		this.factory = new FileFactory(path, this.uses_names, opts.isModule,opts.ignored, this,this.reporter);
+		this.factory = new FileFactory(path, this.uses_names, opts , this,this.reporter);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
@@ -85,6 +86,16 @@ export class ProjectManager {
 	}
 
 
+	getAnAddition(add:string){
+		for(let x in this.additions ){
+			if (x===add){
+				return this.additions[x]
+			}
+		}
+			return null
+
+	}
+
 	private loadFileClassLists() {
 		this.root.visit(
 			node => {
@@ -105,7 +116,7 @@ export class ProjectManager {
 			})
 	}
 
-	forEachSource(func: (value: JSFile ) => void,tfName:string): void {
+	forEachSource(func: (value: JSFile ) => void,tfName:string='description'): void {
 		let curr:string
 		try {
 			this.jsFiles.forEach(e => {

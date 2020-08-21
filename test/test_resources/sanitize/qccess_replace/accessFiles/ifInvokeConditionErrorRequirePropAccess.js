@@ -1,6 +1,6 @@
 
-const _moduleAccess_trueOrFalse = require('trueOrFalse');
-const _moduleAccess_getAnError = require('getAnError');
-if (_moduleAccess_trueOrFalse.get()) {
-    throw new Error(_moduleAccess_getAnError.errorNum0);
+const trueOrFalse = require('trueOrFalse');
+const getAnError = require('getAnError');
+if (trueOrFalse.get()) {
+    throw new Error(getAnError.errorNum0);
 }

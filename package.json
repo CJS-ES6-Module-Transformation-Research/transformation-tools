@@ -1,14 +1,10 @@
 {
   "name": "ast-research",
   "version": "1.0.0",
-  "description": "",
+  "description": "transformation-tools repository for CommonJS to ES6 Module transformations",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js ",
-    "test": "tsc && nyc mocha --require ts-node/register --require source-map-support/register --recursive test/tests/require_string_testing.ts",
-    "_test": "tsc && mocha --require ts-node/register --require source-map-support/register --recursive test/tests/require_string_testing.ts",
-    "coverage": "nyc npm run test",
-    "clean-js": "sh clean"
+    "test": "nyc mocha"
   },
   "author": "",
   "license": "ISC",
@@ -48,5 +44,33 @@
     "ts-node": "^8.10.2",
     "ts-node-register": "^1.0.0",
     "typescript": "^3.9.7"
-  }
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "test/**/*"
+    ],
+    "reporter": [
+      "html"
+    ],
+    "include": [
+      "src/**/*"
+    ]
+  },
+  "mocha": {},
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CJS-ES6-Module-Transformation-Research/transformation-tools.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/CJS-ES6-Module-Transformation-Research/transformation-tools/issues"
+  },
+  "homepage": "https://github.com/CJS-ES6-Module-Transformation-Research/transformation-tools#readme"
 }

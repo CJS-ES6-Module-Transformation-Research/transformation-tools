@@ -22,7 +22,9 @@ repos-test/*
 repos-test/**/*
 
 
-
-
+*.js.map
+src/**/*.js
+./*.js
+test/tests/*.js
 
 /redirect/

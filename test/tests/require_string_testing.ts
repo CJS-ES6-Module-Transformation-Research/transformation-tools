@@ -8,7 +8,7 @@ import {requireStringSanitizer} from '../../src/transformations/sanitizing/visit
 import {project as PROJ_DIR} from '../../index'
 import {mock_opts} from "../index";
 
-const requireString = `${PROJ_DIR}/test/sanitize/require_string`
+const requireString = `${PROJ_DIR}/test/test_resources/sanitize/require_string`
 const read =
     readFileSync(`${requireString}/tests.txt`)
         .toString()

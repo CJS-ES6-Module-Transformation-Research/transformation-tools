@@ -1,3 +1,3 @@
 
-const _moduleAccess_amodule = require('amodule');
-a = _moduleAccess_amodule.access;
+const amodule = require('amodule');
+a = amodule.access;

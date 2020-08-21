@@ -7,7 +7,7 @@ import {JSFile} from "../../src/abstract_fs_v2/JSv2";
 import {ProjectManager,ProjConstructionOpts} from "../../src/abstract_fs_v2/ProjectManager";
  import {flattenDecls} from "../../src/transformations/sanitizing/visitors";
 
-const DECL_FLATTEN = `${PROJ_ROOT_DIR}/test/sanitize/declarator_flattener/decl_flatten`;
+const DECL_FLATTEN = `${PROJ_ROOT_DIR}/test/test_resources/sanitize/declarator_flattener/decl_flatten`;
 const TEST_DIR: string[] = readdirSync(DECL_FLATTEN);
 
 const BASE_TEST_DATA = TEST_DIR.filter(e => e.split('_')[0] === 'standard');
@@ -21,7 +21,8 @@ function createOptions(dest:string='') :ProjConstructionOpts {
      write_status: dest? "copy":"in-place",
      copy_node_modules: false,
      isModule: false,
-     target_dir: dest? dest:''
+     target_dir: dest? dest:'',ignored:[],
+     isNamed:false
  }
 }
 

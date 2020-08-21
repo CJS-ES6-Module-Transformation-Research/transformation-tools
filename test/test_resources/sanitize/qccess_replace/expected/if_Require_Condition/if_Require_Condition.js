@@ -1,5 +1,5 @@
 
-const _moduleAccess_trueOrFalse = require('trueOrFalse');
-if (_moduleAccess_trueOrFalse) {
+const trueOrFalse = require('trueOrFalse');
+if (trueOrFalse) {
     throw new Error('');
 }

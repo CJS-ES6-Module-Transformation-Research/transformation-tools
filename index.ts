@@ -1,5 +1,5 @@
-
-export const project = require('path').join(__dirname)
+import {join} from 'path'
+export const project =  join(__dirname)
 
 
 

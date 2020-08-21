@@ -1,0 +1,12 @@
+{
+  "name": "obj_direct_assign",
+  "version": "1.0.0",
+  "description": "",
+  "main": "obj_direct_assign.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

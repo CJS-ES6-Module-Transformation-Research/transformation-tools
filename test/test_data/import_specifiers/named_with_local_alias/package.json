@@ -1,0 +1,12 @@
+{
+  "name": "named_with_local_alias",
+  "version": "1.0.0",
+  "description": "",
+  "main": "named_with_local_alias.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

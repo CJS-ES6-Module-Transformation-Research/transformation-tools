@@ -1,6 +1,6 @@
 
-const _moduleAccess_mocha = require('mocha');
-const _moduleAccess_three = require('three');
-for (let j = 32, i = _moduleAccess_mocha; true; i++) {
-    let x = _moduleAccess_three;
+const mocha = require('mocha');
+const three = require('three');
+for (let j = 32, i = mocha; true; i++) {
+    let x = three;
 }

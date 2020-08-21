@@ -1,5 +1,8 @@
+import {join} from 'path';
 import {project} from '../index'
-import {ProjConstructionOpts} from "../src/abstract_fs_v2/ProjectManager.js";
+import {ProjConstructionOpts, ProjectManager} from "../src/abstract_fs_v2/ProjectManager";
+
+export const TEST_DIR = join(project, 'test')
 
 export const test_root = `${project}`
 export const project_sanitize_resources_root = `${test_root}/project_sanitize_tests`
@@ -10,15 +13,43 @@ export const mock_opts: ProjConstructionOpts = {
 	target_dir: "",
 	suffix: "",
 	isModule: false,
-	copy_node_modules: false
+	copy_node_modules: false,
+	isNamed: false,
+	ignored: [],
+	testing: true
 }
-export const mod_mock: ProjConstructionOpts = {
+const namedProjOps: ProjConstructionOpts = {
 	write_status: "in-place",
 	target_dir: "",
 	suffix: "",
-	isModule: true,
-	copy_node_modules: false
+	isModule: false,
+	copy_node_modules: false,
+	isNamed: false,
+	ignored: [],
+	testing: true
 }
+
+export function createProject(projPath: string, isNamed: boolean) {
+	return new ProjectManager(projPath, isNamed ? namedProjOps : defaultProjOpts)
+}
+
+const defaultProjOpts: ProjConstructionOpts = {
+	write_status: "in-place",
+	target_dir: "",
+	suffix: "",
+	isModule: false,
+	copy_node_modules: false,
+	isNamed: false,
+	ignored: [],
+	testing: true
+}
+// export const mod_mock: ProjConstructionOpts = {
+// 	write_status: "in-place",
+// 	target_dir: "",
+// 	suffix: "",
+// 	isModule: true,
+// 	copy_node_modules: false
+// }
 
 const project_test_dirs: { [key: string]: string } = {};
 project_test_dirs.untouched = `${project_sanitize_resources_root}/test_proj`;
