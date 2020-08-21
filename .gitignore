@@ -21,6 +21,8 @@ repos-test
 repos-test/*
 repos-test/**/*
 
+coverage
+coverage/**/*
 
 *.js.map
 src/**/*.js
