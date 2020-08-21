@@ -1,6 +1,0 @@
-https://github.com/CJS-ES6-Module-Transformation-Research/memory-fs
-https://github.com/CJS-ES6-Module-Transformation-Research/node-jsonfile
-https://github.com/CJS-ES6-Module-Transformation-Research/tcppubsub
-https://github.com/CJS-ES6-Module-Transformation-Research/tar-fs
-https://github.com/CJS-ES6-Module-Transformation-Research/get-repository-url
-https://github.com/AndiDittrich/Node.CLI-Progress.git
