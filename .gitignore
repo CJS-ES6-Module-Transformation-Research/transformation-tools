@@ -21,8 +21,25 @@ repos-test
 repos-test/*
 repos-test/**/*
 
+coverage
+coverage/**/*
+
+#root
+*.js
+*.js.map
+./*.js
+./*.js.map
 
 
+#src
+src/**/*.js
+src/**/*.js.map
 
+#test dirs
+test/*.js
+test/*.js.map
+test/tests/*.js
+test/tests/*.js.map
+test/test_resources
 
 /redirect/
