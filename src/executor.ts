@@ -53,7 +53,7 @@ function _sanitize(projectManager: ProjectManager) {
 
 	projectManager.forEachSource(getDeclaredModuleImports, "Require Info Gather")
 
-	projectManager.forEachSource(add__dirname, '__dirname case')
+	// projectManager.forEachSource(add__dirname, '__dirname case')
 
 
 	projectManager.forEachSource(accessReplace, "Require Access Replace")

@@ -81,19 +81,18 @@ export const add__dirname: TransformFunction = (js: JSFile) => {
 
 	let import_meta_url = js.getNamespace().getImportMeta()
 
+	js.registerReplace(import_meta_url.name, `import.meta.url`)
 	if (js.namespaceContains('__dirname') || seenDirname) {
 		js.getAST().body.splice(0, 0, variableDeclarations.filename(import_meta_url.name), variableDeclarations.dirname)
+
 		// addFilename(js)
 		// refact(js, create__dirname, 'path');
-
-		js.registerReplace(import_meta_url.name, `import.meta.url`)
 
 	} else if (js.namespaceContains('__filename') || seenFilename) {
 
 		js.getAST().body.splice(0, 0, variableDeclarations.filename(import_meta_url.name))
 
 		// addFilename(js);
-		js.registerReplace(import_meta_url.name, `import.meta.url`)
 
 
 	}
