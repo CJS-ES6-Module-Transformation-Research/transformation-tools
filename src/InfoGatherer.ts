@@ -1,3 +1,4 @@
+import {generate} from "escodegen";
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
@@ -158,8 +159,7 @@ interface Specifier {
 function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
 	// let notPrimProps = []
 	let fctStack: string[] = [];
-
-	let nameS: string;
+ 	let nameS: string;
 	traverse(ast, {
 		enter: (node, parent) => {
 			switch (node.type) {
@@ -182,6 +182,7 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 						nameS = node.object.object.name;
 						let key = node.object.property.name
 						let value = node.property.name
+
 						if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(key)) {
 							// containsNode(mapOfRPIs[nameS].listOfAllPropsAccessed, node.object)) {
 							// notPrimProps.push( node.object);
@@ -191,7 +192,7 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 						}
 					}
 					break;
-				case "CallExpression":
+				case "NewExpression":{
 					if (node.callee.type == "MemberExpression"
 						&& node.callee.object.type == "Identifier"
 						&& node.callee.property.type == "Identifier"
@@ -208,6 +209,25 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 						}
 					}
 					break;
+				}
+				case "CallExpression": {
+					if (node.callee.type == "MemberExpression"
+						&& node.callee.object.type == "Identifier"
+						&& node.callee.property.type == "Identifier"
+						&& !isShadowVariable(node.callee.object.name, fctStack, shadows)
+					) {
+
+						nameS = node.callee.object.name;
+						if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(node.callee.property.name)) {
+							// notPrimProps.push( node.callee);
+							if (!mapOfRPIs[nameS].refTypeProps.includes(node.callee.property.name)) {
+								mapOfRPIs[nameS].refTypeProps.push(
+									node.callee.property.name);
+							}
+						}
+					}
+					break;
+				}
 			}
 		}, leave: (node, parent) => {
 			switch (node.type) {
@@ -351,9 +371,10 @@ for (let forced in def_aults) {
 
 		let specD = demap.fromId[forced]
  		let e:API;
-		mmp.createOrSet(js,  specD, (a)=> {
- 			a.setType(API_TYPE.default_only, true)
-		},API_TYPE.default_only, true )
+		mmp.resolveSpecifier(js, specD ).setType(API_TYPE.default_only,true )
+		// mmp.createOrSet(js,  specD, (a)=> {
+ 		// 	a.setType(API_TYPE.default_only, true)
+		// },API_TYPE.default_only, true )
 
 		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 	}
@@ -452,16 +473,6 @@ export function getDeclaredModuleImports(js: JSFile) {
 }
 
 
-export function getOneOffForcedDefaults(ast: Program, listOfImportIds: string[]) {
-	let fdMap: { [id: string]: boolean } = {}
-	traverse(ast, {
-		enter: (node, parent) => {
-			if (node.type === "Identifier") {
-			}
-		}
-	})
-	return fdMap;
-}
 
 
 //protect data

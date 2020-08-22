@@ -22,7 +22,7 @@ function createOptions(dest:string='') :ProjConstructionOpts {
      copy_node_modules: false,
      isModule: false,
      target_dir: dest? dest:'',ignored:[],
-     isNamed:false
+     isNamed:false,report:false,testing:true
  }
 }
 

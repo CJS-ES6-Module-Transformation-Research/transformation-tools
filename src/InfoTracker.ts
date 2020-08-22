@@ -299,6 +299,7 @@ try {
 
 
 	add(declaration:ImportDeclaration) {
+
 		this.declarations.push(declaration)
 	}
 	getWPN( ){

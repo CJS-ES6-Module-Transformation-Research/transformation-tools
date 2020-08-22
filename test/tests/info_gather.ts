@@ -1,8 +1,11 @@
-import {expect} from "chai";
 import {join} from "path";
 import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {getDeclaredModuleImports, reqPropertyInfoGather} from "../../src/InfoGatherer";
+import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
+import {getDeclaredModuleImports, reqPropertyInfoGather, ReqPropInfo} from "../../src/InfoGatherer";
+import {InfoTracker} from "../../src/InfoTracker";
+import {API, API_TYPE} from "../../src/transformations/export_transformations/API";
 import {createProject, FIXTURES} from "../index";
+import { expect ,assert } from "chai";
 
 
 function MANY(js: JSFile) {
@@ -11,158 +14,141 @@ function MANY(js: JSFile) {
 }
 
 describe('info_gather', () => {
+	// let project: ProjectManager
+	// let js: JSFile
+	interface _Info {
+		js: JSFile,
+		project: ProjectManager,
+		info: InfoTracker
+		,rpi:ReqPropInfo
+	}
 
-	it('shadow_single', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/shadow_single'), false)
-		let actualJS: JSFile = project.getJS('shadow_single.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('shadow_single.expected.js')
+	function runInfoGather(name: string): _Info {
+		let project = createProject(join(FIXTURES, `info_gather/${name}`), false)
+		let js = project.getJS(`${name}.actual.js`);
+assert (js,'js ')
+		MANY(js)
+		let info =  js.getInfoTracker()
+		assert (info,'info ' )
+		let x = []
+		project.forEachSource(e=>x.push(e.getRelative()) )
+ 		let rpi: ReqPropInfo =info .getRPI('x')
+		 assert (rpi  ,'rpi: '+ `${name}.actual.js  ${x 
+		 
+		 }` )
+		return {js, project, info,rpi }
+	}
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   shadow_single');
-	});
 	it('nested_shadow', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/nested_shadow'), false)
-		let actualJS: JSFile = project.getJS('nested_shadow.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('nested_shadow.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   nested_shadow');
+		let {js,project,info,rpi     } = runInfoGather('nested_shadow')
+		expect(rpi.potentialPrimProps.length).to.be.eq( 1)
+		expect(rpi.potentialPrimProps[0]).to.be.eq( 'z')
 	});
 	it('rpi_info_general', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/rpi_info_general'), false)
-		let actualJS: JSFile = project.getJS('rpi_info_general.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('rpi_info_general.expected.js')
+		let {js,project,info,rpi    } = runInfoGather('rpi_info_general')
+		expect(rpi.potentialPrimProps.length).to.be.eq( 1)
+		expect(rpi.potentialPrimProps[0]).to.be.eq( 'y')
+		expect(rpi.refTypeProps.length).to.be.eq( 1)
+		expect(rpi.refTypeProps[0]).to.be.eq( 'z')
+		expect(rpi.allAccessedProps.length).to.be.eq( 2)
+		expect(rpi.allAccessedProps).to.contains( 'z')
+		expect(rpi.allAccessedProps).to.contains( 'y')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   rpi_info_general');
 	});
 	it('forced_decl_from_orEquals', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/forced_decl_from_orEquals'), false)
-		let actualJS: JSFile = project.getJS('forced_decl_from_orEquals.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('forced_decl_from_orEquals.expected.js')
+		let {js,project,info,rpi    } = runInfoGather('forced_decl_from_orEquals')
+ 		expect(js.getApi().getType()).to.be.eq(API_TYPE.default_only)
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   forced_decl_from_orEquals');
+
 	});
 	it('forced_decl_from_prop_lhs_assign', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/forced_decl_from_prop_lhs_assign'), false)
-		let actualJS: JSFile = project.getJS('forced_decl_from_prop_lhs_assign.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('forced_decl_from_prop_lhs_assign.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   forced_decl_from_prop_lhs_assign');
+		let {js,project,info,rpi    } = runInfoGather('forced_decl_from_prop_lhs_assign')
+		expect(js.getApi().getType()).to.be.eq(API_TYPE.default_only)
 	});
-	it('potential_prim_rhs_decl', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/potential_prim_rhs_decl'), false)
-		let actualJS: JSFile = project.getJS('potential_prim_rhs_decl.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('potential_prim_rhs_decl.expected.js')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   potential_prim_rhs_decl');
-	});
 	it('potential_prim_rhs_assign', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/potential_prim_rhs_assign'), false)
-		let actualJS: JSFile = project.getJS('potential_prim_rhs_assign.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('potential_prim_rhs_assign.expected.js')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   potential_prim_rhs_assign');
+		let {js,project,info,rpi    } = runInfoGather('potential_prim_rhs_assign')
+		expect(rpi.allAccessedProps).to.contains( 'y', rpi.allAccessedProps.toString())
+		expect(rpi.potentialPrimProps).to.contains( 'y', rpi.potentialPrimProps.toString())
+		expect(rpi.allAccessedProps).to.contains( 'z', rpi.allAccessedProps.toString())
+		expect(rpi.potentialPrimProps).to.contains( 'z', rpi.potentialPrimProps.toString())
+		expect(rpi.potentialPrimProps.length).to.eq( 2, rpi.potentialPrimProps.toString())
+		expect(rpi.allAccessedProps.length).to.eq( 2, rpi.allAccessedProps.toString())
 	});
 	it('potential_prim_add_expr', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/potential_prim_add_expr'), false)
-		let actualJS: JSFile = project.getJS('potential_prim_add_expr.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('potential_prim_add_expr.expected.js')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   potential_prim_add_expr');
+		let {js,project,info,rpi    } = runInfoGather('potential_prim_add_expr')
+		expect(rpi.allAccessedProps).to.contains( 'y')
+		expect(rpi.potentialPrimProps).to.contains( 'y')
+		expect(rpi.allAccessedProps).to.contains( 'z')
+		expect(rpi.potentialPrimProps).to.contains( 'z')
+		expect(rpi.potentialPrimProps.length).to.eq( 2)
+		expect(rpi.allAccessedProps.length).to.eq( 2)
+
+
 	});
 	it('potential_prim_many', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/potential_prim_many'), false)
-		let actualJS: JSFile = project.getJS('potential_prim_many.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('potential_prim_many.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   potential_prim_many');
+		let {js,project,info,rpi    } = runInfoGather('potential_prim_many')
+		expect(rpi.allAccessedProps).to.contains( 'y')
+		expect(rpi.potentialPrimProps).to.contains( 'y')
+		expect(rpi.allAccessedProps).to.contains( 'z')
+		expect(rpi.potentialPrimProps).to.contains( 'z')
+		expect(rpi.potentialPrimProps.length).to.eq( 2)
+		expect(rpi.allAccessedProps.length).to.eq( 2)
 	});
 	it('call_or_access_prop_rhs_assign', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/call_or_access_prop_rhs_assign'), false)
-		let actualJS: JSFile = project.getJS('call_or_access_prop_rhs_assign.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('call_or_access_prop_rhs_assign.expected.js')
+		let {js,project,info,rpi    } = runInfoGather('call_or_access_prop_rhs_assign')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   call_or_access_prop_rhs_assign');
+
+		expect(rpi.allAccessedProps).to.contains( 'y', "msg:  "+(JSON.stringify(rpi,null,3))+"")
+		expect(rpi.refTypeProps).to.contains( 'y',"msg:  "+(JSON.stringify(rpi,null,3))+"")
+		expect(rpi.refTypeProps.length).to.eq( 1)
+		expect(rpi.allAccessedProps.length).to.eq( 1)
+
 	});
 	it('call_or_access_prop_invoke', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/call_or_access_prop_invoke'), false)
-		let actualJS: JSFile = project.getJS('call_or_access_prop_invoke.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('call_or_access_prop_invoke.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   call_or_access_prop_invoke');
+		let {js,project,info,rpi    } = runInfoGather('call_or_access_prop_invoke')
+		expect(rpi.allAccessedProps).to.contains( 'y')
+		expect(rpi.potentialPrimProps).to.contains( 'y')
+		expect(rpi.allAccessedProps).to.contains( 'z')
+		expect(rpi.refTypeProps).to.contains( 'z')
+		expect(rpi.potentialPrimProps.length).to.eq( 1)
+		expect(rpi.refTypeProps.length).to.eq( 1)
+		expect(rpi.allAccessedProps.length).to.eq( 2)
 	});
 	it('call_or_access_prop_new_expr', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/call_or_access_prop_new_expr'), false)
-		let actualJS: JSFile = project.getJS('call_or_access_prop_new_expr.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('call_or_access_prop_new_expr.expected.js')
+		let {js,project,info,rpi    } = runInfoGather('call_or_access_prop_new_expr')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   call_or_access_prop_new_expr');
+		expect(rpi.refTypeProps).to.contains( 'y')
+		expect(rpi.allAccessedProps).to.contains( 'y')
+		expect(rpi.refTypeProps.length).to.eq( 1)
+		expect(rpi.allAccessedProps.length).to.eq( 1)
 	});
 	it('call_or_access_prop_new_many', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/call_or_access_prop_new_many'), false)
-		let actualJS: JSFile = project.getJS('call_or_access_prop_new_many.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('call_or_access_prop_new_many.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   call_or_access_prop_new_many');
+		let {js,project,info,rpi    } = runInfoGather('call_or_access_prop_new_many')
+		expect(rpi.potentialPrimProps).to.contains( 'a')
+		expect(rpi.potentialPrimProps.length).to.eq( 1 , `for primProps:${rpi.potentialPrimProps.toString()}`)
+		expect(rpi.refTypeProps).to.contains( 'z')
+		expect(rpi.refTypeProps).to.contains( 'y')
+		expect(rpi.refTypeProps.length).to.eq( 2 , `for refProps:${rpi.refTypeProps.toString()}`)
+		expect(rpi.allAccessedProps).to.contains( 'z')
+		expect(rpi.allAccessedProps).to.contains( 'a')
+		expect(rpi.allAccessedProps).to.contains( 'y')
+		expect(rpi.allAccessedProps.length  ).to.eq( 3, `for allPRops :${rpi.allAccessedProps.toString()}`)
 	});
 	it('all_props_mix', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/all_props_mix'), false)
-		let actualJS: JSFile = project.getJS('all_props_mix.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('all_props_mix.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   all_props_mix');
-	});
+		let {js,project,info,rpi     } = runInfoGather('all_props_mix')
+		expect(rpi.allAccessedProps).to.contains( 'y',  rpi.allAccessedProps.toString())
+		expect(rpi.potentialPrimProps).to.contains( 'y',  rpi.potentialPrimProps.toString())
+		expect(rpi.allAccessedProps).to.contains( 'call',  rpi.allAccessedProps.toString())
+		expect(rpi.refTypeProps).to.contains( 'call',  rpi.refTypeProps.toString())
+		expect(rpi.potentialPrimProps.length).to.eq( 1,  rpi.potentialPrimProps.toString())
+		expect(rpi.refTypeProps.length).to.eq( 1,  rpi.potentialPrimProps.toString())
+		expect(rpi.allAccessedProps.length).to.eq( 2, rpi.allAccessedProps.toString())	});
 	it('prim_ref_mix', () => {
-		const project = createProject(join(FIXTURES, 'info_gather/prim_ref_mix'), false)
-		let actualJS: JSFile = project.getJS('prim_ref_mix.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('prim_ref_mix.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   prim_ref_mix');
+		let {js,project,info,rpi    } = runInfoGather('prim_ref_mix')
+		expect.fail( )
 	});
-	it('', () => {
-		const project = createProject(join(FIXTURES, 'info_gather'), false)
-		let actualJS: JSFile = project.getJS('.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('.expected.js')
 
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   ');
-	});
-	it('', () => {
-		const project = createProject(join(FIXTURES, 'info_gather'), false)
-		let actualJS: JSFile = project.getJS('.actual.js');
-		MANY(actualJS)
-		let prjS = project.getJS('.expected.js')
-
-		let expected = prjS.makeSerializable().fileData
-		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   ');
-	});
 });

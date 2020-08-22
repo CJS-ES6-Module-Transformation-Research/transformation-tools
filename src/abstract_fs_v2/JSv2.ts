@@ -1,6 +1,6 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
-import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
@@ -191,10 +191,13 @@ export class JSFile extends AbstractDataFile {
 			body.splice(0, 0, e)
 		})
 
-
-		this.data_based_imports.getDeclarations().reverse().forEach(e => {
-			newAST.body.splice(0, 0, e)
-		})
+		if (this.isTest && (!this.data_based_imports)) {
+			 //skip cause test
+		} else {
+			this.data_based_imports.getDeclarations().reverse().forEach(e => {
+				newAST.body.splice(0, 0, e)
+			})
+		}
 		return newAST;
 	}
 
@@ -224,7 +227,7 @@ export class JSFile extends AbstractDataFile {
 			} catch (e2) {
 				if (this.isTest) {
 					_program = parseModule(program, {loc: true})
-				}else{
+				} else {
 					throw e2;
 				}
 			}

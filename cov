@@ -1,0 +1,2 @@
+#!/bin/bash
+tsc && nyc mocha  test/tests/ && open http://localhost:63342/cjs_transform/coverage/index.html

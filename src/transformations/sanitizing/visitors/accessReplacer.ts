@@ -472,8 +472,8 @@ function deconstructDeconstructors(node: VariableDeclaration, parent: Node | nul
 	// = body[body.indexOf(node)]
 
 	stmts.forEach(e => {
-		// body .splice(index,0,e)
-		js.addToTop(e)
+		body .splice(index,0,e)
+
 	})
 	index = body.indexOf(node)
 	body.splice(index, 1)
