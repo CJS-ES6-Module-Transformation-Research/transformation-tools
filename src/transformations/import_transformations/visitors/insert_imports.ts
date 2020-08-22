@@ -23,7 +23,7 @@ export function cleanMIS(moduleSpecifier: string): string {
 
 export function insertImports(js: JSFile) {
 	// console.log(`calling insertImports on jsfile : ${js.getRelative()} `)
-
+js.setAsModule()
 	let infoTracker = js.getInfoTracker();
 	let listOfVars = getListOfVars(infoTracker)
 	let MAM = js.getAPIMap()

@@ -1,0 +1,12 @@
+{
+  "name": "prim_ref_mix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "prim_ref_mix.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

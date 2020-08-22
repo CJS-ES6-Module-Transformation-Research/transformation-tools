@@ -6,7 +6,7 @@ export const TEST_DIR = join(project, 'test')
 
 export const test_root = `${project}`
 export const project_sanitize_resources_root = `${test_root}/project_sanitize_tests`
-
+export const FIXTURES= join(project, 'fixtures')
 
 export const mock_opts: ProjConstructionOpts = {
 	write_status: "in-place",
@@ -19,30 +19,33 @@ export const mock_opts: ProjConstructionOpts = {
 	testing: true
 }
 const namedProjOps: ProjConstructionOpts = {
+	isNamed: true,
 	write_status: "in-place",
 	target_dir: "",
 	suffix: "",
-	isModule: false,
-	copy_node_modules: false,
-	isNamed: false,
 	ignored: [],
 	testing: true
 }
-
-export function createProject(projPath: string, isNamed: boolean) {
-	return new ProjectManager(projPath, isNamed ? namedProjOps : defaultProjOpts)
-}
-
 const defaultProjOpts: ProjConstructionOpts = {
+	isNamed: false,
 	write_status: "in-place",
 	target_dir: "",
 	suffix: "",
-	isModule: false,
-	copy_node_modules: false,
-	isNamed: false,
 	ignored: [],
 	testing: true
 }
+export function createProject(projPath: string, isNamed: boolean) {
+	return new ProjectManager(projPath,  {
+		isNamed: isNamed,
+		write_status: "in-place",
+		target_dir: "",
+		suffix: "",
+		ignored: [],
+		testing: true
+	}, isNamed);
+}
+
+
 // export const mod_mock: ProjConstructionOpts = {
 // 	write_status: "in-place",
 // 	target_dir: "",

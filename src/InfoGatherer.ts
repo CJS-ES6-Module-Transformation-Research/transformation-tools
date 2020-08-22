@@ -331,7 +331,6 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	});
 
 	for (let id in rpis) {
-
 		let rpi = rpis[id];
 		rpi.allAccessedProps.forEach((prop: string) => {
 			if (!rpi.refTypeProps.includes(prop)) {
@@ -340,7 +339,12 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		});
 
 	}
-
+for (let id in rpis){
+	console.log(id)
+	console.log(rpis[id].refTypeProps)
+	console.log(rpis[id].potentialPrimProps)
+	console.log(rpis[id].allAccessedProps)
+}
 
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
@@ -445,8 +449,6 @@ export function getDeclaredModuleImports(js: JSFile) {
 				}
 			}
 		})
-
-
 }
 
 

@@ -21,6 +21,8 @@ if (input) {
 	// if(tf_args._.includes('jsreport')){
 	// 	repo
 	// }
+	pm.writeOut()
+
 	pm.report()
 
 }

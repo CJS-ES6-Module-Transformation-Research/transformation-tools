@@ -30,7 +30,7 @@ export class Dir extends AbstractFile {
 	}
 
 	constructor(path: string, b: MetaData, parent: Dir, factory: FileFactory, rc: ModuleAPIMap, ignored:string[]=[] ) {
-		super(path, b, parent);
+		super(path, b, parent,b.test);
 		this.modMap = rc;
 		this.factory = () => factory;
 		this.childrenNames = readdirSync(this.path_abs)

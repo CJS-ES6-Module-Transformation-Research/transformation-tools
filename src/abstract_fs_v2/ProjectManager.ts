@@ -46,19 +46,21 @@ export class ProjectManager {
 	private readonly suffixFsData: { [abs: string]: string } = {}
 	private includeGit: boolean = false;
 	private includeNodeModules: boolean = false;
-	private uses_names: boolean;
-	private reporter: Reporter;
+	private readonly uses_names: boolean;
+	private readonly reporter: Reporter;
+	private readonly test: boolean;
 
 
-	constructor(path: string, opts: ProjConstructionOpts) {
-		this.uses_names = opts.isNamed;
+	constructor(path: string, opts: ProjConstructionOpts, _named:boolean=false) {
+		opts.isNamed = opts.isNamed || _named ;
+		this.uses_names = opts.isNamed || _named ;
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
 		this.reporter = new Reporter(process.cwd() )
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
-
-		this.factory = new FileFactory(path, this.uses_names, opts , this,this.reporter);
+	this.test = opts.testing
+		this.factory = new FileFactory(path,  opts , this,this.reporter);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
@@ -125,8 +127,13 @@ export class ProjectManager {
 				func(e)
 			})
 		} catch (e) {
+
 			console.log(`EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}`)
-			throw e;
+			if  (!this.test){
+				throw e;
+			}
+				throw e;
+
 		}
 	}
 

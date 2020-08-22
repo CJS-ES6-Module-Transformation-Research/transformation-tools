@@ -1,0 +1,12 @@
+{
+  "name": "js_has_priority",
+  "version": "1.0.0",
+  "description": "",
+  "main": "js_has_priority.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

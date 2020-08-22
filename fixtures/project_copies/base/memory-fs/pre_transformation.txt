@@ -1,0 +1,77 @@
+
+> memory-fs@0.5.0 test /Users/sam/Dropbox/Spring_20/research_proj/github_repo_stuff/memory-fs
+> mocha
+
+
+
+  directory
+    ✓ should have a empty root directory as startup
+    ✓ should make and remove directories (linux style)
+    ✓ should make and remove directories (windows style)
+    ✓ should call a mkdir callback when passed as the third argument
+
+  files
+    ✓ should make and remove files
+
+  errors
+    ✓ should fail on invalid paths
+    ✓ should fail incorrect arguments
+    ✓ should fail on wrong type
+    ✓ should throw on readlink
+
+  async
+    ✓ should call stat callback in a new event cycle
+    ✓ should call readdir callback in a new event cycle
+    ✓ should call mkdirp callback in a new event cycle
+    ✓ should call rmdir callback in a new event cycle
+    ✓ should call unlink callback in a new event cycle
+    ✓ should call readlink callback in a new event cycle
+    ✓ should call mkdir a callback in a new event cycle
+    ✓ should call readFile a callback in a new event cycle
+    ✓ should be able to use the async versions
+    ✓ should return errors
+
+  streams
+    writable streams
+      ✓ should write files
+      ✓ should zero files
+      ✓ should accept pipes
+      ✓ should propagate errors
+    readable streams
+      ✓ should read files
+      ✓ should respect start/end
+      ✓ should propagate errors
+
+  normalize
+    ✓ should normalize paths
+
+  pathToArray
+    ✓ should split path to an array of parts
+    ✓ should fail on invalid paths
+
+  join
+    ✓ should join paths
+    ✓ should join paths (weird cases)
+    ✓ should join paths (absolute request)
+
+  os
+    unix
+      ✓ should stat stuff
+      ✓ should readdir directories
+      ✓ should readdir directories
+      ✓ should also accept multi slashs
+    windows
+      ✓ should stat stuff
+      ✓ should readdir directories
+      ✓ should readdir directories
+      ✓ should also accept multi slashs
+      ✓ should also accept a normal slash
+
+  error
+    ✓ should include the path in Error message
+    ✓ should use correct error message in the first line of Error stack
+    ✓ should work fine without operation name
+
+
+  44 passing (36ms)
+

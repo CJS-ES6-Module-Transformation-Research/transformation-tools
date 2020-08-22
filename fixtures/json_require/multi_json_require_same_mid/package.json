@@ -1,0 +1,12 @@
+{
+  "name": "multi_json_require_same_mid",
+  "version": "1.0.0",
+  "description": "",
+  "main": "multi_json_require_same_mid.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

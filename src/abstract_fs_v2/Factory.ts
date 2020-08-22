@@ -183,13 +183,13 @@ export class FileFactory {
 	private reporter: Reporter;
 	private isTest: boolean;
 
-	constructor(path: string, uses_names: boolean, opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null ) {
+	constructor(path: string,  opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null ) {
 		this.reporter = reporter
 		this.isModule =   opts.isModule;
 		this.rootPath = resolve(path);
 		this.pm = pm;
 		this.ignored = opts.ignored
-		this.uses_names = uses_names
+		this.uses_names = opts.isNamed
 		this.isTest = opts.testing
 		this.root_dir = this.createRoot();
 	}

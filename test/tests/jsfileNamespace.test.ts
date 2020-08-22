@@ -1,11 +1,13 @@
-import {it} from "mocha";
-import {expect} from "chai";
+
 import {readFileSync} from 'fs'
+import {project} from "../../index";
 import {Namespace} from "../../src/abstract_fs_v2/Namespace";
 import {test_root} from "../index";
 import {parseScript, Program} from "esprima";
+import { join } from "path";
+import { expect } from 'chai';
 
-const testDir = `${test_root}/res/namespace_test_files`
+const testDir = join(project, 'test', `test_resources/res/namespace_test_files`)
 
 interface map {
     [key: string]: string;
@@ -30,9 +32,11 @@ testData ['classDecl'] = readFileSync(`${testDir}/classDecl.js`).toString()
 // testData ['classDecl']
 // decl, assign in for
 // not rhs of module.exports = {};
+// @ts-ignore
 describe('Utility: Basic Namespace Traversal Tests', () => {
 
 
+    // @ts-ignore
     it('singleVDecl', () => {
         let data = Namespace.create(parseScript(testData['singleVDecl']));
         let size = 1;
@@ -41,6 +45,7 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
     });
 
 
+    // @ts-ignore
     it('singleDeconsDecl', () => {
         let data = Namespace.create(parseScript(testData['singleDeconsDecl']));
         let size = 1;
@@ -49,6 +54,7 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
     });
 
 
+    // @ts-ignore
     it('multiDeconsDecl', () => {
         let data = Namespace.create(parseScript(testData['multiDeconsDecl']));
         let size = 3;
@@ -59,6 +65,7 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
     });
 
 
+    // @ts-ignore
     it('moduleExports', () => {
         let data = Namespace.create(parseScript(testData['moduleExports']));
         let size = 1;
@@ -67,6 +74,7 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
     });
 
 
+// @ts-ignore
     it('funcDecl', () => {
         let data = Namespace.create(parseScript(testData['funcDecl']));
         let size = 3;
@@ -77,6 +85,7 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
     });
 
 
+    // @ts-ignore
     it('classDecl', () => {
         let data = Namespace.create(parseScript(testData['classDecl']));
         let size = 1;
@@ -87,21 +96,25 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
 
 })
 
+// @ts-ignore
 describe('namespace variable renaming', () => {
 
 
+    // @ts-ignore
     it('singleVDecl', () => {
         let data = Namespace.create(parseScript(testData['singleVDecl']));
         expect(data.generateBestName('x').name).equal('x0', data.generateBestName('x').name)
     });
 
 
+    // @ts-ignore
     it('singleDeconsDecl', () => {
         let data = Namespace.create(parseScript(testData['singleDeconsDecl']));
         expect(data.generateBestName('a').name).equal('a0')
     });
 
 
+    // @ts-ignore
     it('multiDeconsDecl', () => {
         let data = Namespace.create(parseScript(testData['multiDeconsDecl']));
         expect(data.generateBestName('a').name).equal('a0')
@@ -110,6 +123,7 @@ describe('namespace variable renaming', () => {
     });
 
 
+    // @ts-ignore
     it('moduleExports', () => {
         let data = Namespace.create(parseScript(testData['moduleExports']));
         expect(data.generateBestName('a').name).equal('a')
@@ -118,6 +132,7 @@ describe('namespace variable renaming', () => {
     });
 
 
+    // @ts-ignore
     it('funcDecl', () => {
         let data = Namespace.create(parseScript(testData['funcDecl']));
         expect(data.generateBestName('a').name).equal('a0')
@@ -126,6 +141,7 @@ describe('namespace variable renaming', () => {
     });
 
 
+    // @ts-ignore
     it('classDecl', () => {
         let data = Namespace.create(parseScript(testData['classDecl']));
         expect(data.generateBestName('HelloWorld').name).equal('HelloWorld0')

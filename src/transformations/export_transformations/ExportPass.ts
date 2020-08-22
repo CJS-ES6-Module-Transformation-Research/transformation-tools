@@ -110,6 +110,7 @@ class ExportPass {
 		}
 		this.api = this.js.getApi()
 	}
+
 	//
 	// private getAPI(): API {
 	// 	return .resolveSpecifier(this.js)
@@ -137,8 +138,8 @@ class ExportPass {
 			// console.log(`____ ${this.tracker.type}`)
 		}
 		let reporter = this.js.getReporter()
-		let mli = reporter.addMultiLine('export_name_report','exp_name_header')
- 		switch (this.tracker.type) {
+		let mli = reporter.addMultiLine('export_name_report', 'exp_name_header')
+		switch (this.tracker.type) {
 
 			case "default":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -183,7 +184,7 @@ class ExportPass {
 	private createNamedExports(): ExportNamedDeclaration {
 		let names: string[] = []
 		let specifiers: ExportSpecifier[] = []
-  		let mli = this.js.getReporter().addMultiLine('export_name_report','exp_name_header')
+		let mli = this.js.getReporter().addMultiLine('export_name_report', 'exp_name_header')
 		for (let name in this.tracker.names) {
 			let val: ExportSpecifier = this.tracker.names[name]
 			names.push(val.exported.name)
@@ -278,16 +279,20 @@ export function __exports(js: JSFile) {
 	let indicesToRemove: number[] = []
 	type adder = (e: (Directive | Statement | ModuleDeclaration)) => void
 	let add: adder;
+	js.setAsModule()
 
 	function setDefaultID() {
 		if (!__default_exports_id) {
 			__default_exports_id = namespace.getDefaultExport()
 		}
 	}
+let body = js.getAST().body
+	let insertIndicesDecl: number[] = []
+	let objDeclReplaceMap: { [key: number]: VariableDeclaration[] } = {}
 
-	js.getAST().body.forEach((node: (Directive | Statement | ModuleDeclaration), index: number, arr: (Directive | Statement | ModuleDeclaration)[]) => {
+	body.forEach((node: (Directive | Statement | ModuleDeclaration), index: number, arr: (Directive | Statement | ModuleDeclaration)[]) => {
 		let debug = ""
-		add = (elem) => 1 + index ? arr.push(elem) : arr.splice(index, 0, elem)
+		// add = (elem) => 1 + index ? arr.push(elem) : arr.splice(index, 0, elem)
 		// console.log(`processing node ${generate(node)}`)
 		if (node.type === "ExpressionStatement"
 			&& node.expression.type === "AssignmentExpression"
@@ -302,7 +307,8 @@ export function __exports(js: JSFile) {
 						// console.log(`detected direct assign in id of type ${assigned.type}`)
 
 						exportPass.clear()
-						pushObj(node.expression, right)
+						insertIndicesDecl.push(index)
+						objDeclReplaceMap[index] = pushObj(node.expression, right)
 
 						break;
 					default:
@@ -376,16 +382,20 @@ export function __exports(js: JSFile) {
 
 
 	});
+	insertIndicesDecl.reverse().forEach(e=>{
+		objDeclReplaceMap[e].reverse().forEach(v=>{
+			body.splice(e,0,v )
+		});
+	});
 
-
-	function pushObj(expression: AssignmentExpression, assigned: ObjectExpression) {
+	function pushObj(expression: AssignmentExpression, assigned: ObjectExpression): VariableDeclaration[] {
 		let properties = assigned.properties
 		// expression.right = {type: "ObjectExpression", properties: []}
 		expression.left = __default_exports_id
 
+		let toAdd: VariableDeclaration[] = []
 		properties.forEach(prop => {
 			// console.log(`processing ${generate(prop)}`)
-
 			if (prop.type === "Property" && prop.key && prop.value
 				&& prop.key.type === "Identifier") {
 
@@ -405,9 +415,9 @@ export function __exports(js: JSFile) {
 						declarations: [declarator],
 						kind: 'const'
 					}
+					prop.value = local
 					// console.log(`inserting declaration ${generate(decl)}`)
-
-					add(decl)
+					toAdd.push(decl)
 				} else {
 					local = prop.value
 					exported = prop.key
@@ -416,7 +426,8 @@ export function __exports(js: JSFile) {
 				// console.log(` registering names local:${local.name}    and exported:${exported.name}`)
 
 			}
-		})
+		});
+		return toAdd;
 	}
 
 	function __deterimineExportType(test: MemberExpression): ExportedAssignmentType | null {

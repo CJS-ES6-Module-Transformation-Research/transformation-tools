@@ -27,6 +27,7 @@ import {createRequireDecl, id} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
 import {Namespace} from "../../../abstract_fs_v2/Namespace";
 import {InfoTracker} from "../../../InfoTracker";
+import {add__dirname} from "./__dirname";
 
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';
@@ -39,11 +40,54 @@ export const alphaNumericString: string = `${lower}${upper}${numeric}`
  * TransformFunction to replace 'accesses' of require calls.
  * @param js the JSFile to transform.
  */
-export function accessReplace(js: JSFile) {
+export function  accessReplace(js: JSFile) {
 	let requireTracker = js.getInfoTracker();
 	let imports: RequireAccessIDs = {};
 	let triesCaughtEtc: { [key: string]: string } = {}
 	let names = js.getNamespace()
+	let decls:VariableDeclaration[] = [];
+	let indices:number[] = []
+	let body = js.getAST().body
+	  body.forEach( (e,index)=>{
+		if (e.type === "VariableDeclaration"
+			&& e.declarations
+			&& e.declarations[0]
+			&& e.declarations[0].init
+			&& e.declarations[0].id.type === "Identifier"
+			&& e.declarations[0].init.type === "CallExpression"
+			&& e.declarations[0].init.callee.type === "Identifier"
+			&& e.declarations[0].init.callee.name === "require"
+			&& e.declarations[0].init.arguments
+			&& e.declarations[0].init.arguments[0]
+			&& e.declarations[0].init.arguments[0].type === "Literal"
+			&& e.declarations[0].init.arguments[0].value
+
+		){
+		decls.push(e)
+			indices.push(index)
+
+		}
+	})
+
+	indices.reverse().forEach(i=> {
+		 body.splice(i, 1)
+	});
+	add__dirname(js)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	// console.log(js.getRelative())
@@ -179,7 +223,7 @@ export function accessReplace(js: JSFile) {
 
 
 	replace(js.getAST(), visitor)
-	js.getAST().body.forEach(e => {
+	 body.forEach(e => {
 		traverse(e, {
 			enter: (node, parent) => {
 				if (parent !== null && node.type === "VariableDeclaration") {
@@ -207,7 +251,15 @@ export function accessReplace(js: JSFile) {
 	// deconstructDeconstructors(js)
 
 	// js.getInfoTracker().getRPI_()
-	populateAccessDecls(js, imports, js.getAST().body, names)
+
+
+
+
+	populateAccessDecls(js, imports,  body, names)
+
+	decls.reverse().forEach(e=>{
+		body.splice(0,0,e)
+	})
 
 	// if(js.getRelative().includes('index')){
 	// 	console.log(   generate(js.getAST())    )
@@ -294,6 +346,7 @@ function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr
 		&& e.init.arguments[0].type === "Literal")) {
 		let id = extract(getRequireStringFromDecl(e), ns);
 		e.init = id;
+
 	}
 }
 

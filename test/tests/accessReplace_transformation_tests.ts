@@ -5,7 +5,7 @@ import {project} from "../../index";
 import {ProjConstructionOpts, ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
 
 import {accessReplace} from "../../src/transformations/sanitizing/visitors";
-import {mock_opts} from "../index";
+import {createProject, mock_opts} from "../index";
 import { join } from 'path';
 console.log(`projecjt: ${project}`)
 const testFile_dir =join(project ,"test/test_resources/sanitize/qccess_replace")
@@ -28,15 +28,21 @@ describe('Sanitize: 3 Access Replace Test Files', () => {
     // @ts-ignore
     it('Test Files', () => {
         files_in_dir.forEach((proj: string) => {
-            let eProj = new ProjectManager(`${expectedDir}/${proj}`,mock_opts)
-            let aProj =  new ProjectManager(`${actualDir}/${proj}`,mock_opts)
+            let eProj =  createProject( join(expectedDir,proj) ,false)
+            let aProj =   createProject(join(actualDir,proj) ,false)
+
+
              aProj.forEachSource(accessReplace)
 
             aProj.forEachSource((e) => {
                 let actual = e.makeSerializable().fileData;
                 let expected = eProj.getJS(e.getRelative())
                     .makeSerializable().fileData;
-                expect(actual).to.be. equal(expected, e.getRelative());
+                try {
+                    expect(actual).to.be.equal(expected, e.getRelative());
+                }catch(e){
+                    throw e;
+                }
             });
         });
 
