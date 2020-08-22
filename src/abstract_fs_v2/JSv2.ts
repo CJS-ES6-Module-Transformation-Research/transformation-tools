@@ -1,6 +1,6 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
-import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {Directive, ImportDeclaration, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
@@ -192,12 +192,9 @@ export class JSFile extends AbstractDataFile {
 		})
 
 
-		// //MUST BE LAST
-		// if (this.isStrict && this.ast.sourceType !== "module") {
-		// 	this.ast.body.splice(0, 0,
-		// 		JSFile.useStrict
-		// 	);
-		// }
+		this.data_based_imports.getDeclarations().reverse().forEach(e => {
+			newAST.body.splice(0, 0, e)
+		})
 		return newAST;
 	}
 
@@ -210,38 +207,6 @@ export class JSFile extends AbstractDataFile {
 		},
 		"directive": "use strict"
 	}
-
-	// private makeExportsArray(body: (Directive | ModuleDeclaration | Statement)[]) {
-	//
-	// 	let exports = this.exports.getBuilt();
-	// 	console.log(JSON.stringify(exports, null, 2))
-	// 	if (exports.named_exports && exports.named_exports.specifiers.length > 0) {
-	// 		body.push(exports.named_exports)
-	// 		// console.log(`naemd exopots pushed:  ${generate(exports.named_exports)}`)
-	// 	} else {
-	// 		console.log(`something went wrong with naemd exports`)
-	// 	}
-	//
-	// 	if (exports.default_exports && exports.default_exports.declaration) {
-	// 		switch (exports.default_exports.declaration.type) {
-	//
-	// 			case "ObjectExpression":
-	// 				console.log(`something went wrong with naemd exports`)
-	// 				if (exports.default_exports.declaration.properties.length === 0) {
-	// 					console.log(`objectExporession had value, 0`)
-	// 					break;
-	// 				} else {
-	// 					console.log(`objectExporession had value,   ${exports.default_exports.declaration.properties.toString()}`)
-	// 				}
-	//
-	// 			// not technically necessary however it is the only other possibility at this time... seems explicit.
-	// 			case "Identifier":
-	// 			default:
-	// 				body.push(exports.default_exports)
-	// 				break;
-	// 		}
-	// 	}
-	// }
 
 	private parseProgram(program: string, isModule): Program {
 
@@ -421,4 +386,6 @@ export class JSFile extends AbstractDataFile {
 	getDImports(): Imports {
 		return this.data_based_imports
 	}
+
+
 }

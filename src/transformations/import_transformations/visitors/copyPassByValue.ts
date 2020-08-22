@@ -1,10 +1,20 @@
 import {replace} from "estraverse";
-import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
+import {
+	Identifier,
+	ImportDeclaration,
+	ImportDefaultSpecifier, ImportSpecifier,
+	MemberExpression, SimpleLiteral,
+	VariableDeclaration,
+	VariableDeclarator
+} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {Imports} from "../../../InfoTracker";
 
 
 export let hacker_defaults = (js: JSFile) => {
-
+	if (js.usesNamed()){
+		return ;
+	}
 	let ns = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
 	let getRPI = (x: string) => js.getInfoTracker().getRPI(x)
@@ -26,7 +36,7 @@ export let hacker_defaults = (js: JSFile) => {
 			}
 			ns.addToNamespace(best.name)
 			replace_identifiers.push(best)
-			let declaration = createDeclFromBest(e, best);
+			let declaration = createAccessedDeclFromBest(e, best);
 			return declaration
 		})
 		.filter(e => e !== null)
@@ -35,8 +45,8 @@ export let hacker_defaults = (js: JSFile) => {
 		});
 
 
-	let ast = js.getAST();
-	replace(ast, {
+
+	replace(js.getAST(), {
 		leave: ((node, parent) => {
 
 			if (node.type === "MemberExpression"
@@ -57,11 +67,59 @@ export let hacker_defaults = (js: JSFile) => {
 			}
 		})
 	});
-	// js.setPotentialPrims(hacker.create())
+ }
+export function named_copyByValue(js:JSFile) {
+
+ 	// let idfl : ImportDefaultSpecifier={}
+	// let idfl : ImportSpecifier={}
+	// let idfl : ImportDeclaration={}
+
+	// let nameds = (js
+	// 	.getDImports()
+	// 	.getDeclarations()
+	// 	.filter(
+	// 		(e)=> {
+	// 			return e.specifiers.length > 0 && e.specifiers[0].type === "ImportSpecifier"
+	// 		}))
+	// let infoTracker = js.getInfoTracker()
+	// let demap = infoTracker.getDeMap()
+		// .fromSpec[]getRPI.potentialPrimProps.includes(imported)
+	// let _test= (spec:string )=>{
+	// 	let id = demap.fromSpec[spec]
+	// 	return  (prop:string)=>{
+	// 		return infoTracker.getRPI(id).potentialPrimProps.includes(prop)
+	//
+	// 	}
+ 	// }
+	// nameds.forEach((dcl,index,arr)=>{
+	// 	let test = _test((dcl.source as SimpleLiteral).value.toString())
+	// 	let spec = (dcl.source as SimpleLiteral).value.toString()
+	// 	let _e
+	// 	try {
+	// 		dcl.specifiers.forEach(e => {
+	// 			_e = e
+	// 			if (e.type === "ImportSpecifier") {
+	// 				let imported = e.imported.name
+	// 				let old_local = e.local
+	// 				let _tst = infoTracker
+	// 					.getRPI(demap.fromSpec[spec])
+	// 					.potentialPrimProps
+	// 					.includes(imported)
+	// 				if (_tst) {
+	// 					let rhsOfCopy = js.getNamespace().generateBestName(old_local.name)
+	// 					js.insertCopyByValue(createAliasedDeclarator(rhsOfCopy, old_local))
+	// 					e.local = rhsOfCopy
+	// 				}
+	// 			}
+	// 		}
+	// 	 );}catch (e) {
+	// 		console.log(spec)
+	// 		console.log(_e)
+	// 	}
+	// });
 }
 
-
-function createDeclFromBest(e: { modId: string; propName: string }, best: Identifier) {
+function createAccessedDeclFromBest(e: { modId: string; propName: string }, best: Identifier) {
 	let base: Identifier = {type: "Identifier", name: e.modId}
 	let prop: Identifier = {type: "Identifier", name: e.propName}
 	let memex: MemberExpression = {type: "MemberExpression", computed: false, object: base, property: prop}
@@ -78,37 +136,17 @@ function createDeclFromBest(e: { modId: string; propName: string }, best: Identi
 	return declaration;
 }
 
-// interface hackPair {
-// 	id: Identifier
-// 	hack_value: Identifier | MemberExpression
-// }
-//
-// class Hacker {
-// 	private hacks: hackPair[] = []
-//
-// 	addIdentifierValuePair(id: Identifier, hackedValue: Identifier | MemberExpression) {
-// 		console.log(`${id.name} -> ${generate(hackedValue)}  `)
-// 		this.hacks.push({id: id, hack_value: hackedValue})
-// 	}
-//
-// 	create(): VariableDeclaration[] {
-// 		let arr: VariableDeclaration[] = []
-// 		this.hacks.forEach(e => {
-// 				let dcl: VariableDeclarator = {
-// 					type: "VariableDeclarator",
-// 					id: e.id,
-// 					init: e.hack_value
-// 				}
-// 				let declaration: VariableDeclaration = {
-// 					type: "VariableDeclaration",
-// 					kind: "var",
-// 					declarations: [dcl]
-// 				}
-// 				arr.push(declaration);
-// 			}
-// 		);
-// 		return arr;
-// 	};
-// }
-
+function createAliasedDeclarator(copy:Identifier, original:Identifier):VariableDeclaration{
+	let declarator: VariableDeclarator = {
+		type: "VariableDeclarator",
+		id: original,
+		init: copy
+	}
+	let declaration: VariableDeclaration = {
+		type: "VariableDeclaration",
+		kind: 'var',
+		declarations: [declarator]
+	}
+	return declaration
+}
 

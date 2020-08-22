@@ -18,6 +18,7 @@ export interface ProjConstructionOpts {
 	isNamed: boolean
 	copy_node_modules?: boolean
 	ignored?: string[]
+	report:boolean
 	testing?:boolean
 }
 
@@ -57,7 +58,7 @@ export class ProjectManager {
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
-		this.reporter = new Reporter(process.cwd() )
+		this.reporter = new Reporter(process.cwd(), opts.report )
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 	this.test = opts.testing
 		this.factory = new FileFactory(path,  opts , this,this.reporter);
@@ -381,5 +382,9 @@ report(){
 		this.package_json.forEach(p => {
 			pkg(p)
 		})
+	}
+
+	usingNamed() {
+return this.uses_names;
 	}
 }

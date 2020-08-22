@@ -274,6 +274,7 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 				let prop = node.left.property.name;
 				if (mapOfRPIs[name]
 				) {
+ 					_forcedDefault[name] = true;
 					forcedDefault = true;
 					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
 					// console.log (`----- ${name} ${generate(node)}`)
@@ -302,11 +303,12 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	getReqPropertiesAccessed(ast, listOfVars, def_aults, rpis, shadows);
 	getPropsCalledOrAccd(ast, rpis, shadows);
+
 	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
-	if (forcedDefault){
-		js.getApi().setType(API_TYPE.default_only, true)
-	}
-	requireMgr.setForcedDecl(forcedDefault)
+	// if (forcedDefault){
+	// 	js.getApi().setType(API_TYPE.default_only, true)
+	// }
+	// requireMgr.setForcedDecl(forcedDefault)
 
 	listOfVars.forEach((id: string) => {
 		if (rpis[id]) {
@@ -334,31 +336,29 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		let rpi = rpis[id];
 		rpi.allAccessedProps.forEach((prop: string) => {
 			if (!rpi.refTypeProps.includes(prop)) {
-				rpi.potentialPrimProps.includes(prop);
+				rpi.potentialPrimProps.push(prop)
 			}
 		});
 
 	}
-for (let id in rpis){
-	console.log(id)
-	console.log(rpis[id].refTypeProps)
-	console.log(rpis[id].potentialPrimProps)
-	console.log(rpis[id].allAccessedProps)
-}
+
 
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
 	let demap = requireMgr.getDeMap()
 for (let forced in def_aults) {
 	if (def_aults[forced]){
+
 		let specD = demap.fromId[forced]
  		let e:API;
 		mmp.createOrSet(js,  specD, (a)=> {
  			a.setType(API_TYPE.default_only, true)
 		},API_TYPE.default_only, true )
 
- 	}
- }
+		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
+	}
+		// throw new Error("see above todo ")
+}
 }
 
 interface ShadowVariableMap {

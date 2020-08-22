@@ -19,6 +19,7 @@ import {
 import {id} from "../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../abstract_fs_v2/JSv2";
 import {Namespace} from "../../abstract_fs_v2/Namespace";
+import {Reporter} from "../../abstract_fs_v2/Reporter";
 import {InfoTracker} from "../../InfoTracker";
 import {API, API_TYPE} from "./API";
 
@@ -104,13 +105,12 @@ class ExportPass {
 		this.tracker = {type: _type, names: {}, defaultIdentifier: null}
 		this.namespace = js.getNamespace()
 		this.js = js
-		// this.api = js.getAPIMap().resolveSpecifier(js)
-		if (js.getRelative() === 'lib/main.js') {
-			// console.log(`____ ${''}`)
-		}
-		this.api = this.js.getApi()
-	}
 
+		this.api = this.js.getApi()
+		if (this.api.getType()===API_TYPE.default_only ){
+			this.forcedDefault = true;
+		}
+	}
 	//
 	// private getAPI(): API {
 	// 	return .resolveSpecifier(this.js)
@@ -134,12 +134,10 @@ class ExportPass {
 
 		}
 
-		if (this.js.getRelative() === 'lib/main.js') {
-			// console.log(`____ ${this.tracker.type}`)
-		}
 		let reporter = this.js.getReporter()
-		let mli = reporter.addMultiLine('export_name_report', 'exp_name_header')
-		switch (this.tracker.type) {
+		let mli = reporter.addMultiLine('export_name_report' )
+ 		switch (this.tracker.type) {
+
 
 			case "default":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -152,6 +150,7 @@ class ExportPass {
 				// api = new API(API_TYPE.default_only)
 				this.api.setType(API_TYPE.default_only)
 				mli.data[this.js.getRelative()] = ['default']
+
 				return declaration
 			case "named":
 				if (this.js.getRelative() === 'lib/main.js') {
@@ -182,9 +181,11 @@ class ExportPass {
 	}
 
 	private createNamedExports(): ExportNamedDeclaration {
+
+
 		let names: string[] = []
 		let specifiers: ExportSpecifier[] = []
-		let mli = this.js.getReporter().addMultiLine('export_name_report', 'exp_name_header')
+		let mli = this.js.getReporter().addMultiLine(Reporter.ExportNames)
 		for (let name in this.tracker.names) {
 			let val: ExportSpecifier = this.tracker.names[name]
 			names.push(val.exported.name)
@@ -239,7 +240,7 @@ class ExportPass {
 	registerName(local: string, exported: string): void {
 		// console.log(this.tracker.type)
 		// console.log(`registering local:${local}  :  export:${exported} ${this.tracker.type}`)
-		if (this.tracker.type !== "default") {
+		if (this.tracker.type !== "default" ) {
 
 			this.tracker.type = "named"
 		}
@@ -293,18 +294,16 @@ let body = js.getAST().body
 	body.forEach((node: (Directive | Statement | ModuleDeclaration), index: number, arr: (Directive | Statement | ModuleDeclaration)[]) => {
 		let debug = ""
 		// add = (elem) => 1 + index ? arr.push(elem) : arr.splice(index, 0, elem)
-		// console.log(`processing node ${generate(node)}`)
-		if (node.type === "ExpressionStatement"
+ 		if (node.type === "ExpressionStatement"
 			&& node.expression.type === "AssignmentExpression"
 			&& node.expression.left.type === "MemberExpression"
 		) {
 			let right: Expression = node.expression.right;
 			let modExp: ExportedAssignmentType = __deterimineExportType(node.expression.left);
-			if (modExp && modExp.isDefault) {
+			if ((modExp && modExp.isDefault)) {
 				setDefaultID();
 				switch (right.type) {
 					case "ObjectExpression":
-						// console.log(`detected direct assign in id of type ${assigned.type}`)
 
 						exportPass.clear()
 						insertIndicesDecl.push(index)
@@ -313,7 +312,6 @@ let body = js.getAST().body
 						break;
 					default:
 						node.expression.left = __default_exports_id
-						// console.log(`resassigned left to create expr ${generate(node)}`)
 
 						exportPass.registerDefault(__default_exports_id)
 						break;
@@ -340,7 +338,9 @@ let body = js.getAST().body
 				if (rhs.type === "Identifier") {
 
 					if (rhs.name === exported.name) {
-						arr.splice(index, 1)
+						// arr.splice(index, 1)
+						arr[index] = {type:"EmptyStatement" }
+						exportPass.registerName(rhs.name,exported.name )
 					} else {
 
 						exported = namespace.generateBestName(exported.name)
@@ -353,8 +353,7 @@ let body = js.getAST().body
 				} else {
 					local = preexisting;
 					if (!preexisting) {
-						// console.log(`exportedname: ${exported.name}`)
-						local = exported;
+ 						local = exported;
 						if (!(exportPass.hasLocalID(exported.name))) {
 
 							local = namespace.generateBestName(exported.name)
@@ -376,8 +375,6 @@ let body = js.getAST().body
 			}
 
 		}
-		// console.log(`attempting to handle replacement at node: ${generate(node)}`)
-
 		exReplace(node)
 
 
@@ -460,11 +457,10 @@ let body = js.getAST().body
 	if (ex_decl && (
 		(ex_decl.type === "ExportDefaultDeclaration" && ex_decl.declaration)
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
+		// console.log(generate(ex_decl))
 		js.getAST().body.push(ex_decl)
 	}
-	// console.log()
-	// js.getAPIMap().display()
-	///////////////////////////////////// 	exReplace(js)
+
 	if (__default_exports_id) {
 		let decl: VariableDeclaration = {
 			type: "VariableDeclaration",
@@ -477,11 +473,6 @@ let body = js.getAST().body
 		}
 		js.getAST().body.splice(0, 0, decl)
 	}
-	// console.log(exData.api.getType())
-	// if(js.getRelative().includes('main')){
-	// // console.log(   generate(js.getAST())    )
-	// 	process.exit(0)
-	// }
 
 
 	function exReplace(node: Node) {
@@ -517,28 +508,7 @@ let body = js.getAST().body
 						}
 					}
 				}
-				// if (node.type === "MemberExpression") {
-				//
-				// 	let _type: ExportedAssignmentType = __deterimineExportType(node)
-				// 	if (_type) {
-				//
-				// 		if (_type.isDefault) {
-				// 			if (parent && parent.type === "MemberExpression") {
-				// 				_type = __deterimineExportType(parent, true)
-				// 			}
-				// 			if (_type && !_type.isDefault) {
-				// 				return __default_exports_id
-				// 			} else {
-				// 				return __default_exports_id
-				// 			}
-				//
-				// 		}
-				// 		//  else if (  parent && parent.type !== "MemberExpression"){
-				// 		// 	return exportPass.getLocalID(_type.id.name)
-				// 		// }
-				//
-				// 	}
-				// }
+
 			}
 		};
 		replace(node, exREplaceVisitor)
@@ -546,40 +516,6 @@ let body = js.getAST().body
 
 }
 
-
-// @ts-ignore
-// console.log(parseScript(`let x = {a, b:c}`).body[0].declarations[0].init.properties.forEach((prop: Property) => {
-// 	console.log(prop)
-// }));
-//
-// // @ts-ignore
-// let ms = parseScript('module.exports.a').body[0].expression
-// console.log((ms as ModuleDotExports).object)
-//
-// let tests = `
-// module.exports = "direct assignment"
-// module.exports.x = "m.e named assignment"
-// exports.x = "exports named assignment"
-// module.exports.x.y = "NULL m.e named assignment red herring"
-// exports.x.y = "NULL exports named assignment red herring"
-// `
-// let _tests: AssignmentExpression[] = []
-// parseScript(tests).body.forEach(e => {
-// 	// @ts-ignore
-// 	console.log(e.expression.left.object.type)
-// 	_tests.push((e as ExpressionStatement).expression as AssignmentExpression)
-// })
-// _tests.forEach(e => {
-// 	let testval = e.left
-// 	let expected = generate(e.right)
-// 	let actual = __deterimineExportType(testval as MemberExpression)
-//
-// 	console.log(`${generate(testval)} was determined to be a(n) ${actual ? actual.name : "null"} with expected : ${expected}`)
-// })
-//
-///ts-ignore
-// console.log(JSON.stringify((parseScript(`var x = {x:function(){}}`).body[0].declarations[0].init.properties), null, 2)
-// )
 
 
 function createVarD(identifier: Identifier, ex: Expression): VariableDeclaration {
