@@ -41,8 +41,7 @@ export function insertImports(js: JSFile) {
 
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
-		let rpi = js.getInfoTracker().getRPI(init.name)
-		try {
+ 		try {
 			let api = js.getAPIMap().resolveSpecifier(js, moduleSpecifier)
 
 			if (api.getType() !== API_TYPE.named_only) {
@@ -79,9 +78,9 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.callee.type === "Identifier"
 						&& node.declarations[0].init.callee.name === "require"
 						&& node.declarations[0].init.arguments
-						&& node.declarations[0].init.arguments[0].type === "Literal"
+					 	&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
-						let isNamespace = computeType(js, node.declarations[0].id, (node.declarations[0].init.arguments[0] as SimpleLiteral).value.toString())
+
 						let _id = node.declarations[0].id.name
 						let q = node.declarations[0].init
 						let lit: Literal
@@ -109,16 +108,17 @@ export function insertImports(js: JSFile) {
 							&& (!builtins_funcs.includes(module_specifier)))
 						let isNamedAPI = false;
 						let api = map.resolveSpecifier(js,module_specifier );
+						let isNamespace  =api.getType() === API_TYPE.named_only
 						if (api) {
 							isNamedAPI = (api.getType() === API_TYPE.named_only)
 						}
 
 
-						if (js.usesNamed() && isNamespace && (isBuiltin || isNamedAPI)  ) {
+						if (js.usesNamed() && isNamespace &&   (isBuiltin || isNamedAPI)  ) {
  							namedImports(_id, module_specifier, api)
 						} else {
 							let idecl: ImportDeclaration
-							if (isNamespace &&  (!js.usesNamed()) ) {
+							if ( isNamespace &&  (!js.usesNamed() ) && (!api.isForced()) ) {
 								idecl = {
 									type: "ImportDeclaration",
 									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),

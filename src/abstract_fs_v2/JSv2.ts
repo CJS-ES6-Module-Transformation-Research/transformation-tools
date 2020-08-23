@@ -1,5 +1,6 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
+import {traverse} from "estraverse";
 import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, dirname, join, relative} from "path";
@@ -21,6 +22,7 @@ export class JSFile extends AbstractDataFile {
 	private readonly api: API;
 	private readonly apiMap: ModuleAPIMap;
 	private readonly _usesNames: boolean;
+	test: any;
 
 
 	getInfoTracker(): InfoTracker {
@@ -58,8 +60,18 @@ export class JSFile extends AbstractDataFile {
 		this.apiMap = b.moduleAPIMap
 		this.api = new API(API_TYPE.none)
 		this.apiMap.initJS(this, this.api)
+		this.test = b.test
+ 		traverse(this.ast,{enter:(node,parent) => {
+ 			if (node.type === "Identifier" && node.name==="delete"){
 
 
+ 				let gen = this.namespace.generateBestName('__delete')
+ 				node.name = gen.name
+				this.registerReplace(gen.name,'__delete')
+				// this.namespace.addToNamespace()
+
+			}
+			} })
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 
@@ -194,7 +206,7 @@ export class JSFile extends AbstractDataFile {
 			body.splice(0, 0, e)
 		})
 
-		if (this.isTest && (!this.data_based_imports)) {
+		if (this.test && (!this.data_based_imports)) {
 			 //skip cause test
 		} else {
 			this.data_based_imports.getDeclarations().reverse().forEach(e => {
@@ -228,7 +240,7 @@ export class JSFile extends AbstractDataFile {
 			try {
 				_program = (isModule ? parseModule : parseScript)(program, {loc: true})
 			} catch (e2) {
-				if (this.isTest) {
+				if (this.test ) {
 					_program = parseModule(program, {loc: true})
 				} else {
 					throw e2;

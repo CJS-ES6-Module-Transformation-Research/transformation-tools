@@ -15,7 +15,60 @@ import {API, API_TYPE} from "./transformations/export_transformations/API";
 // 	});
 // 	return retVal;
 // }
+export const reqPropertyInfoGather = (js: JSFile) => {
+	let ast = js.getAST()
+	let requireMgr: InfoTracker = js.getInfoTracker();
+	let listOfVars: string[] = getListOfVars(requireMgr);
+	let def_aults: ForcedDefaultMap = {}
+	//init assume false;
+	listOfVars.forEach(e => def_aults[e] = false)
 
+
+	// console.log(`list of vars:  ${listOfVars}`)
+	let rpis: { [id: string]: ReqPropInfo } = {};
+	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
+
+	getReqPropertiesAccessed(ast, listOfVars, def_aults, rpis, shadows);
+	getPropsCalledOrAccd(ast, rpis, shadows);
+
+	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
+	// if (forcedDefault){
+	// 	js.getApi().setType(API_TYPE.default_only, true)
+	// }
+	// requireMgr.setForcedDecl(forcedDefault)
+
+	listOfVars.forEach((id: string) => {
+		if (rpis[id]) {
+			// console.log(`rpis of id: ${id}`)
+			let rpi = rpis[id];
+			rpi.allAccessedProps.forEach((prop: string) => {
+				if (!rpi.refTypeProps.includes(prop)) {
+					rpi.potentialPrimProps.includes(prop);
+				}
+			});
+		} else {
+			//if must be default import and no calls or accesses made
+			// console.log("NOD IDS FOR ID: " + id)
+			rpis[id] = {
+				allAccessedProps: [],
+				forceDefault: false,
+				potentialPrimProps: [],
+				refTypeProps: []
+			}
+
+		}
+
+	});
+
+	for (let id in rpis) {
+		let rpi = rpis[id];
+		rpi.allAccessedProps.forEach((prop: string) => {
+			if (!rpi.refTypeProps.includes(prop)) {
+				rpi.potentialPrimProps.push(prop)
+			}
+		});
+
+	}
 
 function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap) {
 	let retval: boolean = false;
@@ -36,8 +89,7 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDef
 	// let listOfProps = [];
 	let fctStack: string[] = [];
 
-
-	traverse(ast, {
+ 	traverse(ast, {
 		enter: (node, parent) => {
 			switch (node.type) {
 				case "FunctionDeclaration": // we're entering a function
@@ -59,6 +111,17 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDef
 						&& listOfVars.includes(node.right.name)) {
 
 						_forcedDefault[node.right.name]=true;
+					}
+					break;
+					case "ConditionalExpression":
+					if (node. consequent.type === "Identifier"
+						&& listOfVars.includes(node.consequent.name)) {
+						_forcedDefault[node.consequent.name]=true;
+ 					}
+					if (node.alternate.type === "Identifier"
+						&& listOfVars.includes(node.alternate.name)) {
+
+ 						_forcedDefault[node.alternate.name]=true;
 					}
 					break;
 				case "VariableDeclaration":
@@ -340,59 +403,7 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 }
 
 
-export const reqPropertyInfoGather = (js: JSFile) => {
-	let ast = js.getAST()
-	let requireMgr: InfoTracker = js.getInfoTracker();
-	let listOfVars: string[] = getListOfVars(requireMgr);
-	let def_aults: ForcedDefaultMap = {}
-	//init assume false;
-	listOfVars.forEach(e => def_aults[e] = false)
 
-
-	// console.log(`list of vars:  ${listOfVars}`)
-	let rpis: { [id: string]: ReqPropInfo } = {};
-	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
-
-	getReqPropertiesAccessed(ast, listOfVars, def_aults, rpis, shadows);
-	getPropsCalledOrAccd(ast, rpis, shadows);
-
-	let forcedDefault = getReassignedPropsOrIDs(ast, listOfVars, def_aults, rpis)
-	// if (forcedDefault){
-	// 	js.getApi().setType(API_TYPE.default_only, true)
-	// }
-	// requireMgr.setForcedDecl(forcedDefault)
-
-	listOfVars.forEach((id: string) => {
-		if (rpis[id]) {
-			// console.log(`rpis of id: ${id}`)
-			let rpi = rpis[id];
-			rpi.allAccessedProps.forEach((prop: string) => {
-				if (!rpi.refTypeProps.includes(prop)) {
-					rpi.potentialPrimProps.includes(prop);
-				}
-			});
-		} else {
-			//if must be default import and no calls or accesses made
-			// console.log("NOD IDS FOR ID: " + id)
-			rpis[id] = {
-				allAccessedProps: [],
-				forceDefault: false,
-				potentialPrimProps: [],
-				refTypeProps: []
-			}
-		}
-
-	});
-
-	for (let id in rpis) {
-		let rpi = rpis[id];
-		rpi.allAccessedProps.forEach((prop: string) => {
-			if (!rpi.refTypeProps.includes(prop)) {
-				rpi.potentialPrimProps.push(prop)
-			}
-		});
-
-	}
 
 
 	requireMgr.setReqPropsAccessedMap(rpis);
