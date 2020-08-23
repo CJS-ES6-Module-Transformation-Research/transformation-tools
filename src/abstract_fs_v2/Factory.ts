@@ -68,8 +68,9 @@ export class ModuleAPIMap {
 
 	createOrSet(js: JSFile| CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
+
 		if (!(this.apiKey[resolved])) {
-			this.apiKey[resolved] = new API(API_TYPE.none)
+			this.apiKey[resolved] = new API(_type)
 		}
 		this.apiKey[resolved].setType(_type, isForced)
 
@@ -78,7 +79,7 @@ export class ModuleAPIMap {
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
 	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
 
-	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
+	 resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
 
 		//is not bare
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
@@ -301,17 +302,22 @@ export class FileFactory {
 				let dir = new Dir(path, data, parent, this, this.rc, this.ignored)
 				this.dirs[dir.getRelative()] = dir;
 				dir.setReporter(this.reporter)
+				console.log(`Created Dir: ${path}`)
 				return dir
 				break;
 			case FileType.js:
  				let jsn = new JSFile(path, data, parent, this.isModule)
  				this.jsMap[jsn.getRelative()] = jsn
 				jsn.setReporter(this.reporter)
+				console.log(`Created JSFile: ${path}`)
+
 				return jsn
  			case FileType.package:
 
 				let pkgJ = new PackageJSON(path, data, parent)
 				pkgJ .setReporter(this.reporter)
+				console.log(`Created PkgJSON: ${path}`)
+
 				return pkgJ
  			default:
 				return null;

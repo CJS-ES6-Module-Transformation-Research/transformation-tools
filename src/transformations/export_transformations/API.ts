@@ -2,7 +2,7 @@ import {API_KeyMap} from "../../abstract_fs_v2/Factory";
 
 
 export class API {
-	private isForced: boolean=false ;
+	private _isForced: boolean=false ;
 	constructor(type: API_TYPE, isBuiltin = false, names: string[] = []) {
 		this.type = type,
 			this.exports = []
@@ -19,6 +19,9 @@ export class API {
 		return this.type
 	}
 
+	isForced():boolean{
+		return this._isForced
+	}
 
 
 	private readonly _isBuiltin: boolean;
@@ -27,11 +30,11 @@ export class API {
 	private type: API_TYPE;
 
 	setType(_type: API_TYPE, isForced=false) {
-		if (this.isForced){
+		if (this._isForced){
 			return
 		}
 		if (isForced){
-			this.isForced = true;
+			this._isForced = true;
 			this.type = _type
 		}
 		this.type = _type
@@ -42,7 +45,7 @@ export class API {
 		this.exports=names
 	}
 	toString(){
-		return `${this.type}, ${this.isForced}`
+		return `${this.type}, ${this._isForced}`
 	}
 }
 

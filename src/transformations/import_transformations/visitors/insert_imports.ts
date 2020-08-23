@@ -103,12 +103,12 @@ export function insertImports(js: JSFile) {
 
 						let module_specifier = lit.value.toString()
 						let wpn: WithPropNames = _imports.getWPN()
-						let api = wpn.api[module_specifier];
 						let info = js.getInfoTracker();
 						let map = js.getAPIMap()
 						let isBuiltin = (built_ins.includes(module_specifier)
 							&& (!builtins_funcs.includes(module_specifier)))
 						let isNamedAPI = false;
+						let api = map.resolveSpecifier(js,module_specifier );
 						if (api) {
 							isNamedAPI = (api.getType() === API_TYPE.named_only)
 						}
@@ -118,7 +118,7 @@ export function insertImports(js: JSFile) {
  							namedImports(_id, module_specifier, api)
 						} else {
 							let idecl: ImportDeclaration
-							if (isNamespace) {
+							if (isNamespace &&  (!js.usesNamed()) ) {
 								idecl = {
 									type: "ImportDeclaration",
 									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),

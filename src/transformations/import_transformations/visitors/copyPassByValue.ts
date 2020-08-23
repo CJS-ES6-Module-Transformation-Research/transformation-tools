@@ -1,19 +1,12 @@
 import {replace} from "estraverse";
-import {
-	Identifier,
-	ImportDeclaration,
-	ImportDefaultSpecifier, ImportSpecifier,
-	MemberExpression, SimpleLiteral,
-	VariableDeclaration,
-	VariableDeclarator
-} from "estree";
+import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {Imports} from "../../../InfoTracker";
+import {API_TYPE} from "../../export_transformations/API";
 
 
 export let hacker_defaults = (js: JSFile) => {
-	if (js.usesNamed()){
-		return ;
+	if (js.usesNamed()) {
+		return;
 	}
 	let ns = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
@@ -24,7 +17,11 @@ export let hacker_defaults = (js: JSFile) => {
 	infoTracker
 		.getMaybePrims()
 		.map(e => {
-			if (getRPI(e.modId).forceDefault) {
+			// if (getRPI(e.modId).forceDefault) {
+			// 	return null;
+			// }
+			let api = js.getAPIMap().resolveSpecifier(js, infoTracker.getDeMap().fromId[e.modId])
+			if (api.getType() === API_TYPE.default_only && api.isForced()) {
 				return null;
 			}
 			let best = ns.generateBestName(e.propName)
@@ -36,14 +33,14 @@ export let hacker_defaults = (js: JSFile) => {
 			}
 			ns.addToNamespace(best.name)
 			replace_identifiers.push(best)
-			let declaration = createAccessedDeclFromBest(e, best);
+
+				let declaration = createAccessedDeclFromBest(e, best);
 			return declaration
 		})
 		.filter(e => e !== null)
 		.forEach((value: VariableDeclaration) => {
 			js.insertCopyByValue(value);
 		});
-
 
 
 	replace(js.getAST(), {
@@ -67,10 +64,11 @@ export let hacker_defaults = (js: JSFile) => {
 			}
 		})
 	});
- }
-export function named_copyByValue(js:JSFile) {
+}
 
- 	// let idfl : ImportDefaultSpecifier={}
+export function named_copyByValue(js: JSFile) {
+
+	// let idfl : ImportDefaultSpecifier={}
 	// let idfl : ImportSpecifier={}
 	// let idfl : ImportDeclaration={}
 
@@ -83,14 +81,14 @@ export function named_copyByValue(js:JSFile) {
 	// 		}))
 	// let infoTracker = js.getInfoTracker()
 	// let demap = infoTracker.getDeMap()
-		// .fromSpec[]getRPI.potentialPrimProps.includes(imported)
+	// .fromSpec[]getRPI.potentialPrimProps.includes(imported)
 	// let _test= (spec:string )=>{
 	// 	let id = demap.fromSpec[spec]
 	// 	return  (prop:string)=>{
 	// 		return infoTracker.getRPI(id).potentialPrimProps.includes(prop)
 	//
 	// 	}
- 	// }
+	// }
 	// nameds.forEach((dcl,index,arr)=>{
 	// 	let test = _test((dcl.source as SimpleLiteral).value.toString())
 	// 	let spec = (dcl.source as SimpleLiteral).value.toString()
@@ -136,7 +134,7 @@ function createAccessedDeclFromBest(e: { modId: string; propName: string }, best
 	return declaration;
 }
 
-function createAliasedDeclarator(copy:Identifier, original:Identifier):VariableDeclaration{
+function createAliasedDeclarator(copy: Identifier, original: Identifier): VariableDeclaration {
 	let declarator: VariableDeclarator = {
 		type: "VariableDeclarator",
 		id: original,

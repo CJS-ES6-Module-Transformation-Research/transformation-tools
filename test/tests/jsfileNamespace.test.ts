@@ -44,27 +44,6 @@ describe('Utility: Basic Namespace Traversal Tests', () => {
         expect(data.getAllNames().length).to.be.equal(size)
     });
 
-
-    // @ts-ignore
-    it('singleDeconsDecl', () => {
-        let data = Namespace.create(parseScript(testData['singleDeconsDecl']));
-        let size = 1;
-        expect(data.containsName('a')).true
-        expect(data.getAllNames().length).to.be.equal(size)
-    });
-
-
-    // @ts-ignore
-    it('multiDeconsDecl', () => {
-        let data = Namespace.create(parseScript(testData['multiDeconsDecl']));
-        let size = 3;
-        expect(data.containsName('a')).true
-        expect(data.containsName('b')).true
-        expect(data.containsName('c')).true
-        expect(data.getAllNames().length).to.be.equal(size)
-    });
-
-
     // @ts-ignore
     it('moduleExports', () => {
         let data = Namespace.create(parseScript(testData['moduleExports']));

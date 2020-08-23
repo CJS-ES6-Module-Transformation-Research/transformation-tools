@@ -59,7 +59,7 @@ describe('api_build', () => {
 	});
 	it('none_not_default', () => {
 		const project = createProject(join(FIXTURES, 'api_build/none_not_default'), false)
-		let actualJS: JSFile = project.getJS('main.js');
+		let actualJS: JSFile = project.getJS('mod.js');
 		project.forEachSource(getDeclaredModuleImports)
 		project.forEachSource(reqPropertyInfoGather)
 		project.forEachSource(accessReplace)

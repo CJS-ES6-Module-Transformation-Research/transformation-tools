@@ -1,4 +1,3 @@
-import {generate} from "escodegen";
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
@@ -49,6 +48,18 @@ function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDef
 					break;
 				case "ArrowFunctionExpression": // we're entering a function
 					fctStack.push(createFuncID(node));
+					break;
+
+				case "LogicalExpression":
+					if (node.left.type === "Identifier"
+						&& listOfVars.includes(node.left.name)) {
+						_forcedDefault[node.left.name]=true;
+					}
+					if (node.right.type === "Identifier"
+						&& listOfVars.includes(node.right.name)) {
+
+						_forcedDefault[node.right.name]=true;
+					}
 					break;
 				case "VariableDeclaration":
 					let decl = node.declarations[0]
@@ -159,7 +170,7 @@ interface Specifier {
 function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
 	// let notPrimProps = []
 	let fctStack: string[] = [];
- 	let nameS: string;
+	let nameS: string;
 	traverse(ast, {
 		enter: (node, parent) => {
 			switch (node.type) {
@@ -192,7 +203,7 @@ function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropIn
 						}
 					}
 					break;
-				case "NewExpression":{
+				case "NewExpression": {
 					if (node.callee.type == "MemberExpression"
 						&& node.callee.object.type == "Identifier"
 						&& node.callee.property.type == "Identifier"
@@ -257,21 +268,44 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 				let right: Expression = node.right
 				let seen = false// todo maybe use to implement expresion children with logical grandparents
 				// traverse(left,)
+
 				traverse(right, {
 					enter: (e: Node, p: Node | null) => {
 						if ((e.type === "Identifier" && p) && (p.type === "LogicalExpression" || p.type === "ConditionalExpression")) {
 							let name = e.name
-							if (listofVarse.includes(name)) {
-								_forcedDefault[name] = true;
-
-							}
 
 						}
 					}, leave: () => {
 					}
 				})
+				if (node.right.type === "LogicalExpression") {
 
+					let val = node.right.left
+					let val2 = node.right.right
+					if (node.right.left.type === "Identifier"
+						&& listofVarse.includes((val as Identifier).name)) {
+						_forcedDefault[(val as Identifier).name] = true;
 
+					}
+					if (node.right.right.type === "Identifier"
+						&& listofVarse.includes(val2 as Identifier)) {
+						_forcedDefault[(val2 as Identifier).name] = true;
+
+					}
+				} else if (node.right.type === "ConditionalExpression") {
+					let val = node.right.consequent
+					let val2 = node.right.alternate
+					if (node.right.consequent.type === "Identifier"
+						&& listofVarse.includes((val as Identifier).name)) {
+						_forcedDefault[(val as Identifier).name] = true;
+
+					}
+					if (node.right.alternate.type === "Identifier"
+						&& listofVarse.includes(val2 as Identifier)) {
+						_forcedDefault[(val2 as Identifier).name] = true;
+
+					}
+				}
 				if (node.left.type === "MemberExpression"
 					&& node.left.object.type === "Identifier"
 					&& node.left.property.type === "Identifier") {
@@ -280,8 +314,6 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 					if (mapOfRPIs[name]
 					) {
 						forcedDefault = true;
-						// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
-						// console.log (`----- ${name} ${generate(node)}`)
 
 					}
 				}
@@ -294,7 +326,7 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 				let prop = node.left.property.name;
 				if (mapOfRPIs[name]
 				) {
- 					_forcedDefault[name] = true;
+					_forcedDefault[name] = true;
 					forcedDefault = true;
 					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
 					// console.log (`----- ${name} ${generate(node)}`)
@@ -366,20 +398,21 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
 	let demap = requireMgr.getDeMap()
-for (let forced in def_aults) {
-	if (def_aults[forced]){
+	for (let forced in def_aults) {
+		if (def_aults[forced]) {
 
-		let specD = demap.fromId[forced]
- 		let e:API;
-		mmp.createOrSet(js,  specD, (a)=> {
- 			a.setType(API_TYPE.default_only, true)
-		},API_TYPE.default_only, true )
-		// js.getApi().setType(API_TYPE.default_only,true )
+			let specD = demap.fromId[forced]
 
-		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
-	}
+			let e: API;
+
+			mmp.createOrSet(js, specD, (a) => {
+			}, API_TYPE.default_only, true)
+			mmp.resolveSpecifier(js, specD).setType(API_TYPE.default_only, true)
+			console.log(specD)
+			// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
+		}
 		// throw new Error("see above todo ")
-}
+	}
 }
 
 interface ShadowVariableMap {
@@ -464,15 +497,13 @@ export function getDeclaredModuleImports(js: JSFile) {
 
 					) {
 						// console.log(generate(decl))
-						js.getInfoTracker().insertDeclPair( decl.id.name, (decl.init.arguments[0]as SimpleLiteral).value.toString())
+						js.getInfoTracker().insertDeclPair(decl.id.name, (decl.init.arguments[0] as SimpleLiteral).value.toString())
 						// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
 					}
 				}
 			}
 		})
 }
-
-
 
 
 //protect data

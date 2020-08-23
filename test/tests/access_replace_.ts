@@ -132,23 +132,7 @@ const pth = join(TEST_DIR ,'test_resources/sanitize/qccess_replace')
             });
 });
 
-	 it('for_Multi_Require_Prop_Access', ()=>{ 
 
-            let eProj =  createProject( join(pth,'expected','for_Multi_Require_Prop_Access') ,false)
-            let aProj =   createProject(join(pth ,'js_files','for_Multi_Require_Prop_Access'),false)
-
-
-             aProj.forEachSource(accessReplace)
-
-            aProj.forEachSource((e) => {
-                let actual = e.makeSerializable().fileData;
-                let expected = eProj.getJS(e.getRelative())
-                    .makeSerializable().fileData;
-              
-                    expect(actual).to.be.equal(expected, e.getRelative() );
-              
-            });
-});
 
 	 it('for_Prop_Access', ()=>{ 
 
