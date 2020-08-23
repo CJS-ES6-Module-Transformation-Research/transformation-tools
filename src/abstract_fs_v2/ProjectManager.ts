@@ -1,4 +1,4 @@
-import {ok as assertTrue} from "assert";
+import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
 import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
@@ -18,8 +18,8 @@ export interface ProjConstructionOpts {
 	isNamed: boolean
 	copy_node_modules?: boolean
 	ignored?: string[]
-	report:boolean
-	testing?:boolean
+	report: boolean
+	testing?: boolean
 }
 
 export class ProjectManager {
@@ -52,16 +52,16 @@ export class ProjectManager {
 	private readonly test: boolean;
 
 
-	constructor(path: string, opts: ProjConstructionOpts, _named:boolean=false) {
-		opts.isNamed = opts.isNamed || _named ;
-		this.uses_names = opts.isNamed || _named ;
+	constructor(path: string, opts: ProjConstructionOpts, _named: boolean = false) {
+		opts.isNamed = opts.isNamed || _named;
+		this.uses_names = opts.isNamed || _named;
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
-		this.reporter = new Reporter(process.cwd(), opts.report )
+		this.reporter = new Reporter(process.cwd(), opts.report)
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
-	this.test = opts.testing
-		this.factory = new FileFactory(path,  opts , this,this.reporter);
+		this.test = opts.testing
+		this.factory = new FileFactory(path, opts, this, this.reporter);
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
@@ -89,13 +89,13 @@ export class ProjectManager {
 	}
 
 
-	getAnAddition(add:string){
-		for(let x in this.additions ){
-			if (x===add){
+	getAnAddition(add: string) {
+		for (let x in this.additions) {
+			if (x === add) {
 				return this.additions[x]
 			}
 		}
-			return null
+		return null
 
 	}
 
@@ -119,21 +119,38 @@ export class ProjectManager {
 			})
 	}
 
-	forEachSource(func: (value: JSFile ) => void,tfName:string='description'): void {
-		let curr:string
+	forEachSource(func: (value: JSFile) => void, tfName: string = func.name ): void {
+		let curr: string = ''
+
+		// this.jsFiles.forEach(f =>{
+		// 	console.log(f ? f.getRelative():"null")
+		// 	// console.log()
+		// })
+		// let jsf: JSFile
+		// if (this.jsFiles.includes(d)){
+		// 	throw new Error("UNDEFINED~!!!! ")
+		// }
+		// this.jsFiles.forEach( e=>{
+		// 	if (e === undefined){
+		// 		throw new Error("UNDEFINED~!!!! ")
+		// 	}
+		// })
+
 		try {
-			this.jsFiles.forEach(e => {
-				curr = e.getRelative()
-				// console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
-				func(e)
+
+			this.jsFiles.forEach(jsFile => {
+				assert(jsFile, 'jsfile was negative in '+tfName )
+				curr = jsFile.getRelative()
+// jsFile = jsf
+ 				// console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
+				func(jsFile)
 			})
 		} catch (e) {
 
 			console.log(`EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}`)
-			if  (!this.test){
-				throw e;
-			}
-				throw e;
+			console.log(e )
+
+			throw e;
 
 		}
 	}
@@ -141,9 +158,11 @@ export class ProjectManager {
 	getJS(name: string): JSFile {
 		return this.jsMap[name]
 	};
-report(){
-	this.reporter.writeOut()
-}
+
+	report() {
+		this.reporter.writeOut()
+	}
+
 	public writeOut() {
 
 		if (this.write_status === "in-place") {
@@ -385,6 +404,6 @@ report(){
 	}
 
 	usingNamed() {
-return this.uses_names;
+		return this.uses_names;
 	}
 }

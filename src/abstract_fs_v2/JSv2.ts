@@ -18,8 +18,8 @@ type script_or_module = "script" | "module"
 export class JSFile extends AbstractDataFile {
 
 
-	private api: API;
-	private apiMap: ModuleAPIMap;
+	private readonly api: API;
+	private readonly apiMap: ModuleAPIMap;
 	private readonly _usesNames: boolean;
 
 
@@ -45,8 +45,9 @@ export class JSFile extends AbstractDataFile {
 	private isShebang: RegExp = /^#!.*/
 
 	constructor(path: string, b: MetaData, parent: Dir, isModule: boolean, data = '') {
+
 		super(path, b, parent, data);
-		this._usesNames = b.uses_names;
+ 		this._usesNames = b.uses_names;
 		this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
 		this.ast = this.parseProgram(this.data, isModule)
@@ -57,6 +58,8 @@ export class JSFile extends AbstractDataFile {
 		this.apiMap = b.moduleAPIMap
 		this.api = new API(API_TYPE.none)
 		this.apiMap.initJS(this, this.api)
+
+
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 

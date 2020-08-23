@@ -3,7 +3,7 @@ import {join} from "path";
 import {JSFile} from "../../src/abstract_fs_v2/JSv2";
 import {getDeclaredModuleImports, reqPropertyInfoGather} from "../../src/InfoGatherer";
 import {__exports} from "../../src/transformations/export_transformations/ExportPass";
-import { execute } from "../../src/executioner";
+import { execute } from "../../src/executor";
 import {createProject, FIXTURES} from "../index";
 
 function MANY(js: JSFile) {
@@ -18,7 +18,7 @@ describe('_exported_values', () => {
 	it('default_natural', () => {
 		const project = createProject(join(FIXTURES, '_exported_values/default_natural'), false)
 		let actualJS: JSFile = project.getJS('default_natural.actual.js');
-		execute(project)
+		MANY(actualJS)
 		let prjS = project.getJS('default_natural.expected.js')
 
 		let expected = prjS.makeSerializable().fileData
@@ -97,6 +97,24 @@ describe('_exported_values', () => {
 
 		let expected = prjS.makeSerializable().fileData
 		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   m_exports_prop_reassign');
+	});
+	it('reassign direct obj assignment', () => {
+		const project = createProject(join(FIXTURES, '_exported_values/reassign_direct_obj_assignment'), false)
+		let actualJS: JSFile = project.getJS('reassign_direct_obj_assignment.actual.js');
+		MANY(actualJS)
+		let prjS = project.getJS('reassign_direct_obj_assignment.expected.js')
+
+		let expected = prjS.makeSerializable().fileData
+		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   reassign_direct_obj_assignment');
+	});
+	it('reassign direct obj assignment_forced_default', () => {
+		const project = createProject(join(FIXTURES, '_exported_values/reassign_direct_obj_assignment_fd'), false)
+		let actualJS: JSFile = project.getJS('reassign_direct_obj_assignment_fd.actual.js');
+		MANY(actualJS)
+		let prjS = project.getJS('reassign_direct_obj_assignment_fd.expected.js')
+
+		let expected = prjS.makeSerializable().fileData
+		expect(expected).to.be.equal(actualJS.makeSerializable().fileData, 'error in   reassign_direct_obj_assignment_fd ');
 	});
 // it('', ()=>{
 // 	const project =  createProject(join(FIXTURES,'_exported_values'), false)

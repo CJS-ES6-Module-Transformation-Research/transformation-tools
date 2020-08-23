@@ -1,4 +1,3 @@
-import {generate} from "escodegen";
 import {replace, Visitor} from "estraverse";
 import {
 	AssignmentExpression,
@@ -25,7 +24,7 @@ import {InfoTracker} from "../../InfoTracker";
 import {API, API_TYPE} from "./API";
 
 export interface ExportTypes {
-	type: exportType
+	type: API_TYPE
 	default_exports?: ExportDefaultDeclaration
 	named_exports?: ExportNamedDeclaration
 }
@@ -56,23 +55,9 @@ interface ExportedAssignmentType {
 	id?: Identifier
 }
 
-type exportType = "default" | "named" | "none"
-
-interface ExportBuilderI {
-	clear(): void;
-
-
-	registerDefault(names: Identifier): void;
-
-	// registerObjectLiteral(obj: ObjectExpression): void;
-
-	registerName(local: string, exported: string): void;
-
-	// build(): ExportNamedDeclaration | ExportDefaultDeclaration;
-}
 
 interface ETracker {
-	type: exportType
+	type: API_TYPE
 	names: { [exported: string]: ExportSpecifier }
 	defaultIdentifier: Identifier
 }
@@ -85,14 +70,9 @@ function makeExSpecifier(local: string, exported: string): ExportSpecifier {
 	}
 }
 
-interface ExportReturns {
-	api: API,
-	declaration: ExportNamedDeclaration | ExportDefaultDeclaration
-}
 
 class ExportPass {
 
-	private exportTypes: ExportTypes
 	private tracker: ETracker
 	private readonly forcedDefault: boolean
 	private namespace: Namespace;
@@ -101,22 +81,18 @@ class ExportPass {
 
 	constructor(js: JSFile, isForcedDefault: boolean) {
 		this.forcedDefault = isForcedDefault
-		let _type: exportType = isForcedDefault ? "default" : "none"
-		this.exportTypes = {type: _type}
-		this.tracker = {type: _type, names: {}, defaultIdentifier: null}
+
+		this.tracker = {
+			type: this.forcedDefault ? API_TYPE.default_only : API_TYPE.none,
+			names: {},
+			defaultIdentifier: null
+		}
 		this.namespace = js.getNamespace()
 		this.js = js
- 		this.api = this.js.getApi()
-		if (this.api.getType() === API_TYPE.default_only) {
-			this.forcedDefault = true;
-		}
+		this.api =  js.getApi()
 
 	}
 
-	//
-	// private getAPI(): API {
-	// 	return .resolveSpecifier(this.js)
-	// }
 
 	build(): ExportNamedDeclaration | ExportDefaultDeclaration | null | undefined {
 
@@ -138,10 +114,10 @@ class ExportPass {
 
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
-	 		switch (this.tracker.type) {
+		switch (this.tracker.type) {
 
 
-			case "default":
+			case API_TYPE.default_only:
 
 				declaration = {
 					type: "ExportDefaultDeclaration",
@@ -152,7 +128,7 @@ class ExportPass {
 				mli.data[this.js.getRelative()] = ['default']
 
 				return declaration
-			case "named":
+			case API_TYPE.named_only:
 
 
 				if (this.forcedDefault) {
@@ -174,8 +150,7 @@ class ExportPass {
 				} else {
 					return this.createNamedExports();
 				}
-				break;
-		}
+ 		}
 	}
 
 	private createNamedExports(): ExportNamedDeclaration {
@@ -212,7 +187,7 @@ class ExportPass {
 	}
 
 	hasLocalID(exported: string) {
- 		return this.tracker.names[exported]
+		return this.tracker.names[exported]
 	}
 
 	clear(): void {
@@ -226,7 +201,7 @@ class ExportPass {
 
 	registerDefault(name: Identifier = null): void {
 		this.clear()
-		this.tracker.type = "default"
+		this.tracker.type = API_TYPE.default_only
 		if (name && (!this.tracker.defaultIdentifier)) {
 			this.tracker.defaultIdentifier = this.namespace.getDefaultExport();
 		}
@@ -234,9 +209,9 @@ class ExportPass {
 
 	registerName(local: string, exported: string): void {
 
-		if (this.tracker.type !== "default") {
+		if (this.tracker.type !== API_TYPE.default_only) {
 
-			this.tracker.type = "named"
+			this.tracker.type = API_TYPE.named_only
 		}
 		this.tracker.names[exported] = makeExSpecifier(local, exported);
 
@@ -274,7 +249,7 @@ export function __exports(js: JSFile) {
 
 
 		let debug = ""
- 		if (node.type === "ExpressionStatement"
+		if (node.type === "ExpressionStatement"
 			&& node.expression.type === "AssignmentExpression"
 			&& node.expression.left.type === "MemberExpression"
 		) {
@@ -309,9 +284,9 @@ export function __exports(js: JSFile) {
 				if (exportPass.hasLocalID(exported.name)) {
 					preexisting = exportPass.getLocalID(exported.name)
 					if (preexisting) {
- 						node.expression.left = preexisting
+						node.expression.left = preexisting
 					}
- 				}
+				}
 
 
 				if (rhs.type === "Identifier") {
@@ -336,10 +311,10 @@ export function __exports(js: JSFile) {
 						if (!(exportPass.hasLocalID(exported.name))) {
 
 							local = namespace.generateBestName(exported.name)
- 						} else {
+						} else {
 
 						}
- 						dcln = createVarD(local, rhs)
+						dcln = createVarD(local, rhs)
 						arr[index] = dcln
 					}
 					exportPass.registerName(local.name, exported.name)
@@ -355,7 +330,6 @@ export function __exports(js: JSFile) {
 
 
 	});
-
 
 
 	insertIndicesDecl.reverse().forEach(e => {
@@ -444,7 +418,7 @@ export function __exports(js: JSFile) {
 		// console.log(generate(ex_decl))
 
 		js.getAST().body.push(ex_decl)
- 	}
+	}
 
 
 	if (__default_exports_id) {
@@ -459,11 +433,10 @@ export function __exports(js: JSFile) {
 		}
 
 
-
 		js.getAST().body.splice(0, 0, decl)
 
 
- 	}
+	}
 
 
 	function exReplace(node: Node) {
@@ -492,7 +465,7 @@ export function __exports(js: JSFile) {
 						&& node.object.object.name === "module"
 						&& node.object.property.name === "exports"
 					) {
- 						if (exportPass.hasLocalID(node.property.name)) {
+						if (exportPass.hasLocalID(node.property.name)) {
 							return exportPass.getLocalID(node.property.name)
 						} else {
 							setDefaultID();

@@ -7,8 +7,21 @@ import {TEST_DIR} from "../index";
 import {join} from "path";
 import { expect } from "chai";
 const pth = join(TEST_DIR ,'test_resources/sanitize/qccess_replace')
-function MANY(js:JSFile){throw new Error('IMPLEMENT THE API_BUILD TESTS THING ')}
-	 describe('access_replace_', ()=>{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 	 describe('access_replace_', ()=>{
 
 
 	 it('assignment_Property_Access', ()=>{ 
@@ -26,7 +39,7 @@ function MANY(js:JSFile){throw new Error('IMPLEMENT THE API_BUILD TESTS THING ')
               
                     expect(actual).to.be.equal(expected, e.getRelative() );
               
-            });
+            }, 'testGen');
 });
 
 	 it('assignment_Property_Access_Assignment_Access', ()=>{ 

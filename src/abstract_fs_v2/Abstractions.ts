@@ -7,8 +7,7 @@ export abstract class AbstractFile {
     protected readonly isTest: boolean;
 
     protected constructor(path: string, bfd: MetaData, parent: Dir, isTest:boolean) {
-
-        this.isTest = isTest;
+         this.isTest = isTest;
         this.ext = bfd.ext
         this.stat = bfd.stat
         this.type = bfd.type
@@ -78,6 +77,7 @@ export abstract class AbstractDataFile extends AbstractFile {
 
     protected constructor(path: string, b: MetaData, parent: Dir, data: string = '') {
         super(path, b, parent, b.test);
+
         if (data) {
             this.data = data;
         } else {

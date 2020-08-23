@@ -16,8 +16,8 @@ import {
 	Program,
 	Property,
 	RestElement,
-	SimpleCallExpression, SimpleLiteral,
-	SpreadElement,
+	SimpleCallExpression,
+	SimpleLiteral,
 	Statement,
 	VariableDeclaration,
 	VariableDeclarator
@@ -40,15 +40,16 @@ export const alphaNumericString: string = `${lower}${upper}${numeric}`
  * TransformFunction to replace 'accesses' of require calls.
  * @param js the JSFile to transform.
  */
-export function  accessReplace(js: JSFile) {
+export function accessReplace(js: JSFile) {
 	let requireTracker = js.getInfoTracker();
 	let imports: RequireAccessIDs = {};
-	let triesCaughtEtc: { [key: string]: string } = {}
+
 	let names = js.getNamespace()
-	let decls:VariableDeclaration[] = [];
-	let indices:number[] = []
+	let decls: VariableDeclaration[] = [];
+	let indices: number[] = []
 	let body = js.getAST().body
-	  body.forEach( (e,index)=>{
+
+	body.forEach((e, index) => {
 		if (e.type === "VariableDeclaration"
 			&& e.declarations
 			&& e.declarations[0]
@@ -62,32 +63,17 @@ export function  accessReplace(js: JSFile) {
 			&& e.declarations[0].init.arguments[0].type === "Literal"
 			&& e.declarations[0].init.arguments[0].value
 
-		){
-		decls.push(e)
+		) {
+			decls.push(e)
 			indices.push(index)
 
 		}
 	})
 
-	indices.reverse().forEach(i=> {
-		 body.splice(i, 1)
+	indices.reverse().forEach(i => {
+		body.splice(i, 1)
 	});
 	add__dirname(js)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	// console.log(js.getRelative())
@@ -125,16 +111,7 @@ export function  accessReplace(js: JSFile) {
 
 					switch (parent.type) {
 						case "CallExpression":
-							if (node === parent.callee) {
-								parent.callee = access_replaceID;
-							} else {
-								parent.arguments.forEach((elem: Expression | SpreadElement, index: number, array: Node[]) => {
-									if (elem === node) {
-										array[index] = access_replaceID;
-									}
-								});
-							}
-
+							parent.callee = access_replaceID;
 							return;
 						case "MemberExpression":
 							parent.object = access_replaceID;
@@ -143,15 +120,15 @@ export function  accessReplace(js: JSFile) {
 							parent.right = access_replaceID;
 							return;
 						case "VariableDeclarator":
-							if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
-								// return VisitorOption.Remove
-								js.getInfoTracker().addDeconsId(access_replaceID)
-							} else if (parent.id.type === "ObjectPattern") {
-								parent.init = access_replaceID
-								//return VisitorOption.Remove;
-							} else {
+							// if (parent.id.type === "ObjectPattern" && (!js.usesNamed())) {
+							// 	// return VisitorOption.Remove
+							// 	js.getInfoTracker().addDeconsId(access_replaceID)
+							// } else if (parent.id.type === "ObjectPattern") {
+							// 	parent.init = access_replaceID
+							// 	//return VisitorOption.Remove;
+							// } else {
 								return node;
-							}
+							// }
 
 					}
 				} else {
@@ -166,21 +143,9 @@ export function  accessReplace(js: JSFile) {
 						case "SwitchCase":
 							return access_replaceID;
 							break;
-						case "FunctionDeclaration" :
-						case "FunctionExpression" :
-						case "ArrowFunctionExpression":
-
-							//not needed here because parent would be body
-							break;
-						case"VariableDeclarator":
-							return;
-						default:
-							return;
 					}
 
 				}
-			} else if (parent === null) {
-				return;
 			}
 			//if there is a variable declaration of any type inside a for loop
 			if (isForLoopAccess(node, parent)
@@ -205,7 +170,6 @@ export function  accessReplace(js: JSFile) {
 	};
 
 
-
 	function extractBestModuleName(requireStr: string, ns: Namespace): Identifier {
 		// let cleaned = cleanValue(requireStr);
 		let idName = `${cleanValue(requireStr)}`;
@@ -223,7 +187,7 @@ export function  accessReplace(js: JSFile) {
 
 
 	replace(js.getAST(), visitor)
-	 body.forEach(e => {
+	body.forEach(e => {
 		traverse(e, {
 			enter: (node, parent) => {
 				if (parent !== null && node.type === "VariableDeclaration") {
@@ -253,12 +217,10 @@ export function  accessReplace(js: JSFile) {
 	// js.getInfoTracker().getRPI_()
 
 
+	populateAccessDecls(js, imports, body, names)
 
-
-	populateAccessDecls(js, imports,  body, names)
-
-	decls.reverse().forEach(e=>{
-		body.splice(0,0,e)
+	decls.reverse().forEach(e => {
+		body.splice(0, 0, e)
 	})
 
 	// if(js.getRelative().includes('index')){
@@ -303,7 +265,7 @@ function getRequireStringFromDecl(node: VariableDeclarator) {
 		&& node.init.callee.name === "require"
 		&& node.init.arguments && node.init.arguments[0] !== null
 		&& node.init.arguments[0].type === "Literal") {
-		return (node.init.arguments[0]as SimpleLiteral ).value.toString();
+		return (node.init.arguments[0] as SimpleLiteral).value.toString();
 	}
 }
 
@@ -318,25 +280,25 @@ function isForLoopAccess(node: Node, parent: Node) {
 
 }
 
-function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPattern | RestElement |
-	AssignmentPattern | MemberExpression | AssignmentExpression)) {
-	let key = (oPatt.obj as Property).key as (Identifier | ObjectPattern | ArrayPattern | RestElement |
-		AssignmentPattern | MemberExpression | AssignmentExpression) as Pattern;
-
-	let val = obj// (oPatt.obj as Property).value
-	let vd: VariableDeclarator = {
-		type: "VariableDeclarator",
-		id: key,
-		init: val as Expression
-	}
-	let vn: VariableDeclaration = {
-		type: "VariableDeclaration",
-		kind: "const",
-		declarations: [vd]
-
-	}
-	return vn;
-}
+// function extractObjectData(oPatt, obj: (Identifier | ObjectPattern | ArrayPattern | RestElement |
+// 	AssignmentPattern | MemberExpression | AssignmentExpression)) {
+// 	let key = (oPatt.obj as Property).key as (Identifier | ObjectPattern | ArrayPattern | RestElement |
+// 		AssignmentPattern | MemberExpression | AssignmentExpression) as Pattern;
+//
+// 	let val = obj// (oPatt.obj as Property).value
+// 	let vd: VariableDeclarator = {
+// 		type: "VariableDeclarator",
+// 		id: key,
+// 		init: val as Expression
+// 	}
+// 	let vn: VariableDeclaration = {
+// 		type: "VariableDeclaration",
+// 		kind: "const",
+// 		declarations: [vd]
+//
+// 	}
+// 	return vn;
+// }
 
 function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr: string, ns: Namespace) => Identifier, ns: Namespace) {
 	if ((e.init && e.init.type === "CallExpression"
@@ -351,44 +313,8 @@ function extractRequireDataForAccess(e: VariableDeclarator, extract: (requireStr
 }
 
 
-function toAssignOrDecl(typeName: string, id: Pattern, value: MemberExpression): Statement {
-	if (typeName === "ExpressionStatement") {
-		let as: AssignmentExpression = {
-			type: "AssignmentExpression",
-			left: id,
-			right: value,
-			operator: "="
-		};
-		return {
-			type: "ExpressionStatement",
-			expression: as
-		}
-
-	} else if (typeName === "VariableDeclaration") {
-		let variableDeclarator: VariableDeclarator = {
-			type: "VariableDeclarator",
-			id: id,
-			init: value
-		}
-		return {
-			type: "VariableDeclaration",
-			kind: "const",
-			declarations: [variableDeclarator],
-		}
-	} else {
-		throw new Error("unexpected state");
-	}
-}
 
 
-function makeAMembery(objID: Expression, propID: Expression): MemberExpression {
-	return {
-		type: "MemberExpression",
-		computed: false,
-		object: objID,
-		property: propID
-	}
-}
 
 interface Require extends SimpleCallExpression {
 	callee: { type: "Identifier", name: "require" }
@@ -401,82 +327,82 @@ function isARequire(node: Node): boolean {
 		&& node.callee.name === "require";
 }
 
-function deconstructDeconstructors(node: VariableDeclaration, parent: Node | null, info: InfoTracker, js: JSFile) {
-
-	let ids = info.getIDs()
-
-	let stmts: VariableDeclaration[] = [];
-	let init: Identifier = node.declarations[0].init as Identifier;
-	let memexFactory: (x: string) => MemberExpression = (e: string) => {
-		return {
-			type: "MemberExpression",
-			object: init,
-			property: id(e),
-			computed: false
-		}
-	}
-	(node.declarations[0].id as ObjectPattern).properties.forEach((e: Property | RestElement) => {
-		if (e.type === "Property") {
-			if (e.shorthand && e.value.type === "Identifier") {
-				stmts.push({
-					type: "VariableDeclaration",
-					kind: node.kind,
-					declarations: [{
-						type: "VariableDeclarator",
-						id: e.value,
-						init: memexFactory(e.value.name)
-					}]
-				})
-			} else if (e.key.type === "Identifier" && e.value.type === "Identifier") {
-				//not shorthand
-				stmts.push({
-					type: "VariableDeclaration",
-					kind: node.kind,
-					declarations: [{
-						type: "VariableDeclarator",
-						id: e.value,
-						init: memexFactory(e.key.name)
-					}]
-				})
-			}
-		} else if (e.type === "RestElement") {
-			throw new Error("TODO? ")
-			//TODO/IS THIS DOABLE/DONE?
-			// e.argument
-			// stmts.push({
-			// 	type: "VariableDeclaration",
-			// 	kind: node.kind,
-			// 	declarations: [{
-			// 		type: "VariableDeclarator",
-			// 		id: e.value,
-			// 		init: memexFactory(e.key.name)
-			// 	}]
-			// })
-		}
-	});
-
-	let body: (Statement | Directive | ModuleDeclaration)[]
-
-	// get body or code block
-	if ("Program" === parent.type) {
-		body = (parent as Program).body
-	} else if (parent.type === "BlockStatement") {
-		body = (parent as BlockStatement).body
-	} else if (parent.type === "ForStatement") {
-		//error/won't happen
-		return;
-	} else {
-		throw new Error("don't know why it got here ")
-	}
-	let index = body.indexOf(node)
-	// = body[body.indexOf(node)]
-
-	stmts.forEach(e => {
-		body .splice(index,0,e)
-
-	})
-	index = body.indexOf(node)
-	body.splice(index, 1)
-
-	return VisitorOption.Remove
-}
+// function deconstructDeconstructors(node: VariableDeclaration, parent: Node | null, info: InfoTracker, js: JSFile) {
+//
+// 	let ids = info.getIDs()
+//
+// 	let stmts: VariableDeclaration[] = [];
+// 	let init: Identifier = node.declarations[0].init as Identifier;
+// 	let memexFactory: (x: string) => MemberExpression = (e: string) => {
+// 		return {
+// 			type: "MemberExpression",
+// 			object: init,
+// 			property: id(e),
+// 			computed: false
+// 		}
+// 	}
+// 	(node.declarations[0].id as ObjectPattern).properties.forEach((e: Property | RestElement) => {
+// 		if (e.type === "Property") {
+// 			if (e.shorthand && e.value.type === "Identifier") {
+// 				stmts.push({
+// 					type: "VariableDeclaration",
+// 					kind: node.kind,
+// 					declarations: [{
+// 						type: "VariableDeclarator",
+// 						id: e.value,
+// 						init: memexFactory(e.value.name)
+// 					}]
+// 				})
+// 			} else if (e.key.type === "Identifier" && e.value.type === "Identifier") {
+// 				//not shorthand
+// 				stmts.push({
+// 					type: "VariableDeclaration",
+// 					kind: node.kind,
+// 					declarations: [{
+// 						type: "VariableDeclarator",
+// 						id: e.value,
+// 						init: memexFactory(e.key.name)
+// 					}]
+// 				})
+// 			}
+// 		} else if (e.type === "RestElement") {
+// 			throw new Error("TODO? ")
+// 			//TODO/IS THIS DOABLE/DONE?
+// 			// e.argument
+// 			// stmts.push({
+// 			// 	type: "VariableDeclaration",
+// 			// 	kind: node.kind,
+// 			// 	declarations: [{
+// 			// 		type: "VariableDeclarator",
+// 			// 		id: e.value,
+// 			// 		init: memexFactory(e.key.name)
+// 			// 	}]
+// 			// })
+// 		}
+// 	});
+//
+// 	let body: (Statement | Directive | ModuleDeclaration)[]
+//
+// 	// get body or code block
+// 	if ("Program" === parent.type) {
+// 		body = (parent as Program).body
+// 	} else if (parent.type === "BlockStatement") {
+// 		body = (parent as BlockStatement).body
+// 	} else if (parent.type === "ForStatement") {
+// 		//error/won't happen
+// 		return;
+// 	} else {
+// 		throw new Error("don't know why it got here ")
+// 	}
+// 	let index = body.indexOf(node)
+// 	// = body[body.indexOf(node)]
+//
+// 	stmts.forEach(e => {
+// 		body.splice(index, 0, e)
+//
+// 	})
+// 	index = body.indexOf(node)
+// 	body.splice(index, 1)
+//
+// 	return VisitorOption.Remove
+// }

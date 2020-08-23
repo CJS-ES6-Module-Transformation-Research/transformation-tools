@@ -293,7 +293,7 @@ export class FileFactory {
 		}
 
 		if (escape) {
-			return null;
+ 			return null;
 		}
 		switch (data.type) {
 
@@ -304,18 +304,16 @@ export class FileFactory {
 				return dir
 				break;
 			case FileType.js:
-				let jsn = new JSFile(path, data, parent, this.isModule)
-				this.jsMap[jsn.getRelative()] = jsn
+ 				let jsn = new JSFile(path, data, parent, this.isModule)
+ 				this.jsMap[jsn.getRelative()] = jsn
 				jsn.setReporter(this.reporter)
 				return jsn
-				break;
-			case FileType.package:
+ 			case FileType.package:
 
 				let pkgJ = new PackageJSON(path, data, parent)
 				pkgJ .setReporter(this.reporter)
 				return pkgJ
-				break;
-			default:
+ 			default:
 				return null;
 		}
 	}

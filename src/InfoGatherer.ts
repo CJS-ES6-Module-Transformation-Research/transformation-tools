@@ -371,10 +371,10 @@ for (let forced in def_aults) {
 
 		let specD = demap.fromId[forced]
  		let e:API;
-		mmp.resolveSpecifier(js, specD ).setType(API_TYPE.default_only,true )
-		// mmp.createOrSet(js,  specD, (a)=> {
- 		// 	a.setType(API_TYPE.default_only, true)
-		// },API_TYPE.default_only, true )
+		mmp.createOrSet(js,  specD, (a)=> {
+ 			a.setType(API_TYPE.default_only, true)
+		},API_TYPE.default_only, true )
+		// js.getApi().setType(API_TYPE.default_only,true )
 
 		// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 	}

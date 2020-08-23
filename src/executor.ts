@@ -4,9 +4,9 @@ import {__exports} from "./transformations/export_transformations/ExportPass";
 import {hacker_defaults, named_copyByValue} from "./transformations/import_transformations/visitors/copyPassByValue";
 import {insertImports} from "./transformations/import_transformations/visitors/insert_imports";
 //require strings x2
-import {accessReplace, flattenDecls, jsonRequire, requireStringSanitizer} from "./transformations/sanitizing/visitors";
+import {accessReplace, flattenDecls , requireStringSanitizer} from "./transformations/sanitizing/visitors";
 import {add__dirname} from "./transformations/sanitizing/visitors/__dirname";
-import {deconsFlatten} from "./transformations/sanitizing/visitors/patternFlatten";
+// import {deconsFlatten} from "./transformations/saniti/zing/visitors/patternFlatten";
 
 
 export function execute(projectManager: ProjectManager) {
@@ -42,10 +42,10 @@ export function execute(projectManager: ProjectManager) {
 }
 
 
-function _sanitize(projectManager: ProjectManager) {
+export function _sanitize(projectManager: ProjectManager) {
 
 	projectManager.forEachSource(requireStringSanitizer, "string sanitize")
-	projectManager.forEachSource(jsonRequire, "JSON require sanitize")
+	// projectManager.forEachSource(jsonRequire, "JSON require sanitize")
 
 	// projectManager.forEachSource(deconsFlatten, 'dc flt')
 	// todo rewrite for the fwk
