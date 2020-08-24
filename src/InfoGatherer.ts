@@ -423,12 +423,12 @@ function addFromID(id:string,reason:string=js.getRelative()) {
 
 			let specD = demap.fromId[forced]
 
-			let e: API;
 
-			mmp.createOrSet(js, specD, (a) => {
-			}, API_TYPE.default_only, true)
-			mmp.resolveSpecifier(js, specD).setType(API_TYPE.default_only, true)
-			let resolved = mmp.resolve(specD,js)
+			// mmp.createOrSet(js, specD, (a) => {
+			// }, API_TYPE.default_only, true)
+			mmp.resolveSpecifier(js, specD)
+				.setType(API_TYPE.default_only, true)
+			// let resolved = mmp.resolve(specD,js)
 			// js.getReporter().addSingleLine(Reporter.forcedDefault).data[resolved] = js.getRelative()
 			// console.log(specD)
 			// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO

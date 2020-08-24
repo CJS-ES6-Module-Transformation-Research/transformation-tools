@@ -74,8 +74,10 @@ private    printonec = false;
 
 	createOrSet(js: JSFile | CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
-
+		console.log((js as JSFile).getApi())
+		console.log((js as JSFile).getApi())
 		if (!(this.apiKey[resolved])) {
+		console.log("resolved")
 			this.apiKey[resolved] = new API(_type)
 		}
 		this.apiKey[resolved].setType(_type, isForced)
@@ -84,37 +86,54 @@ private    printonec = false;
 
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
 	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
-
+	readonly defautlKey = new API(API_TYPE.default_only )
 	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
 
 		//is not bare
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
 			let resolved = this.resolve(moduleSpecifier, jsFile)
-			return this.apiKey[resolved]
+			let jsdirname = path.dirname(jsFile.getRelative())
+			console.log(jsdirname)
+			console.log(path .join(jsdirname,moduleSpecifier ))
+
+			console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
+			  // join(path.dirname(jsFile.getRelative()), moduleSpecifier)
+			let retV= this.apiKey[resolved]
+			if (!retV){
+				console.log (`ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${jsFile.getRelative() }`)
+
+			}
+			return retV
 		} else if (this.apiKey[moduleSpecifier]) {
 			return this.apiKey[moduleSpecifier]
 		} else {
 			if (this.builtinDefault(moduleSpecifier)) {
-				if (!this.apiKey[moduleSpecifier]) {
+
 					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, true)
-				}
+				return this.apiKey[moduleSpecifier]
+
 
 			} else if (this.builtInReg(moduleSpecifier)) {
 				// throw new Error("TODO add info")
-				if (!this.apiKey[moduleSpecifier]) {
+
 
 					let _type = API_TYPE.named_only
 					this.apiKey[moduleSpecifier] = new API(_type, true)
-				}
+
+				return this.apiKey[moduleSpecifier]
 
 
 			} else {
-				if (!this.apiKey[moduleSpecifier]) {
-					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, false)
-				}
+ 					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, false)
+return this.apiKey[moduleSpecifier]
 			}
 		}
-		return this.apiKey[moduleSpecifier]
+		 if (this.apiKey[moduleSpecifier]){
+		 	return this.apiKey[moduleSpecifier]
+		 }else {
+		 	console.log (`1ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${jsFile.getRelative() }`)
+			 return this.defautlKey
+		 }
 
 		//
 		// if ((!this.builtInReg(moduleSpecifier)) && (!)) {

@@ -4,7 +4,8 @@
   "description": "transformation-tools repository for CommonJS to ES6 Module transformations",
   "main": "index.js",
   "scripts": {
-    "test": "nyc mocha"
+    "test": "tsc && mocha test/tests",
+    "coverage": "tsc && nyc bmocha test/tests"
   },
   "author": "",
   "license": "ISC",

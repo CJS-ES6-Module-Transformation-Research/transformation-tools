@@ -63,7 +63,9 @@ export class CJSToJSON extends AbstractDataFile {
 	constructor(path: string, metadata: MetaData, parent: Dir, data: string) {
 		super(path, metadata, parent, data);
 		let api = new API(API_TYPE.default_only,false)
-		metadata.moduleAPIMap.initJS(this, api)
+		metadata.moduleAPIMap.apiKey[this.getRelative()] =api
+		// 	initJS(this, api)
+		// metadata.moduleAPIMap.resolveSpecifier(this, this.getRelative() )
 
 	}
 

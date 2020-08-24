@@ -121,9 +121,6 @@ export function insertImports(js: JSFile) {
 						// 	console.log(`failed to resolve specifier: ${module_specifier} in file ${js.getRelative()} `)
 						// }
 
-						if ( js.getRelative().includes('src/format.js')){
-
-						}
 						if (js.usesNamed() && (isBuiltin || api.getType() === API_TYPE.named_only) && (!api.isForced())) {
 							namedImports(_id, module_specifier, api)
 						} else {
@@ -145,8 +142,11 @@ export function insertImports(js: JSFile) {
 							} else {
 								let  resolved =  mod_map .resolve(module_specifier , js)
 								xImportsY.data[js.getRelative()].push(resolved +"|default" +( api && api.isForced()? "-forced":"standard"));
+								if (js.usesNamed()){
+									js.setUseDefaultCopy(true)
+								}
 
-								idecl = {
+									idecl = {
 									type: "ImportDeclaration",
 									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
 									specifiers: [{

@@ -17,7 +17,12 @@ type script_or_module = "script" | "module"
 
 
 export class JSFile extends AbstractDataFile {
-
+    setUseDefaultCopy(arg0: boolean=true) {
+    	this.useDefaultCopy = arg0
+      }private useDefaultCopy :boolean=false
+getUseDefaultCopy(){
+    	return this.useDefaultCopy
+}
 
 	private readonly api: API;
 	private readonly apiMap: ModuleAPIMap;

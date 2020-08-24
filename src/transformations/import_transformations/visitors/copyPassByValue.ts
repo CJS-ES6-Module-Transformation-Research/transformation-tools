@@ -5,7 +5,7 @@ import {API_TYPE} from "../../export_transformations/API";
 
 
 export let hacker_defaults = (js: JSFile) => {
-	if (js.usesNamed()) {
+	if (js.usesNamed() && (!js.getUseDefaultCopy())) {
 		return;
 	}
 	let ns = js.getNamespace()
