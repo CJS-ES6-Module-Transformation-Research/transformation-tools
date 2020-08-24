@@ -30,7 +30,7 @@ coverage/**/*
 ./*.js
 ./*.js.map
 
-
+.nyc_output
 #src
 src/**/*.js
 src/**/*.js.map

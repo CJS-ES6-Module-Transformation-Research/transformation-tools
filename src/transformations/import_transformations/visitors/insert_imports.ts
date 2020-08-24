@@ -108,10 +108,11 @@ export function insertImports(js: JSFile) {
 							&& (!builtins_funcs.includes(module_specifier)))
 						let isNamedAPI = false;
 						let api = map.resolveSpecifier(js,module_specifier );
-						let isNamespace  =api.getType() === API_TYPE.named_only
-						if (api) {
-							isNamedAPI = (api.getType() === API_TYPE.named_only)
+						let isNamespace= false
+						if(api) {
+							isNamespace = api.getType() === API_TYPE.named_only
 						}
+						 
 
 
 						if (js.usesNamed() && isNamespace &&   (isBuiltin || isNamedAPI)  ) {
@@ -248,9 +249,12 @@ export function insertImports(js: JSFile) {
 			if (!propNameReplaceMap[id]) {
 				propNameReplaceMap[id] = {}
 			}
+
+
 			//todo determine if this can remove prev
 			propNameReplaceMap[id][accessedProp] = local.name
 			if (js.usesNamed() && rpi.potentialPrimProps.includes(accessedProp)) {
+
 				prev = createCopy(local)()
 				primReport.push(`${prev.name}>>${local.name}`)
 			}
@@ -285,6 +289,9 @@ export function insertImports(js: JSFile) {
 				return copy
 
 				function createAliasedDeclarator(copy: Identifier, original: Identifier): VariableDeclaration {
+					let relative = js.getRelative()
+					let msg = `${copy.name}-${original.name}`
+
 					let declarator: VariableDeclarator = {
 						type: "VariableDeclarator",
 						id: original,

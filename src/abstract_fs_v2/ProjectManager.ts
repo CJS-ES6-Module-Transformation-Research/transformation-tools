@@ -1,6 +1,6 @@
 import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
-import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync} from "fs";
+import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync, writeFile} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
@@ -219,15 +219,16 @@ export class ProjectManager {
 
 
 	private writeAll(root_dir: string = this.root.getAbsolute()) {
-		this.dataFiles.forEach(file => {
+		this.dataFiles.forEach(  (file) => {
 			let serialized: SerializedJSData
 
-			serialized = file.makeSerializable();
 
 
+			serialized = file.makeSerializable() ;
 			try {
 				// console.log(root_dir)
-				writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData)
+
+				writeFileSync(join(root_dir, (serialized.relativePath)), serialized.fileData  )
 			} catch (ex) {
 				console.log(`root dir: ${root_dir}`)
 				console.log(`filename relative: ${file.getRelative()}`)

@@ -6,7 +6,7 @@ export class Reporter {
 	static readonly copyPrimCount = 'copy_prim_count'
 	static readonly forcedDefault = 'forced_default_count'
 	private singleLines: {[key:string]:SingleLineItem }={}
-	private multiLines: {[key:string]:MultiLineItem }={}
+	private arrayLine: {[key:string]:MultiLineItem }={}
 	private path: string;
 	private isActive: boolean;
 	constructor(_path:string,active:boolean) {
@@ -20,10 +20,10 @@ export class Reporter {
 		return this.singleLines[name]
 	}
 	addMultiLine(name:string ):MultiLineItem{
-		if (!this.multiLines[name]) {
-			this.multiLines[name] = {  data: {}}
+		if (!this.arrayLine[name]) {
+			this.arrayLine[name] = {  data: {}}
 		}
-		return this.multiLines[name]
+		return this.arrayLine[name]
 	}
 	writeOut(){
 		let writeOuts:{[key:string]:string}={}
@@ -35,8 +35,8 @@ export class Reporter {
 				str = str + `${key}|${value}\n`
 			}
 			writeOuts[_key] = str
-		}for (let _key in this.multiLines){
-			let _value = this.multiLines[_key].data
+		}for (let _key in this.arrayLine){
+			let _value = this.arrayLine[_key].data
 
 			let str = ''
 			for (let key in _value){

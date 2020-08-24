@@ -1,8 +1,9 @@
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
+import {Reporter} from "./abstract_fs_v2/Reporter";
 import {InfoTracker} from "./InfoTracker.js";
-import {API, API_TYPE} from "./transformations/export_transformations/API";
+ import {API, API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -63,8 +64,9 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	for (let id in rpis) {
 		let rpi = rpis[id];
 		rpi.allAccessedProps.forEach((prop: string) => {
-			if (!rpi.refTypeProps.includes(prop)) {
+			if (!(rpi.refTypeProps.includes(prop))) {
 				rpi.potentialPrimProps.push(prop)
+				console.log(prop)
 			}
 		});
 
@@ -348,12 +350,12 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 					if (node.right.left.type === "Identifier"
 						&& listofVarse.includes((val as Identifier).name)) {
 						_forcedDefault[(val as Identifier).name] = true;
-
+						addFromID((val as Identifier).name,'part of a boolean expression')
 					}
 					if (node.right.right.type === "Identifier"
 						&& listofVarse.includes(val2 as Identifier)) {
 						_forcedDefault[(val2 as Identifier).name] = true;
-
+						addFromID((val2 as Identifier).name,'part of a boolean expression')
 					}
 				} else if (node.right.type === "ConditionalExpression") {
 					let val = node.right.consequent
@@ -362,11 +364,13 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 						&& listofVarse.includes((val as Identifier).name)) {
 						_forcedDefault[(val as Identifier).name] = true;
 
+						addFromID((val as Identifier).name,'part of a ternary operator')
 					}
 					if (node.right.alternate.type === "Identifier"
 						&& listofVarse.includes(val2 as Identifier)) {
 						_forcedDefault[(val2 as Identifier).name] = true;
 
+						addFromID((val2 as Identifier).name,'part of a ternary operator')
 					}
 				}
 				if (node.left.type === "MemberExpression"
@@ -390,6 +394,7 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 				if (mapOfRPIs[name]
 				) {
 					_forcedDefault[name] = true;
+					addFromID(name,`property of ${name} reassigned`)
 					forcedDefault = true;
 					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
 					// console.log (`----- ${name} ${generate(node)}`)
@@ -402,10 +407,14 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 	return forcedDefault;
 }
 
+function addFromID(id:string,reason:string=js.getRelative()) {
+	js.getReporter()
+		.addSingleLine(Reporter.forcedDefault)
+		.data[js.getAPIMap().
+	resolve(requireMgr.getDeMap() .fromId[id], js)] = reason
 
-
-
-
+}
+	let reporter: Reporter = js.getReporter()
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
 	let demap = requireMgr.getDeMap()
@@ -419,7 +428,9 @@ function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: Forc
 			mmp.createOrSet(js, specD, (a) => {
 			}, API_TYPE.default_only, true)
 			mmp.resolveSpecifier(js, specD).setType(API_TYPE.default_only, true)
-			console.log(specD)
+			let resolved = mmp.resolve(specD,js)
+			// js.getReporter().addSingleLine(Reporter.forcedDefault).data[resolved] = js.getRelative()
+			// console.log(specD)
 			// js.forceDefault(mmp.resolveSpecifier(specD.))//TODO
 		}
 		// throw new Error("see above todo ")

@@ -1,3 +1,4 @@
+import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from 'estraverse'
 import {
 	ArrayPattern,
@@ -111,7 +112,19 @@ export function accessReplace(js: JSFile) {
 
 					switch (parent.type) {
 						case "CallExpression":
-							parent.callee = access_replaceID;
+							if (parent.callee.type ==="CallExpression"
+							&& parent.callee === node){
+								parent.callee = access_replaceID;
+							}else {
+								parent.arguments.forEach((e,i,arr )=>{
+									if (generate(e)===generate(node)){
+										arr[i]= access_replaceID
+									}
+								})
+								// if(parent.arguments.includes(node as Expression)){
+								//
+								// }
+							}
 							return;
 						case "MemberExpression":
 							parent.object = access_replaceID;

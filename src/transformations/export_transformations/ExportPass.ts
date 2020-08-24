@@ -6,6 +6,7 @@ import {
 	ExportNamedDeclaration,
 	ExportSpecifier,
 	Expression,
+	ExpressionStatement,
 	Identifier,
 	MemberExpression,
 	ModuleDeclaration,
@@ -89,7 +90,7 @@ class ExportPass {
 		}
 		this.namespace = js.getNamespace()
 		this.js = js
-		this.api =  js.getApi()
+		this.api = js.getApi()
 
 	}
 
@@ -112,6 +113,7 @@ class ExportPass {
 
 		}
 
+		let exprs: ExpressionStatement[] = []
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
 		switch (this.tracker.type) {
@@ -126,6 +128,28 @@ class ExportPass {
 				// api = new API(API_TYPE.default_only)
 				this.api.setType(API_TYPE.default_only)
 				mli.data[this.js.getRelative()] = ['default']
+				let body = this.js.getAST().body
+				for (let name in this.tracker.names) {
+					let spec: ExportSpecifier = this.tracker.names[name]
+					let exported = spec.exported.name
+					let local = spec.local.name
+					let assign :AssignmentExpression = {
+						type: "AssignmentExpression",
+						operator: "=",
+						left: {
+							type: "MemberExpression",
+							object: this.namespace.getDefaultExport(),// {type:"Identifier",name:},
+							property: {type: "Identifier", name: exported},
+							computed: false
+						},
+						right: {type: "Identifier", name: local}
+					}
+					body.push({
+						type: "ExpressionStatement",
+						expression: assign
+					})
+				}
+
 
 				return declaration
 			case API_TYPE.named_only:
@@ -150,7 +174,7 @@ class ExportPass {
 				} else {
 					return this.createNamedExports();
 				}
- 		}
+		}
 	}
 
 	private createNamedExports(): ExportNamedDeclaration {
@@ -251,79 +275,111 @@ export function __exports(js: JSFile) {
 		let debug = ""
 		if (node.type === "ExpressionStatement"
 			&& node.expression.type === "AssignmentExpression"
-			&& node.expression.left.type === "MemberExpression"
 		) {
 
-			let right: Expression = node.expression.right;
-			let modExp: ExportedAssignmentType = __deterimineExportType(node.expression.left);
-			if ((modExp && modExp.isDefault)) {
-				setDefaultID();
-				switch (right.type) {
-					case "ObjectExpression":
+			if (
+				node.expression.left.type === "Identifier"
+				&& node.expression.left.name === "exports"
+				&& node.expression.right.type === "AssignmentExpression"
+				&& node.expression.operator === "="
+				&& node.expression.right.operator === "="
 
+				&& node.expression.right.left.type === "MemberExpression"
+				&& node.expression.right.left.object.type === "Identifier"
+				&& node.expression.right.left.property.type === "Identifier"
+				&& node.expression.right.left.object.name === "module"
+				&& node.expression.right.left.property.name === "exports"
+			) {
+				setDefaultID();
+
+				switch (node.expression.right.right.type) {
+					case "ObjectExpression":
 						exportPass.clear()
 						insertIndicesDecl.push(index)
-						objDeclReplaceMap[index] = pushObj(node.expression, right)
+						objDeclReplaceMap[index] = pushObj(node.expression, node.expression.right.right)
 
 						break;
+
 					default:
 						node.expression.left = __default_exports_id
-
+						node.expression.right = node.expression.right.right
 						exportPass.registerDefault(__default_exports_id)
-						break;
+
+						break
 				}
+			} else if (node.expression.left.type === "MemberExpression") {
 
-			} else if (modExp) {
-				//named exports
-				let exported: Identifier = modExp.id
+				let right: Expression = node.expression.right;
+				let modExp: ExportedAssignmentType = __deterimineExportType(node.expression.left);
+				if ((modExp && modExp.isDefault)) {
+					setDefaultID();
+					switch (right.type) {
+						case "ObjectExpression":
 
-				let local: Identifier
-				let rhs: Expression = node.expression.right
-				let dcln: VariableDeclaration
-				let preexisting: Identifier
-				if (exportPass.hasLocalID(exported.name)) {
-					preexisting = exportPass.getLocalID(exported.name)
-					if (preexisting) {
-						node.expression.left = preexisting
-					}
-				}
+							exportPass.clear()
+							insertIndicesDecl.push(index)
+							objDeclReplaceMap[index] = pushObj(node.expression, right)
 
+							break;
+						default:
+							node.expression.left = __default_exports_id
 
-				if (rhs.type === "Identifier") {
-
-					if (rhs.name === exported.name) {
-						// arr.splice(index, 1)
-						arr[index] = {type: "EmptyStatement"}
-						exportPass.registerName(rhs.name, exported.name)
-					} else {
-
-						exported = namespace.generateBestName(exported.name)
-						dcln = createVarD(exported, rhs)
-						arr[index] = dcln
-						exportPass.registerName(rhs.name, exported.name)
+							exportPass.registerDefault(__default_exports_id)
+							break;
 					}
 
+				} else if (modExp) {
+					//named exports
+					let exported: Identifier = modExp.id
 
-				} else {
-					local = preexisting;
-					if (!preexisting) {
-						local = exported;
-						if (!(exportPass.hasLocalID(exported.name))) {
+					let local: Identifier
+					let rhs: Expression = node.expression.right
+					let dcln: VariableDeclaration
+					let preexisting: Identifier
+					if (exportPass.hasLocalID(exported.name)) {
+						preexisting = exportPass.getLocalID(exported.name)
+						if (preexisting) {
+							node.expression.left = preexisting
+						}
+					}
 
-							local = namespace.generateBestName(exported.name)
+
+					if (rhs.type === "Identifier") {
+
+						if (rhs.name === exported.name) {
+							// arr.splice(index, 1)
+							arr[index] = {type: "EmptyStatement"}
+							exportPass.registerName(rhs.name, exported.name)
 						} else {
 
+							exported = namespace.generateBestName(exported.name)
+							dcln = createVarD(exported, rhs)
+							arr[index] = dcln
+							exportPass.registerName(rhs.name, exported.name)
 						}
-						dcln = createVarD(local, rhs)
-						arr[index] = dcln
-					}
-					exportPass.registerName(local.name, exported.name)
 
+
+					} else {
+						local = preexisting;
+						if (!preexisting) {
+							local = exported;
+							if (!(exportPass.hasLocalID(exported.name))) {
+
+								local = namespace.generateBestName(exported.name)
+							} else {
+
+							}
+							dcln = createVarD(local, rhs)
+							arr[index] = dcln
+						}
+						exportPass.registerName(local.name, exported.name)
+
+
+					}
 
 				}
 
 			}
-
 		}
 
 		exReplace(node)

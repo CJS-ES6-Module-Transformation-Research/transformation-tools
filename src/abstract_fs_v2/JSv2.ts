@@ -22,7 +22,7 @@ export class JSFile extends AbstractDataFile {
 	private readonly api: API;
 	private readonly apiMap: ModuleAPIMap;
 	private readonly _usesNames: boolean;
-	test: any;
+	private readonly test: boolean;
 
 
 	getInfoTracker(): InfoTracker {
@@ -52,6 +52,7 @@ export class JSFile extends AbstractDataFile {
  		this._usesNames = b.uses_names;
 		this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
+		this.test = b.test
 		this.ast = this.parseProgram(this.data, isModule)
 
 		this.infoTracker = new InfoTracker(this.getRelative());
@@ -60,7 +61,6 @@ export class JSFile extends AbstractDataFile {
 		this.apiMap = b.moduleAPIMap
 		this.api = new API(API_TYPE.none)
 		this.apiMap.initJS(this, this.api)
-		this.test = b.test
  		traverse(this.ast,{enter:(node,parent) => {
  			if (node.type === "Identifier" && node.name==="delete"){
 

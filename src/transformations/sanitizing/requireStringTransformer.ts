@@ -25,8 +25,13 @@ export class RequireStringTransformer {
 				this.js.getParent().getRelative(),
 				dirname(_path)))
 
-		return dir	.getPackageJSON()
-					.getMain()
+		let potential = dir.getPackageJSON().getMain()
+		if (potential.startsWith('.')||potential.startsWith('/')){
+			return './index.js'
+		}else if (!(potential.endsWith('.js'))){
+			return './index.js'
+		}
+		return potential
 
 	}
 

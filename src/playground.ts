@@ -1,5 +1,6 @@
 // #!/usr/local/bin/ts-node
-import {parseModule} from "esprima";
+import {generate} from "escodegen";
+import {parseModule, parseScript} from "esprima";
 import {ExportDefaultDeclaration, ExpressionStatement, ObjectExpression, Program} from 'estree'
 
 let ast: Program
@@ -181,6 +182,33 @@ let ast: Program
 
 
 
+let e = parseScript(`exports = module.exports = require('./superstatic');`).body[0]
+console.log(e)
 
+let x = generate({
+	type:"AssignmentExpression",
+	operator:"=",
+	left:{type:"Identifier",name:"exports"},
+	right:{
+		type:"AssignmentExpression",
+		operator:"=",
+	left:{
+		type:"MemberExpression",
+		object:{type:"Identifier",name:"module"},
+		property:{type:"Identifier",name:"exports"},
+		computed:false
+	},
+		right:{
+			type:"CallExpression",
+			callee:{type:"Identifier",name:"require"},
+			arguments:[
+				{
+					type:"Literal",
+					value:"fs"
+				}
+			]
+		}
+	}
+})
 
-
+console.log(x)

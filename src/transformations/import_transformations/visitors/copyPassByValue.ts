@@ -14,9 +14,12 @@ export let hacker_defaults = (js: JSFile) => {
 
 	let idSet: { [base: string]: { [prop: string]: Identifier } } = {}
 	let infoTracker = js.getInfoTracker()
+	if (js.getRelative().includes('test-ping')) {
+		console.log(infoTracker.getMaybePrims())
+	}
 	infoTracker
 		.getMaybePrims()
-		.map(e => {
+		.forEach(e => {
 			// if (getRPI(e.modId).forceDefault) {
 			// 	return null;
 			// }
@@ -35,12 +38,11 @@ export let hacker_defaults = (js: JSFile) => {
 			replace_identifiers.push(best)
 
 				let declaration = createAccessedDeclFromBest(e, best);
-			return declaration
+			js.insertCopyByValue(declaration);
 		})
-		.filter(e => e !== null)
-		.forEach((value: VariableDeclaration) => {
-			js.insertCopyByValue(value);
-		});
+		// .filter(e => e !== null)
+		// .forEach((value: VariableDeclaration) => {
+		// });
 
 
 	replace(js.getAST(), {

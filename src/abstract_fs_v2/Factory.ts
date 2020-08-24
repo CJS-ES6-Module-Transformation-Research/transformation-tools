@@ -302,21 +302,18 @@ export class FileFactory {
 				let dir = new Dir(path, data, parent, this, this.rc, this.ignored)
 				this.dirs[dir.getRelative()] = dir;
 				dir.setReporter(this.reporter)
-				console.log(`Created Dir: ${path}`)
-				return dir
+ 				return dir
 				break;
 			case FileType.js:
  				let jsn = new JSFile(path, data, parent, this.isModule)
  				this.jsMap[jsn.getRelative()] = jsn
 				jsn.setReporter(this.reporter)
-				console.log(`Created JSFile: ${path}`)
 
 				return jsn
  			case FileType.package:
 
 				let pkgJ = new PackageJSON(path, data, parent)
 				pkgJ .setReporter(this.reporter)
-				console.log(`Created PkgJSON: ${path}`)
 
 				return pkgJ
  			default:

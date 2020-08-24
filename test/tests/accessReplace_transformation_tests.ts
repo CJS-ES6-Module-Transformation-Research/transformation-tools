@@ -35,7 +35,7 @@
 //              aProj.forEachSource(accessReplace)
 //
 //             aProj.forEachSource((e) => {
-//                 let actual = e.makeSerializable().fileData;
+//                 let actual = e.makeSerializable()fileData;
 //                 let expected = eProj.getJS(e.getRelative())
 //                     .makeSerializable().fileData;
 //                 try {
