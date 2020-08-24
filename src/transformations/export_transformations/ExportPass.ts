@@ -1,3 +1,4 @@
+import assert from "assert";
 import {replace, Visitor} from "estraverse";
 import {
 	AssignmentExpression,
@@ -116,6 +117,10 @@ class ExportPass {
 		let exprs: ExpressionStatement[] = []
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
+		if (this.js.getRelative().includes('format.js')){
+			console.log('fd' + this.tracker.type)
+			console.log('fd' + this.forcedDefault)
+		}
 		switch (this.tracker.type) {
 
 
@@ -172,6 +177,9 @@ class ExportPass {
 					this.api.setNames(names)
 					return declaration
 				} else {
+					if (this.js.getRelative().includes('format.js')){
+						console.log( `reached`)
+					}
 					return this.createNamedExports();
 				}
 		}
@@ -188,11 +196,23 @@ class ExportPass {
 			names.push(val.exported.name)
 			specifiers.push(val)
 		}
+		let _api: API = this.js.getAPIMap().resolveSpecifier(this.js,this.js.getRelative() )
 		// let api = new API(API_TYPE.named_only, names)
 		this.api.setType(API_TYPE.named_only)
 		this.api.setNames(names)
+		assert (this.api.getType() === API_TYPE.named_only )
 		mli.data[this.js.getRelative()] = names
-
+		if (this.js.getRelative().includes('src/format.js')){
+			// console.log( `set api to ${this.api.getType()}`)
+			// console.log( `resolve api to ${this.js.getAPIMap().resolveSpecifier(this.js,this.js.getRelative() ).isForced() }`)
+			// console.log( `resolve api to ${this.js.getAPIMap().resolveSpecifier(this.js,this.js.getRelative() ).getType() }`)
+			console.log(`ExportPass  ${this.api.getID()}`)
+			console.log(`ExportPass  ${this.api.getID()}`)
+			console.log(`PreResolved  ${_api.getID()}`)
+			console.log(`PreResolved  ${_api.getID()}`)
+			console.log(`AtCallResolved  ${this.js.getAPIMap().resolveSpecifier(this.js,this.js.getRelative() ) }`)
+			console.log(`AtCallResolved  ${this.js.getAPIMap().resolveSpecifier(this.js, ( this.js.getRelative() )).getID()}`)
+		}
 
 		let declaration: ExportNamedDeclaration = {type: "ExportNamedDeclaration", specifiers: specifiers}
 		return declaration
@@ -214,7 +234,10 @@ class ExportPass {
 		return this.tracker.names[exported]
 	}
 
-	clear(): void {
+	clear(objExpr:boolean=false ): void {
+		if (this.js.getRelative().includes('format.js')){
+			console.log('fd' + this.forcedDefault)
+		}
 		this.tracker = {
 			defaultIdentifier: this.tracker.defaultIdentifier,
 			names: {},
@@ -232,7 +255,9 @@ class ExportPass {
 	}
 
 	registerName(local: string, exported: string): void {
-
+		if (this.js.getRelative().includes('format.js')){
+			console.log('format' + this.tracker.type)
+		}
 		if (this.tracker.type !== API_TYPE.default_only) {
 
 			this.tracker.type = API_TYPE.named_only

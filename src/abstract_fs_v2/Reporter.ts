@@ -9,6 +9,7 @@ export class Reporter {
 	private arrayLine: {[key:string]:MultiLineItem }={}
 	private path: string;
 	private isActive: boolean;
+	static xImportsY: string = "imported-by";
 	constructor(_path:string,active:boolean) {
 		this.isActive = active
 		this.path = _path

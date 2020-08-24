@@ -51,9 +51,19 @@ export class ModuleAPIMap {
 			}
 		}
 	}
-
+private    printonec = false;
+	pp(){
+		if (!this.printonec){
+			this.printonec = true;
+			for (let one in this.apiKey){
+				console.log(one)// this.apiKey[one]
+			}
+		}
+	}
 	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
+
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
+			 console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
 			return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 		} else {
 			return moduleSpecifier
@@ -61,12 +71,8 @@ export class ModuleAPIMap {
 
 	}
 
-	specifierExists(moduleSpecifier: string) {
-		return
-	}
 
-
-	createOrSet(js: JSFile| CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
+	createOrSet(js: JSFile | CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
 
 		if (!(this.apiKey[resolved])) {
@@ -79,16 +85,19 @@ export class ModuleAPIMap {
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
 	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
 
-	 resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
+	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
 
 		//is not bare
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
 			let resolved = this.resolve(moduleSpecifier, jsFile)
 			return this.apiKey[resolved]
+		} else if (this.apiKey[moduleSpecifier]) {
+			return this.apiKey[moduleSpecifier]
 		} else {
 			if (this.builtinDefault(moduleSpecifier)) {
-
-				return new API(API_TYPE.default_only, true)
+				if (!this.apiKey[moduleSpecifier]) {
+					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, true)
+				}
 
 			} else if (this.builtInReg(moduleSpecifier)) {
 				// throw new Error("TODO add info")
@@ -98,13 +107,15 @@ export class ModuleAPIMap {
 					this.apiKey[moduleSpecifier] = new API(_type, true)
 				}
 
-				return this.apiKey[moduleSpecifier]
-
 
 			} else {
-				return new API(API_TYPE.default_only, false)
+				if (!this.apiKey[moduleSpecifier]) {
+					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, false)
+				}
 			}
 		}
+		return this.apiKey[moduleSpecifier]
+
 		//
 		// if ((!this.builtInReg(moduleSpecifier)) && (!)) {
 		// 	this.apiKey[moduleSpecifier] = this.apiKey[moduleSpecifier] || new API(API_TYPE.default_only)
@@ -184,9 +195,9 @@ export class FileFactory {
 	private reporter: Reporter;
 	private isTest: boolean;
 
-	constructor(path: string,  opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null ) {
+	constructor(path: string, opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null) {
 		this.reporter = reporter
-		this.isModule =   opts.isModule;
+		this.isModule = opts.isModule;
 		this.rootPath = resolve(path);
 		this.pm = pm;
 		this.ignored = opts.ignored
@@ -294,7 +305,7 @@ export class FileFactory {
 		}
 
 		if (escape) {
- 			return null;
+			return null;
 		}
 		switch (data.type) {
 
@@ -302,21 +313,21 @@ export class FileFactory {
 				let dir = new Dir(path, data, parent, this, this.rc, this.ignored)
 				this.dirs[dir.getRelative()] = dir;
 				dir.setReporter(this.reporter)
- 				return dir
+				return dir
 				break;
 			case FileType.js:
- 				let jsn = new JSFile(path, data, parent, this.isModule)
- 				this.jsMap[jsn.getRelative()] = jsn
+				let jsn = new JSFile(path, data, parent, this.isModule)
+				this.jsMap[jsn.getRelative()] = jsn
 				jsn.setReporter(this.reporter)
 
 				return jsn
- 			case FileType.package:
+			case FileType.package:
 
 				let pkgJ = new PackageJSON(path, data, parent)
-				pkgJ .setReporter(this.reporter)
+				pkgJ.setReporter(this.reporter)
 
 				return pkgJ
- 			default:
+			default:
 				return null;
 		}
 	}

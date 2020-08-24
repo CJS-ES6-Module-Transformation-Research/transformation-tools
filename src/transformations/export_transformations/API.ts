@@ -22,6 +22,9 @@ export class API {
 	isForced():boolean{
 		return this._isForced
 	}
+getID(){
+		return this.id
+}
 
 
 	private readonly _isBuiltin: boolean;
@@ -31,12 +34,16 @@ export class API {
 
 	setType(_type: API_TYPE, isForced=false) {
 		if (this._isForced){
+			console.log("IS FORCED: RETURN")
 			return
 		}
 		if (isForced){
 			this._isForced = true;
-			this.type = _type
+			console.log("SET FORCED: RETURN")
+
+			return
 		}
+
 		this.type = _type
 
 	}

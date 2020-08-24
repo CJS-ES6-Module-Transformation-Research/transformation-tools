@@ -1,6 +1,7 @@
 import {existsSync, lstatSync} from 'fs'
 import {dirname, extname, join, resolve} from 'path'
 import relative from "relative";
+import {built_ins, builtins_funcs} from "../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../abstract_fs_v2/JSv2";
 
 
@@ -13,10 +14,18 @@ const _JSON = ".json";
 export class RequireStringTransformer {
 	private readonly dirname: string;
 	private js: JSFile
+	private typeLogger: { [p: string]: string[] };
 
 	constructor(js: JSFile) {
 		this.dirname = dirname(js.getAbsolute())
 		this.js = js;
+		this.typeLogger = js.getReporter().addMultiLine('require_count').data
+		this.typeLogger.relative = []
+		this.typeLogger.nameable = []
+		this.typeLogger.builtin_default = []
+
+		this.typeLogger.installed = []
+
 	}
 
 	private computeMain(_path: string) {
@@ -26,9 +35,9 @@ export class RequireStringTransformer {
 				dirname(_path)))
 
 		let potential = dir.getPackageJSON().getMain()
-		if (potential.startsWith('.')||potential.startsWith('/')){
+		if (potential.startsWith('.') || potential.startsWith('/')) {
 			return './index.js'
-		}else if (!(potential.endsWith('.js'))){
+		} else if (!(potential.endsWith('.js'))) {
 			return './index.js'
 		}
 		return potential
@@ -44,6 +53,8 @@ export class RequireStringTransformer {
 	 * @param _path require string.
 	 */
 	getTransformed(_path: string) {
+		this.typeLogger.relative.push()
+
 
 		let absolute: string = this.absPath(_path)
 		let computedPath: string
@@ -52,6 +63,15 @@ export class RequireStringTransformer {
 		if (_path.charAt(0) !== '.' && _path.charAt(0) !== '/') {
 			//todo: many more cases here /
 			//  node submodules
+			if (builtins_funcs.includes(_path)) {
+				this.typeLogger.builtin_default.push(_path)
+
+			} else if (built_ins.includes(_path)) {
+				this.typeLogger.builtin_default.push(_path)
+			} else {
+				this.typeLogger.installed.push(_path)
+
+			}
 			return _path
 		} else if ((isBoth(absolute) && _path.lastIndexOf('/') !== (_path.length - 1))
 			|| !isDir(absolute)) {
@@ -70,6 +90,7 @@ export class RequireStringTransformer {
 		let relativized: string = relative(this.dirname, computedPath, null);
 
 		if (!(relativized.charAt(0) === '.') && !(relativized.charAt(0) === '/')) {
+			this.typeLogger.relative.push(relativized)
 			relativized = "./" + relativized
 		}
 
@@ -95,6 +116,7 @@ export class RequireStringTransformer {
 				return false;
 			}
 		}
+
 
 		return relativized;
 	}

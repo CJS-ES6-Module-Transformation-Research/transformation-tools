@@ -12,9 +12,12 @@ import {RequireStringTransformer} from "../requireStringTransformer";
  */
 export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
     // let requireStringTF: RequireStringTransformer = new RequireStringTransformer(dirname(js.getAbsolute()), js.getParent().getPackageJSON().getMain())
-    let rst: RequireStringTransformer = new RequireStringTransformer(js)
     let re: RegExp = new RegExp('.+\.json$');
-
+    let rst: RequireStringTransformer = new RequireStringTransformer(js)
+    let dataRep = js.getReporter().addMultiLine('require_count').data
+    dataRep[js.getRelative()] = []
+    let _json_req = js.getReporter().addMultiLine('json_requires').data
+                        _json_req[js.getRelative()] = []
     let visitor: Visitor = {
         enter: function (node: Node): void {
 
@@ -25,10 +28,14 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
                 && node.arguments[0].type === "Literal") {
                 let literal:SimpleLiteral = (node.arguments[0] as SimpleLiteral )
 
+
                 // console.log(`import ing in ${js.getRelative()}  from m${literal.value.toString()}   which is in dir: ${_dir.getRelative()}`)
                 let requireString: string = rst.getTransformed(literal.value.toString()) //requireStringTF.getTransformed(literal.value.toString(),js.getParent())
-                if (re.test(requireString)) {
+                dataRep[js.getRelative()].push(requireString)
+                if (re.test(js.getRelative())) {
+
                     requireString =  js.createCJSFromIdentifier(requireString)
+                        _json_req[js.getRelative()] .push(requireString)
                     // literal.value = requireString
                     // literal.raw = `'${requireString}'`
                 }
