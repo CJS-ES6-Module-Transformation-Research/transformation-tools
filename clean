@@ -1,19 +1,34 @@
 #!/bin/bash
-#targetDir='/Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform'
-#echo "starting clean in $(pwd)"
+cd $RF_TOOL ;
+echo "starting clean in $(pwd)"
+find  src -name '*.js' | xargs rm -f
+#find  src -name '*.js.map' | xargs rm -f
+find src -name '*.d.ts' | xargs rm
 
-find /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/src -name '*.js' | xargs rm -f
+find src -name '*.map.js'  | xargs rm -f
 
-find /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/src -name '*.map' | xargs rm -f
 
-rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/*.js
-rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/*.js
-rm -f /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test/tests/*.js
-find /Users/sam/Dropbox/Spring_20/research_proj/CJS_Transform/test -name '*.map' | xargs rm -f
+
+
 
 echo "cleaned"
-find src -name '*.d.ts' | xargs rm
-find Utils -name '*.d.ts' | xargs rm
-#find test -name '*.d.ts' | xargs rm
+
+
+find test -name '*.d.ts' | xargs rm
+find test -name '*.js.map' | xargs rm
+
+#proj root
+rm ./*.js
 rm ./*.d.ts
-rm $(ls test/*.d.ts)
+
+#test root (s)
+rm ./*.js.map
+rm  ./test/*.d.ts
+
+rm -f  ./test/*.js
+rm -f ./test/tests/*.js
+
+#actual tests
+rm  ./test/tests/*.d.ts
+rm  ./test/tests/*.map.js
+rm  ./test/tests/*.js
