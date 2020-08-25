@@ -64,7 +64,9 @@ private    printonec = false;
 
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
 			 // console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
-			return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
+
+			//ERROR module specifier: ../lib/formatter.js did not ressolve to a file when called from test/lib/formatter.test.js but instead resolved to test/lib/formatter.js
+ 			return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 		} else {
 			return moduleSpecifier
 		}
@@ -86,12 +88,12 @@ private    printonec = false;
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
 	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
 	readonly defautlKey = new API(API_TYPE.default_only )
-	resolveSpecifier(jsFile: JSFile | CJSToJSON, moduleSpecifier: string): API {
+	resolveSpecifier(js: JSFile | CJSToJSON, moduleSpecifier: string): API {
 
 		//is not bare
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
-			let resolved = this.resolve(moduleSpecifier, jsFile)
-			let jsdirname = path.dirname(jsFile.getRelative())
+			let resolved = this.resolve(moduleSpecifier, js)
+			let jsdirname = path.dirname(js.getRelative())
 			// console.log(jsdirname)
 			// console.log(path .join(jsdirname,moduleSpecifier ))
 
@@ -99,7 +101,7 @@ private    printonec = false;
 			  // join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 			let retV= this.apiKey[resolved]
 			if (!retV){
-				console.log (`ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${jsFile.getRelative() }`)
+ 				console.log (`ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${js.getRelative() } but instead resolved to ${resolved}`)
 
 			}
 			return retV
@@ -130,7 +132,7 @@ return this.apiKey[moduleSpecifier]
 		 if (this.apiKey[moduleSpecifier]){
 		 	return this.apiKey[moduleSpecifier]
 		 }else {
-		 	console.log (`1ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${jsFile.getRelative() }`)
+		 	console.log (`1ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${js.getRelative() }`)
 			 return this.defautlKey
 		 }
 

@@ -40,15 +40,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	// requireMgr.setForcedDecl(forcedDefault)
 
 	listOfVars.forEach((id: string) => {
-		if (rpis[id]) {
-			// console.log(`rpis of id: ${id}`)
-			let rpi = rpis[id];
-			rpi.allAccessedProps.forEach((prop: string) => {
-				if (!rpi.refTypeProps.includes(prop)) {
-					rpi.potentialPrimProps.includes(prop);
-				}
-			});
-		} else {
+		if (!rpis[id]) {
 			//if must be default import and no calls or accesses made
 			// console.log("NOD IDS FOR ID: " + id)
 			rpis[id] = {
@@ -57,8 +49,29 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				potentialPrimProps: [],
 				refTypeProps: []
 			}
+			def_aults[id] = true;
+			js.report().addForcedDefault(js, "condition")
+
 
 		}
+		 else {
+
+			// console.log(`rpis of id: ${id}`)
+			let rpi = rpis[id];
+			rpi.allAccessedProps.forEach((prop: string) => {
+				if (!rpi.refTypeProps.includes(prop)) {
+					rpi.potentialPrimProps.includes(prop);
+				}
+			});
+			if ( rpi[id] !== undefined
+				&& (((!rpi[id].allAccessedProps)) ||rpi[id].allAccessedProps.length===0)
+				&&	((!(rpi[id].refTypeProps)) ||rpi[id].refTypeProps.length===0)
+				&&	((!(rpi[id].potentialPrimProps) ) ||rpi[id].potentialPrimProps.length===0)
+			){
+				def_aults[id] = true;
+				js.report().addForcedDefault(js, "condition")
+
+			}}
 
 	});
 
@@ -419,7 +432,33 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	}
 
+
+
+
+
 	let reporter: Reporter = js.getReporter()
+
+	traverse(ast,{enter:(node,parent)=>{
+		if (node.type==="AssignmentExpression"
+			&&  node.right.type==="Identifier"
+			&&  listOfVars.includes(node.right.name)
+
+		){
+			reporter.reportOn().addForcedDefault(js,"property_assignment")
+def_aults[node.right.name]=true ;
+		}
+		else if (node.type === "Property"
+			&& node.value.type === "Identifier"
+			&&  listOfVars.includes(node.value.name)
+		){
+			reporter.reportOn().addForcedDefault(js,"property_assignment")
+			def_aults[node.value.name]=true ;
+		}
+		}});
+
+
+
+
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
 	let demap = requireMgr.getDeMap()
@@ -431,6 +470,9 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 			// mmp.createOrSet(js, specD, (a) => {
 			// }, API_TYPE.default_only, true)
+			if ( js.getRelative().includes('formatter.test')){
+				console.log(`setting forced def of ${specD}`)
+			}
 			mmp.resolveSpecifier(js, specD)
 				.setType(API_TYPE.default_only, true)
 			assert(mmp.resolveSpecifier(js, specD).getType()===API_TYPE.default_only , `expected set to default`)

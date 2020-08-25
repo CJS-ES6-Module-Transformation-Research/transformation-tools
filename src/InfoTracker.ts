@@ -274,7 +274,7 @@ export class Imports {
  		let po={}
 		for (let spec in map.fromSpec) {
 try {
-	_api[spec] = apiGetter(spec.replace(/^\.{0,2}\//, ''))
+	_api[spec] = apiGetter(spec  )
 	po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
 }catch (e) {
 	console.log(`err:  ${map.fromSpec[spec]}` )

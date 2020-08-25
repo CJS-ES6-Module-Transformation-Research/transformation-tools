@@ -206,9 +206,8 @@ class ExportPass {
 			names.push(val.exported.name)
 			specifiers.push(val)
 		}
-		let _api: API = this.js.getAPIMap().resolveSpecifier(this.js, this.js.getRelative())
-		// let api = new API(API_TYPE.named_only, names)
-		this.api.setType(API_TYPE.named_only)
+	
+ 		this.api.setType(API_TYPE.named_only)
 		this.api.setNames(names)
 		try {
 			assert(this.api.getType() === API_TYPE.named_only, this.api.getType() + "")
