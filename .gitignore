@@ -31,12 +31,11 @@ coverage/**/*
 ./*.js.map
 
 .nyc_output
-#src
 src/**/*.js
 src/**/*.js.map
 
 #test dirs
-test/*.js
+#test/*.js
 test/*.js.map
 test/tests/*.js
 test/tests/*.js.map
