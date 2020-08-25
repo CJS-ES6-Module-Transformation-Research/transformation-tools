@@ -1,0 +1,1 @@
+if(require('./lib')){console.log('')};

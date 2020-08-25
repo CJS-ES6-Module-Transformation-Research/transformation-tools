@@ -1,0 +1,1 @@
+for (var imported = require('npmModule'); true; imported.exec()) {console.log();}; 

@@ -1,0 +1,1 @@
+if(require('trueOrFalse').get()){throw new Error('')}

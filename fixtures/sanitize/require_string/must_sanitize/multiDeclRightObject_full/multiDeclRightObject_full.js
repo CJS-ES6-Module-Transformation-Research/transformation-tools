@@ -1,0 +1,1 @@
+var imported = require('./index.js'), x =  {a : 35};

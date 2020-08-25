@@ -1,0 +1,1 @@
+let z = require(__dirname +'/'+'index.js')

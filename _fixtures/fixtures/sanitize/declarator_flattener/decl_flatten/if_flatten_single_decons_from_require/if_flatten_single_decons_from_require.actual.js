@@ -1,0 +1,1 @@
+var {val} = require('deconstructable');

@@ -1,0 +1,1 @@
+if(require('../')){console.log('')};

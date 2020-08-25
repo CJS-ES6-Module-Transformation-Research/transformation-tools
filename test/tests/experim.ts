@@ -81,3 +81,23 @@ describe('export building and apis', () => {
 		});
 	});
 });
+describe('export building and apis', () => {
+	let tests: BuiltTestData[] = getAllExpTestData('dyn_exp')
+	tests.forEach(function (test) {
+		it(test.name, function () {
+			_sanitize(test.actProj)
+			test.actProj.forEachSource(reqPropertyInfoGather)
+
+			test.actProj.forEachSource
+				(js => {
+
+					let actualJS = js.getRelative()
+					console.error(actualJS)
+					let actual = test.actProj.getJS(js.getRelative()).makeSerializable().fileData
+					let expected = test.expProj.getJS(js.getRelative()).makeSerializable().fileData
+					expect(actual).to.be.eq(expected)
+
+				})
+		});
+	});
+});

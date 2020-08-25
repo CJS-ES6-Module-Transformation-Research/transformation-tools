@@ -1,0 +1,1 @@
+exports.x = 'name'

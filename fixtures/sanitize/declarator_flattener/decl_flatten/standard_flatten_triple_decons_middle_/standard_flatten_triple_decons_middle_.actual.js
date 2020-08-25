@@ -1,0 +1,1 @@
+var  a = 32,{val} = deconstructableObject ,obj = {x: "99"}
