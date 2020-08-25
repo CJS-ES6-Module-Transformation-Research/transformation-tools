@@ -20,7 +20,7 @@ import {API, API_TYPE} from "../../export_transformations/API";
 
 export function cleanMIS(moduleSpecifier: string): string {
 	let mos = moduleSpecifier.replace(/^\.{0,2}\//, '')
-	console.log('mos: ' + mos)
+	// console.log('mos: ' + mos)
 
 	return mos
 }

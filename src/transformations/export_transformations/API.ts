@@ -37,12 +37,12 @@ getID(){
 
 	setType(_type: API_TYPE, isForced=false) {
 		if (this._isForced){
-			console.log("IS FORCED: RETURN")
+			// console.log("IS FORCED: RETURN")
 			return
 		}
 		if (isForced){
 			this._isForced = true;
-			console.log("SET FORCED: RETURN")
+			// console.log("SET FORCED: RETURN")
 
 			return
 		}

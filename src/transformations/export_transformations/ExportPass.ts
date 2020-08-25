@@ -117,10 +117,10 @@ class ExportPass {
 		let exprs: ExpressionStatement[] = []
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
-		if (this.js.getRelative().includes('format.js')) {
-			console.log('fd' + this.tracker.type)
-			console.log('fd' + this.forcedDefault)
-		}
+		// if (this.js.getRelative().includes('format.js')) {
+		// 	console.log('fd' + this.tracker.type)
+		// 	console.log('fd' + this.forcedDefault)
+		// }
 		if (this.forcedDefault) {
 			switch (this.tracker.type) {
 				case API_TYPE.default_only:
@@ -186,10 +186,10 @@ class ExportPass {
 				return declaration
 			case API_TYPE.named_only:
 
-
-				if (this.js.getRelative().includes('format.js')) {
-					console.log(`reached`)
-				}
+				//
+				// if (this.js.getRelative().includes('format.js')) {
+				// 	console.log(`reached`)
+				// }
 				return this.createNamedExports();
 
 		}
@@ -241,9 +241,9 @@ class ExportPass {
 	}
 
 	clear(objExpr: boolean = false): void {
-		if (this.js.getRelative().includes('format.js')) {
-			console.log('fd' + this.forcedDefault)
-		}
+		// if (this.js.getRelative().includes('format.js')) {
+		// 	console.log('fd' + this.forcedDefault)
+		// }
 		this.tracker = {
 			defaultIdentifier: this.tracker.defaultIdentifier,
 			names: {},
@@ -263,10 +263,10 @@ class ExportPass {
 
 	registerName(local: string, exported: string): void {
 		this.js.report().addNamedExport(this.js)
-
-		if (this.js.getRelative().includes('format.js')) {
-			console.log('format' + this.tracker.type)
-		}
+		//
+		// if (this.js.getRelative().includes('format.js')) {
+		// 	console.log('format' + this.tracker.type)
+		// }
 		if (this.tracker.type !== API_TYPE.default_only) {
 
 			this.tracker.type = API_TYPE.named_only

@@ -67,7 +67,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		rpi.allAccessedProps.forEach((prop: string) => {
 			if (!(rpi.refTypeProps.includes(prop))) {
 				rpi.potentialPrimProps.push(prop)
-				console.log(prop)
+				// console.log(prop)
 			}
 		});
 

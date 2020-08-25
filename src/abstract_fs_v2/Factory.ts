@@ -53,17 +53,17 @@ export class ModuleAPIMap {
 	}
 private    printonec = false;
 	pp(){
-		if (!this.printonec){
-			this.printonec = true;
-			for (let one in this.apiKey){
-				console.log(one)// this.apiKey[one]
-			}
-		}
+		// if (!this.printonec){
+		// 	this.printonec = true;
+		// 	for (let one in this.apiKey){
+		// 		console.log(one)// this.apiKey[one]
+		// 	}
+		// }
 	}
 	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
 
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
-			 console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
+			 // console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
 			return join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 		} else {
 			return moduleSpecifier
@@ -74,10 +74,9 @@ private    printonec = false;
 
 	createOrSet(js: JSFile | CJSToJSON, moduleSpecifier: string, createSet: (api: API) => void, _type: API_TYPE, isForced) {
 		let resolved = this.resolve(moduleSpecifier, js)
-		console.log((js as JSFile).getApi())
-		console.log((js as JSFile).getApi())
+
 		if (!(this.apiKey[resolved])) {
-		console.log("resolved")
+		// console.log("resolved")
 			this.apiKey[resolved] = new API(_type)
 		}
 		this.apiKey[resolved].setType(_type, isForced)
@@ -93,10 +92,10 @@ private    printonec = false;
 		if (moduleSpecifier.startsWith('.') || moduleSpecifier.startsWith('/')) {
 			let resolved = this.resolve(moduleSpecifier, jsFile)
 			let jsdirname = path.dirname(jsFile.getRelative())
-			console.log(jsdirname)
-			console.log(path .join(jsdirname,moduleSpecifier ))
+			// console.log(jsdirname)
+			// console.log(path .join(jsdirname,moduleSpecifier ))
 
-			console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
+			// console.log (`resolved to ${ join(path.dirname(jsFile.getRelative()), moduleSpecifier)}`)
 			  // join(path.dirname(jsFile.getRelative()), moduleSpecifier)
 			let retV= this.apiKey[resolved]
 			if (!retV){
