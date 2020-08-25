@@ -19,15 +19,15 @@ import {Imports, WithPropNames} from "../../../InfoTracker";
 import {API, API_TYPE} from "../../export_transformations/API";
 
 export function cleanMIS(moduleSpecifier: string): string {
-	let mos =  moduleSpecifier.replace(/^\.{0,2}\//, '')
-	console.log('mos: '+mos )
+	let mos = moduleSpecifier.replace(/^\.{0,2}\//, '')
+	console.log('mos: ' + mos)
 
 	return mos
 }
 
 
 export function insertImports(js: JSFile) {
- 	js.setAsModule()
+	js.setAsModule()
 	let last: number = 0;
 	let info = js.getInfoTracker();
 	let listOfVars = getListOfVars(info)
@@ -42,6 +42,7 @@ export function insertImports(js: JSFile) {
 	let reporter = js.getReporter()
 	let xImportsY = reporter.addMultiLine(Reporter.xImportsY)
 	xImportsY.data[js.getRelative()] = []
+	let report = js.report()
 
 	function computeType(js: JSFile, init: Identifier, moduleSpecifier: string) {
 
@@ -58,8 +59,6 @@ export function insertImports(js: JSFile) {
 	}
 
 	// if (moduleSpecifier.includes('src/format.js')){}
-
-
 
 
 	//for readability in debugging
@@ -113,10 +112,10 @@ export function insertImports(js: JSFile) {
 						let map = js.getAPIMap()
 						let isBuiltin = (built_ins.includes(module_specifier)
 							&& (!builtins_funcs.includes(module_specifier)))
- 						let api = map.resolveSpecifier(js, module_specifier);
+						let api = map.resolveSpecifier(js, module_specifier);
 						let isNamespace = false
 						// if (api) {
-							isNamespace = api.getType() === API_TYPE.named_only
+						isNamespace = api.getType() === API_TYPE.named_only
 						// }else{
 						// 	console.log(`failed to resolve specifier: ${module_specifier} in file ${js.getRelative()} `)
 						// }
@@ -126,6 +125,7 @@ export function insertImports(js: JSFile) {
 						} else {
 							let idecl: ImportDeclaration
 							if (isNamespace && (!js.usesNamed()) && (!api.isForced())) {
+								report.addNamespaceImportStatement(js)
 								idecl = {
 									type: "ImportDeclaration",
 									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
@@ -136,17 +136,19 @@ export function insertImports(js: JSFile) {
 
 								}
 								xImportsY.data[js.getRelative()].push(mod_map
-									.resolve(module_specifier , js)+"|namespace");
+									.resolve(module_specifier, js) + "|namespace");
 
 
 							} else {
-								let  resolved =  mod_map .resolve(module_specifier , js)
-								xImportsY.data[js.getRelative()].push(resolved +"|default" +( api && api.isForced()? "-forced":"standard"));
-								if (js.usesNamed()){
+								report.addDefaultImportStatement(js)
+
+								let resolved = mod_map.resolve(module_specifier, js)
+								xImportsY.data[js.getRelative()].push(resolved + "|default" + (api && api.isForced() ? "-forced" : "standard"));
+								if (js.usesNamed()) {
 									js.setUseDefaultCopy(true)
 								}
 
-									idecl = {
+								idecl = {
 									type: "ImportDeclaration",
 									source: (node.declarations[0].init.arguments[0] as SimpleLiteral),
 									specifiers: [{
@@ -199,7 +201,7 @@ export function insertImports(js: JSFile) {
 				&& propNameReplaceMap[node.object.name]
 				&& propNameReplaceMap[node.object.name][node.property.name]
 			) {
-
+					report.addPropAccessLocation(js)
 				let replacement: Identifier = {
 					type: "Identifier",
 					name: propNameReplaceMap[node.object.name][node.property.name]
@@ -245,10 +247,11 @@ export function insertImports(js: JSFile) {
 			}
 			return local;
 		}
-
+		report.addNamedImportStatement(js)
 // rpi.allAccessedProps
 		let dataRep = js.getReporter().addMultiLine('used_named_imports')
 		rpi.allAccessedProps.forEach((accessedProp: string) => {
+			report.addNamedSpecifier(js)
 			let imported: Identifier
 			// if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][accessedProp] === accessedProp) {
 			// 	accessed = {type: "Identifier", name: wpn.aliases[module_specifier][accessedProp]}
@@ -283,15 +286,15 @@ export function insertImports(js: JSFile) {
 				imported: imported
 			}
 			let resolved = mod_map
-				.resolve(module_specifier , js)
-			if (!dataRep.data[resolved] ){
-				dataRep.data[resolved] =[]
+				.resolve(module_specifier, js)
+			if (!dataRep.data[resolved]) {
+				dataRep.data[resolved] = []
 			}
 			dataRep.data[resolved].push(`${imported.name}|${js.getRelative()}`)
 			specifiers.push(is)
 
 			xImportsY.data[js.getRelative()].push(mod_map
-				.resolve(module_specifier , js)+"|named");
+				.resolve(module_specifier, js) + "|named");
 		});
 
 		// js.addAnImport
@@ -309,6 +312,8 @@ export function insertImports(js: JSFile) {
 
 		function createCopy(local: Identifier): () => Identifier {
 			//TODO introduce second type for default version
+
+			report.addCopyByValue(js )
 			return () => {
 				let copy = ns.generateBestName(local.name)
 				js.insertCopyByValue(createAliasedDeclarator(copy, local))

@@ -1,9 +1,10 @@
+import assert from "assert";
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {Reporter} from "./abstract_fs_v2/Reporter";
 import {InfoTracker} from "./InfoTracker.js";
- import {API, API_TYPE} from "./transformations/export_transformations/API";
+import {API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -72,348 +73,352 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 	}
 
-function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap) {
-	let retval: boolean = false;
-	if (shadows[varName]) {
-		// console.log(`${varName}: ${shadows[varName]}`)
-		stack.forEach(e => {
-			if (shadows[varName].includes(e)) {
-				retval = true;
+	function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap) {
+		let retval: boolean = false;
+		if (shadows[varName]) {
+			// console.log(`${varName}: ${shadows[varName]}`)
+			stack.forEach(e => {
+				if (shadows[varName].includes(e)) {
+					retval = true;
+				}
+			});
+		}
+		// return retval;
+		return false;
+	}
+
+
+	function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
+		// let listOfProps = [];
+		let fctStack: string[] = [];
+
+		traverse(ast, {
+			enter: (node, parent) => {
+				switch (node.type) {
+					case "FunctionDeclaration": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+					case "FunctionExpression": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+					case "ArrowFunctionExpression": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+
+					case "LogicalExpression":
+						if (node.left.type === "Identifier"
+							&& listOfVars.includes(node.left.name)) {
+							_forcedDefault[node.left.name] = true;
+							js.report().addForcedDefault(js, "condition")
+						}
+						if (node.right.type === "Identifier"
+							&& listOfVars.includes(node.right.name)) {
+							js.report().addForcedDefault(js, "condition")
+							_forcedDefault[node.right.name] = true;
+						}
+						break;
+					case "ConditionalExpression":
+						if (node.consequent.type === "Identifier"
+							&& listOfVars.includes(node.consequent.name)) {
+							_forcedDefault[node.consequent.name] = true;
+							js.report().addForcedDefault(js, "condition")
+						}
+						if (node.alternate.type === "Identifier"
+							&& listOfVars.includes(node.alternate.name)) {
+
+							_forcedDefault[node.alternate.name] = true;
+							js.report().addForcedDefault(js, "condition")
+						}
+						break;
+					case "VariableDeclaration":
+						let decl = node.declarations[0]
+						if (decl.init
+							&& decl.init.type === "Identifier"
+							&& listOfVars.includes(decl.init.name)
+							&& decl.id.type === "ObjectPattern"
+						) {
+							throw new Error('todo?')
+						}
+						break;
+					case "MemberExpression":
+						// console.log(node.object);
+						if (node.object.type === "Identifier"
+							&& node.property.type === "Identifier"
+							&& listOfVars.includes(node.object.name)
+							&& (!isShadowVariable(node.object.name, fctStack, shadows)//FIXME this has toe end up in it somewhere
+							)
+
+							/*containsNode( )*/) {
+							// console.log(node.object.type)
+							// listOfProps.push( node);
+							let name = node.object.name
+
+							if (!mapOfRPIs[name]) {
+								mapOfRPIs[name] = {
+									allAccessedProps: [],//new Set(),
+									potentialPrimProps: [],//new Set(),
+									refTypeProps: [],//new Set(),
+									forceDefault: false
+								};
+							}
+							if (parent
+								&& parent.type === "AssignmentExpression"
+								&& parent.left === node
+							) {
+								// console.log(`FORCED_DEFAULT:  ${name} in _ `)
+								js.report().addForcedDefault(js,'property_assignment')
+
+								_forcedDefault[name] = true
+							}
+							if (!mapOfRPIs[name].allAccessedProps.includes(node.property.name)) {
+								mapOfRPIs[name].allAccessedProps.push(node.property.name)
+							}
+
+						}
+						break;
+					// case "VariableDeclaration": {
+					// 	if (
+					// 		node.declarations[0]
+					// 		&& node.declarations[0].id.type === "ObjectPattern"
+					// 		&& node.declarations[0].init
+					// 		&& node.declarations[0].init.type === "Identifier"
+					// 	) {
+					// 		let name:string =  node.declarations[0].init.name;
+					// 		if (listOfVars.includes(name)) {
+					// 			if (!mapOfRPIs[name]) {
+					// 				mapOfRPIs[name] = {
+					// 					allAccessedProps: [],//new Set(),
+					// 					potentialPrimProps: [],//new Set(),
+					// 					refTypeProps: [],//new Set(),
+					// 					forceDefault: false,
+					// 					aliasedProps:Specifier[]
+					// 				};
+					// 			}
+					// 			node.declarations[0].id.properties.forEach((prop: Property | RestElement) => {
+					//
+					// 				if (prop.type === "Property" && prop.value.type === "Identifier") {
+					// 					let key, val
+					// 					let spec:Specifier
+					// 					if (prop.shorthand) {
+					// 						val = prop.value;
+					// 						spec = {local:val, imported:val}
+					// 					} else if (prop.key.type === "Identifier") {
+					// 						val = prop.value
+					// 						key = prop.key
+					// 						spec = {local:val, imported:key}
+					// 					}
+					// 				}
+					// 			});
+					// 		}
+					//
+					// 	}
+					// }
+					// 	break;
+				}
+			}, leave: (node, parent) => {
+				switch (node.type) {
+					case "FunctionDeclaration": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+					case "FunctionExpression": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+					case "ArrowFunctionExpression": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+				}
 			}
 		});
+		// return listOfProps;
 	}
-	// return retval;
-	return false;
-}
 
+	interface Specifier {
+		local: Identifier
+		imported: Identifier
+	}
 
-function getReqPropertiesAccessed(ast: Program, listOfVars: string[], _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
-	// let listOfProps = [];
-	let fctStack: string[] = [];
+	function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
+		// let notPrimProps = []
+		let fctStack: string[] = [];
+		let nameS: string;
+		traverse(ast, {
+			enter: (node, parent) => {
+				switch (node.type) {
+					case "FunctionDeclaration": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+					case "FunctionExpression": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+					case "ArrowFunctionExpression": // we're entering a function
+						fctStack.push(createFuncID(node));
+						break;
+					case "MemberExpression":
+						if (node.object.type == "MemberExpression"
+							&& node.object.object.type == "Identifier"
+							&& node.property.type == "Identifier"
+							&& node.object.property.type === "Identifier"
+							&& !isShadowVariable(node.object.object.name, fctStack, shadows)) {
 
- 	traverse(ast, {
-		enter: (node, parent) => {
-			switch (node.type) {
-				case "FunctionDeclaration": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
-				case "FunctionExpression": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
-				case "ArrowFunctionExpression": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
+							nameS = node.object.object.name;
+							let key = node.object.property.name
+							let value = node.property.name
 
-				case "LogicalExpression":
-					if (node.left.type === "Identifier"
-						&& listOfVars.includes(node.left.name)) {
-						_forcedDefault[node.left.name]=true;
-					}
-					if (node.right.type === "Identifier"
-						&& listOfVars.includes(node.right.name)) {
-
-						_forcedDefault[node.right.name]=true;
-					}
-					break;
-					case "ConditionalExpression":
-					if (node. consequent.type === "Identifier"
-						&& listOfVars.includes(node.consequent.name)) {
-						_forcedDefault[node.consequent.name]=true;
- 					}
-					if (node.alternate.type === "Identifier"
-						&& listOfVars.includes(node.alternate.name)) {
-
- 						_forcedDefault[node.alternate.name]=true;
-					}
-					break;
-				case "VariableDeclaration":
-					let decl = node.declarations[0]
-					if (decl.init
-						&& decl.init.type === "Identifier"
-						&& listOfVars.includes(decl.init.name)
-						&& decl.id.type === "ObjectPattern"
-					) {
-						throw new Error('todo?')
-					}
-					break;
-				case "MemberExpression":
-					// console.log(node.object);
-					if (node.object.type === "Identifier"
-						&& node.property.type === "Identifier"
-						&& listOfVars.includes(node.object.name)
-						&& (!isShadowVariable(node.object.name, fctStack, shadows)//FIXME this has toe end up in it somewhere
-						)
-
-						/*containsNode( )*/) {
-						// console.log(node.object.type)
-						// listOfProps.push( node);
-						let name = node.object.name
-
-						if (!mapOfRPIs[name]) {
-							mapOfRPIs[name] = {
-								allAccessedProps: [],//new Set(),
-								potentialPrimProps: [],//new Set(),
-								refTypeProps: [],//new Set(),
-								forceDefault: false
-							};
+							if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(key)) {
+								// containsNode(mapOfRPIs[nameS].listOfAllPropsAccessed, node.object)) {
+								// notPrimProps.push( node.object);
+								if (!mapOfRPIs[nameS].refTypeProps.includes(key)) {
+									mapOfRPIs[nameS].refTypeProps.push(key);
+								}
+							}
 						}
-						if (parent
-							&& parent.type === "AssignmentExpression"
-							&& parent.left === node
+						break;
+					case "NewExpression": {
+						if (node.callee.type == "MemberExpression"
+							&& node.callee.object.type == "Identifier"
+							&& node.callee.property.type == "Identifier"
+							&& !isShadowVariable(node.callee.object.name, fctStack, shadows)
 						) {
-							// console.log(`FORCED_DEFAULT:  ${name} in _ `)
 
-							_forcedDefault[name] = true
-						}
-						if (!mapOfRPIs[name].allAccessedProps.includes(node.property.name)) {
-							mapOfRPIs[name].allAccessedProps.push(node.property.name)
-						}
-
-					}
-					break;
-				// case "VariableDeclaration": {
-				// 	if (
-				// 		node.declarations[0]
-				// 		&& node.declarations[0].id.type === "ObjectPattern"
-				// 		&& node.declarations[0].init
-				// 		&& node.declarations[0].init.type === "Identifier"
-				// 	) {
-				// 		let name:string =  node.declarations[0].init.name;
-				// 		if (listOfVars.includes(name)) {
-				// 			if (!mapOfRPIs[name]) {
-				// 				mapOfRPIs[name] = {
-				// 					allAccessedProps: [],//new Set(),
-				// 					potentialPrimProps: [],//new Set(),
-				// 					refTypeProps: [],//new Set(),
-				// 					forceDefault: false,
-				// 					aliasedProps:Specifier[]
-				// 				};
-				// 			}
-				// 			node.declarations[0].id.properties.forEach((prop: Property | RestElement) => {
-				//
-				// 				if (prop.type === "Property" && prop.value.type === "Identifier") {
-				// 					let key, val
-				// 					let spec:Specifier
-				// 					if (prop.shorthand) {
-				// 						val = prop.value;
-				// 						spec = {local:val, imported:val}
-				// 					} else if (prop.key.type === "Identifier") {
-				// 						val = prop.value
-				// 						key = prop.key
-				// 						spec = {local:val, imported:key}
-				// 					}
-				// 				}
-				// 			});
-				// 		}
-				//
-				// 	}
-				// }
-				// 	break;
-			}
-		}, leave: (node, parent) => {
-			switch (node.type) {
-				case "FunctionDeclaration": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-				case "FunctionExpression": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-				case "ArrowFunctionExpression": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-			}
-		}
-	});
-	// return listOfProps;
-}
-
-interface Specifier {
-	local: Identifier
-	imported: Identifier
-}
-
-function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
-	// let notPrimProps = []
-	let fctStack: string[] = [];
-	let nameS: string;
-	traverse(ast, {
-		enter: (node, parent) => {
-			switch (node.type) {
-				case "FunctionDeclaration": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
-				case "FunctionExpression": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
-				case "ArrowFunctionExpression": // we're entering a function
-					fctStack.push(createFuncID(node));
-					break;
-				case "MemberExpression":
-					if (node.object.type == "MemberExpression"
-						&& node.object.object.type == "Identifier"
-						&& node.property.type == "Identifier"
-						&& node.object.property.type === "Identifier"
-						&& !isShadowVariable(node.object.object.name, fctStack, shadows)) {
-
-						nameS = node.object.object.name;
-						let key = node.object.property.name
-						let value = node.property.name
-
-						if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(key)) {
-							// containsNode(mapOfRPIs[nameS].listOfAllPropsAccessed, node.object)) {
-							// notPrimProps.push( node.object);
-							if (!mapOfRPIs[nameS].refTypeProps.includes(key)) {
-								mapOfRPIs[nameS].refTypeProps.push(key);
+							nameS = node.callee.object.name;
+							if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(node.callee.property.name)) {
+								// notPrimProps.push( node.callee);
+								if (!mapOfRPIs[nameS].refTypeProps.includes(node.callee.property.name)) {
+									mapOfRPIs[nameS].refTypeProps.push(
+										node.callee.property.name);
+								}
 							}
 						}
+						break;
 					}
-					break;
-				case "NewExpression": {
-					if (node.callee.type == "MemberExpression"
-						&& node.callee.object.type == "Identifier"
-						&& node.callee.property.type == "Identifier"
-						&& !isShadowVariable(node.callee.object.name, fctStack, shadows)
-					) {
+					case "CallExpression": {
+						if (node.callee.type == "MemberExpression"
+							&& node.callee.object.type == "Identifier"
+							&& node.callee.property.type == "Identifier"
+							&& !isShadowVariable(node.callee.object.name, fctStack, shadows)
+						) {
 
-						nameS = node.callee.object.name;
-						if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(node.callee.property.name)) {
-							// notPrimProps.push( node.callee);
-							if (!mapOfRPIs[nameS].refTypeProps.includes(node.callee.property.name)) {
-								mapOfRPIs[nameS].refTypeProps.push(
-									node.callee.property.name);
+							nameS = node.callee.object.name;
+							if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(node.callee.property.name)) {
+								// notPrimProps.push( node.callee);
+								if (!mapOfRPIs[nameS].refTypeProps.includes(node.callee.property.name)) {
+									mapOfRPIs[nameS].refTypeProps.push(
+										node.callee.property.name);
+								}
 							}
 						}
+						break;
 					}
-					break;
 				}
-				case "CallExpression": {
-					if (node.callee.type == "MemberExpression"
-						&& node.callee.object.type == "Identifier"
-						&& node.callee.property.type == "Identifier"
-						&& !isShadowVariable(node.callee.object.name, fctStack, shadows)
-					) {
+			}, leave: (node, parent) => {
+				switch (node.type) {
+					case "FunctionDeclaration": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+					case "FunctionExpression": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+					case "ArrowFunctionExpression": // leaving a function, pop it from the stack
+						fctStack.pop();
+						break;
+				}
+			}
+		});
+		// return notPrimProps;
+	}
 
-						nameS = node.callee.object.name;
-						if (mapOfRPIs[nameS] && mapOfRPIs[nameS].allAccessedProps.includes(node.callee.property.name)) {
-							// notPrimProps.push( node.callee);
-							if (!mapOfRPIs[nameS].refTypeProps.includes(node.callee.property.name)) {
-								mapOfRPIs[nameS].refTypeProps.push(
-									node.callee.property.name);
+
+	function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }) {
+		let forcedDefault: boolean = false;
+
+		traverse(ast, {
+			enter: (node: Node, parent: Node | null) => {
+				if (node.type === "AssignmentExpression") {
+					// if (node.right.type === "")
+					let right: Expression = node.right
+					let seen = false// todo maybe use to implement expresion children with logical grandparents
+					// traverse(left,)
+
+					traverse(right, {
+						enter: (e: Node, p: Node | null) => {
+							if ((e.type === "Identifier" && p) && (p.type === "LogicalExpression" || p.type === "ConditionalExpression")) {
+								let name = e.name
+
 							}
+						}, leave: () => {
+						}
+					})
+					if (node.right.type === "LogicalExpression") {
+
+						let val = node.right.left
+						let val2 = node.right.right
+						if (node.right.left.type === "Identifier"
+							&& listofVarse.includes((val as Identifier).name)) {
+							_forcedDefault[(val as Identifier).name] = true;
+							addFromID((val as Identifier).name, 'part of a boolean expression')
+						}
+						if (node.right.right.type === "Identifier"
+							&& listofVarse.includes(val2 as Identifier)) {
+							_forcedDefault[(val2 as Identifier).name] = true;
+							addFromID((val2 as Identifier).name, 'part of a boolean expression')
+						}
+					} else if (node.right.type === "ConditionalExpression") {
+						let val = node.right.consequent
+						let val2 = node.right.alternate
+						if (node.right.consequent.type === "Identifier"
+							&& listofVarse.includes((val as Identifier).name)) {
+							_forcedDefault[(val as Identifier).name] = true;
+
+							addFromID((val as Identifier).name, 'part of a ternary operator')
+						}
+						if (node.right.alternate.type === "Identifier"
+							&& listofVarse.includes(val2 as Identifier)) {
+							_forcedDefault[(val2 as Identifier).name] = true;
+
+							addFromID((val2 as Identifier).name, 'part of a ternary operator')
 						}
 					}
-					break;
-				}
-			}
-		}, leave: (node, parent) => {
-			switch (node.type) {
-				case "FunctionDeclaration": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-				case "FunctionExpression": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-				case "ArrowFunctionExpression": // leaving a function, pop it from the stack
-					fctStack.pop();
-					break;
-			}
-		}
-	});
-	// return notPrimProps;
-}
-
-
-function getReassignedPropsOrIDs(ast: Program, listofVarse, _forcedDefault: ForcedDefaultMap, mapOfRPIs: { [id: string]: ReqPropInfo }) {
-	let forcedDefault: boolean = false;
-
-	traverse(ast, {
-		enter: (node: Node, parent: Node | null) => {
-			if (node.type === "AssignmentExpression") {
-				// if (node.right.type === "")
-				let right: Expression = node.right
-				let seen = false// todo maybe use to implement expresion children with logical grandparents
-				// traverse(left,)
-
-				traverse(right, {
-					enter: (e: Node, p: Node | null) => {
-						if ((e.type === "Identifier" && p) && (p.type === "LogicalExpression" || p.type === "ConditionalExpression")) {
-							let name = e.name
+					if (node.left.type === "MemberExpression"
+						&& node.left.object.type === "Identifier"
+						&& node.left.property.type === "Identifier") {
+						let name = node.left.object.name;
+						let prop = node.left.property.name;
+						if (mapOfRPIs[name]
+						) {
+							forcedDefault = true;
 
 						}
-					}, leave: () => {
-					}
-				})
-				if (node.right.type === "LogicalExpression") {
-
-					let val = node.right.left
-					let val2 = node.right.right
-					if (node.right.left.type === "Identifier"
-						&& listofVarse.includes((val as Identifier).name)) {
-						_forcedDefault[(val as Identifier).name] = true;
-						addFromID((val as Identifier).name,'part of a boolean expression')
-					}
-					if (node.right.right.type === "Identifier"
-						&& listofVarse.includes(val2 as Identifier)) {
-						_forcedDefault[(val2 as Identifier).name] = true;
-						addFromID((val2 as Identifier).name,'part of a boolean expression')
-					}
-				} else if (node.right.type === "ConditionalExpression") {
-					let val = node.right.consequent
-					let val2 = node.right.alternate
-					if (node.right.consequent.type === "Identifier"
-						&& listofVarse.includes((val as Identifier).name)) {
-						_forcedDefault[(val as Identifier).name] = true;
-
-						addFromID((val as Identifier).name,'part of a ternary operator')
-					}
-					if (node.right.alternate.type === "Identifier"
-						&& listofVarse.includes(val2 as Identifier)) {
-						_forcedDefault[(val2 as Identifier).name] = true;
-
-						addFromID((val2 as Identifier).name,'part of a ternary operator')
 					}
 				}
-				if (node.left.type === "MemberExpression"
+				if (node.type === "AssignmentExpression"
+					&& node.left.type === "MemberExpression"
 					&& node.left.object.type === "Identifier"
 					&& node.left.property.type === "Identifier") {
 					let name = node.left.object.name;
 					let prop = node.left.property.name;
 					if (mapOfRPIs[name]
 					) {
+						_forcedDefault[name] = true;
+						addFromID(name, `property of ${name} reassigned`)
 						forcedDefault = true;
+						// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
+						// console.log (`----- ${name} ${generate(node)}`)
 
 					}
-				}
-			}
-			if (node.type === "AssignmentExpression"
-				&& node.left.type === "MemberExpression"
-				&& node.left.object.type === "Identifier"
-				&& node.left.property.type === "Identifier") {
-				let name = node.left.object.name;
-				let prop = node.left.property.name;
-				if (mapOfRPIs[name]
-				) {
-					_forcedDefault[name] = true;
-					addFromID(name,`property of ${name} reassigned`)
-					forcedDefault = true;
-					// console.log (`---reassigned prop ${name} ${mapOfRPIs[name]}`)
-					// console.log (`----- ${name} ${generate(node)}`)
 
 				}
+			},
+		});
+		return forcedDefault;
+	}
 
-			}
-		},
-	});
-	return forcedDefault;
-}
+	function addFromID(id: string, reason: string = js.getRelative()) {
+		js.getReporter()
+			.addSingleLine(Reporter.forcedDefault)
+			.data[js.getAPIMap().resolve(requireMgr.getDeMap().fromId[id], js)] = reason
 
-function addFromID(id:string,reason:string=js.getRelative()) {
-	js.getReporter()
-		.addSingleLine(Reporter.forcedDefault)
-		.data[js.getAPIMap().
-	resolve(requireMgr.getDeMap() .fromId[id], js)] = reason
+	}
 
-}
 	let reporter: Reporter = js.getReporter()
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
@@ -428,6 +433,8 @@ function addFromID(id:string,reason:string=js.getRelative()) {
 			// }, API_TYPE.default_only, true)
 			mmp.resolveSpecifier(js, specD)
 				.setType(API_TYPE.default_only, true)
+			assert(mmp.resolveSpecifier(js, specD).getType()===API_TYPE.default_only , `expected set to default`)
+
 			// let resolved = mmp.resolve(specD,js)
 			// js.getReporter().addSingleLine(Reporter.forcedDefault).data[resolved] = js.getRelative()
 			// console.log(specD)

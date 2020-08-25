@@ -3,6 +3,7 @@ import {dirname, extname, join, resolve} from 'path'
 import relative from "relative";
 import {built_ins, builtins_funcs} from "../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../abstract_fs_v2/JSv2";
+import {ReportBuilder} from "../../abstract_fs_v2/Reporter";
 
 
 const _JS = ".js";
@@ -15,6 +16,7 @@ export class RequireStringTransformer {
 	private readonly dirname: string;
 	private js: JSFile
 	private typeLogger: { [p: string]: string[] };
+	private rpt:ReportBuilder ;
 
 	constructor(js: JSFile) {
 		this.dirname = dirname(js.getAbsolute())
@@ -23,8 +25,7 @@ export class RequireStringTransformer {
 		this.typeLogger.relative = []
 		this.typeLogger.nameable = []
 		this.typeLogger.builtin_default = []
-
-		this.typeLogger.installed = []
+ 		this.typeLogger.installed = []
 
 	}
 

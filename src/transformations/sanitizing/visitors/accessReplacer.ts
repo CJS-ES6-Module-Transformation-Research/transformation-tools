@@ -49,7 +49,7 @@ export function accessReplace(js: JSFile) {
 	let decls: VariableDeclaration[] = [];
 	let indices: number[] = []
 	let body = js.getAST().body
-
+	let report = js.report()
 	body.forEach((e, index) => {
 		if (e.type === "VariableDeclaration"
 			&& e.declarations
@@ -87,7 +87,7 @@ export function accessReplace(js: JSFile) {
 			if (isARequire(node) && parent.type !== "ExpressionStatement") {
 				let require: Require = node as Require
 				let requireString: string = (require.arguments[0] as Literal).value.toString();
-
+				report.addAccessReplace(js)
 				let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
 				// console.log(`acc   ${idStr}`
 				// )

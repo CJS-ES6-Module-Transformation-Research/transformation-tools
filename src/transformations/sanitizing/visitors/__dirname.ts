@@ -84,11 +84,13 @@ export const add__dirname: TransformFunction = (js: JSFile) => {
 	js.registerReplace(import_meta_url.name, `import.meta.url`)
 	if (js.namespaceContains('__dirname') || seenDirname) {
 		js.getAST().body.splice(0, 0, variableDeclarations.filename(import_meta_url.name), variableDeclarations.dirname)
-
+		js.report().addedDirname()
+		js.report().addedFilename() 
 		// addFilename(js)
 		// refact(js, create__dirname, 'path');
 
 	} else if (js.namespaceContains('__filename') || seenFilename) {
+		js.report().addedFilename()
 
 		js.getAST().body.splice(0, 0, variableDeclarations.filename(import_meta_url.name))
 

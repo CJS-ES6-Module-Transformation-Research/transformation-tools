@@ -17,6 +17,7 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 	let _json_req = js.getReporter().addMultiLine('json_requires').data
 	dataRep[js.getRelative()] = []
 	_json_req[js.getRelative()] = []
+	let report = js.report()
 	let visitor: Visitor = {
 		enter: function (node: Node): void {
 
@@ -26,15 +27,19 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 				&& node.callee.name === "require"
 				&& node.arguments[0].type === "Literal") {
 				let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
-
+				report.addARequire(js)
 
 				// console.log(`import ing in ${js.getRelative()}  from m${literal.value.toString()}   which is in dir: ${_dir.getRelative()}`)
 				let requireString: string = rst.getTransformed(literal.value.toString()) //requireStringTF.getTransformed(literal.value.toString(),js.getParent())
 				dataRep[js.getRelative()].push(requireString)
-				if (re.test(requireString)) {
+				if (requireString !== literal.value.toString()) {
+					report.addSaniRequire(js)
+				}
 
+				if (re.test(requireString)) {
 					requireString = js.createCJSFromIdentifier(requireString)
 					_json_req[js.getRelative()].push(requireString)
+					report.addJSONRequire(js, requireString)
 					// literal.value = requireString
 					// literal.raw = `'${requireString}'`
 				}

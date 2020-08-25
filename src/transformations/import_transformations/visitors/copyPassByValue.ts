@@ -23,6 +23,7 @@ export let hacker_defaults = (js: JSFile) => {
 			// if (getRPI(e.modId).forceDefault) {
 			// 	return null;
 			// }
+			js.report().addCopyByValue(js  )
 			let api = js.getAPIMap().resolveSpecifier(js, infoTracker.getDeMap().fromId[e.modId])
 			if (api.getType() === API_TYPE.default_only && api.isForced()) {
 				return null;

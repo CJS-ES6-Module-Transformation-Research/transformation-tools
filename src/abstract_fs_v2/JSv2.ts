@@ -17,6 +17,9 @@ type script_or_module = "script" | "module"
 
 
 export class JSFile extends AbstractDataFile {
+	report(){
+		return this.reporter.reportOn()
+	}
     setUseDefaultCopy(arg0: boolean=true) {
     	this.useDefaultCopy = arg0
       }private useDefaultCopy :boolean=false
@@ -80,7 +83,9 @@ getUseDefaultCopy(){
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 
+
 	public createCJSFromIdentifier(moduleID: string): string {
+
 		let parent: Dir = this.parent();
 		let json_loc = join(dirname(this.getAbsolute()), moduleID)
 

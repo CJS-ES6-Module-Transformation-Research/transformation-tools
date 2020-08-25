@@ -16,6 +16,9 @@ export class API {
  	}
 
 	getType( ) {
+		if (this._isForced){
+			return API_TYPE.default_only
+		}
 		return this.type
 	}
 
