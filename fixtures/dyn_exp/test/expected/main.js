@@ -1,5 +1,5 @@
-var defaultExports = {} 
+var defaultExport = {}
 var a = 'x'
-defaultExports = {a:a} 
+defaultExport = {a: a}
 var z = 3
-export default defaultExports
+export default {a: a, z: z} ;

@@ -3,8 +3,9 @@ import {readdirSync} from "fs";
 import {join} from 'path';
 import {JSFile} from "../../src/abstract_fs_v2/JSv2";
 import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
-import {_sanitize} from "../../src/executor";
+import execute, {_sanitize} from "../../src/executor";
 import {reqPropertyInfoGather} from "../../src/InfoGatherer";
+import {__exports} from "../../src/transformations/export_transformations/ExportPass";
 import {createProject, FIXTURES} from "../index";
 
 interface TestsData {
@@ -60,13 +61,34 @@ function getAllExpTestData(dir_suite: string): BuiltTestData[] {
 	return data
 
 }
-
+//
+// describe('export building and apis', () => {
+// 	let tests: BuiltTestData[] = getAllExpTestData('dyn_exp')
+// 	tests.forEach(function (test) {
+// 		it(test.name, function () {
+// 			_sanitize(test.actProj)
+// 			test.actProj.forEachSource(reqPropertyInfoGather)
+//
+// 			test.actProj.forEachSource
+// 				(js => {
+//
+// 					let actualJS = js.getRelative()
+// 					console.error(actualJS)
+// 					let actual = test.actProj.getJS(js.getRelative()).makeSerializable().fileData
+// 					let expected = test.expProj.getJS(js.getRelative()).makeSerializable().fileData
+// 					expect(actual).to.be.eq(expected)
+//
+// 				})
+// 		});
+// 	});
+// });
 describe('export building and apis', () => {
 	let tests: BuiltTestData[] = getAllExpTestData('dyn_exp')
 	tests.forEach(function (test) {
 		it(test.name, function () {
 			_sanitize(test.actProj)
 			test.actProj.forEachSource(reqPropertyInfoGather)
+			test.actProj.forEachSource( __exports)
 
 			test.actProj.forEachSource
 				(js => {
@@ -81,18 +103,19 @@ describe('export building and apis', () => {
 		});
 	});
 });
-describe('export building and apis', () => {
-	let tests: BuiltTestData[] = getAllExpTestData('dyn_exp')
+describe('forced defaults, copies, and info-gathering', () => {
+	let tests: BuiltTestData[] = getAllExpTestData('hacks_infoGather')
 	tests.forEach(function (test) {
 		it(test.name, function () {
-			_sanitize(test.actProj)
+			execute(test.actProj)
 			test.actProj.forEachSource(reqPropertyInfoGather)
+			test.actProj.forEachSource( __exports)
 
 			test.actProj.forEachSource
 				(js => {
 
 					let actualJS = js.getRelative()
-					console.error(actualJS)
+					// console.error(actualJS)
 					let actual = test.actProj.getJS(js.getRelative()).makeSerializable().fileData
 					let expected = test.expProj.getJS(js.getRelative()).makeSerializable().fileData
 					expect(actual).to.be.eq(expected)

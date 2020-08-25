@@ -1,7 +1,7 @@
 
 var defaultExport = {}
-const a = 'a';
-const b = 'b';
+var a = 'a';
+var b = 'b';
 defaultExport = {
 	a:a,
 	b:b

@@ -18,15 +18,16 @@ import {API_TYPE} from "./transformations/export_transformations/API";
 // 	return retVal;
 // }
 export const reqPropertyInfoGather = (js: JSFile) => {
+
 	let ast = js.getAST()
 	let requireMgr: InfoTracker = js.getInfoTracker();
+	let demap = requireMgr.getDeMap()
 	let listOfVars: string[] = getListOfVars(requireMgr);
 	let def_aults: ForcedDefaultMap = {}
 	//init assume false;
 	listOfVars.forEach(e => def_aults[e] = false)
 
-
-	// console.log(`list of vars:  ${listOfVars}`)
+ 	// console.log(`list of vars:  ${listOfVars}`)
 	let rpis: { [id: string]: ReqPropInfo } = {};
 	let shadows: ShadowVariableMap = getShadowVars(js.getAST(), listOfVars)
 
@@ -50,10 +51,9 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				refTypeProps: []
 			}
 			// def_aults[id] = true;
-			js.report().addForcedDefault(js, "condition")
+			js.report().addForcedDefault(js, demap.fromId[id],"condition")
 
-		}
-		 else {
+		} else {
 
 			// console.log(`rpis of id: ${id}`)
 			let rpi = rpis[id];
@@ -62,18 +62,20 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 					rpi.potentialPrimProps.includes(prop);
 				}
 			});
-			if ( rpi[id] !== undefined
-				&& (((!rpi[id].allAccessedProps)) ||rpi[id].allAccessedProps.length===0)
-				&&	((!(rpi[id].refTypeProps)) ||rpi[id].refTypeProps.length===0)
-				&&	((!(rpi[id].potentialPrimProps) ) ||rpi[id].potentialPrimProps.length===0)
-			){
+			if (rpi[id] !== undefined
+				&& (((!rpi[id].allAccessedProps)) || rpi[id].allAccessedProps.length === 0)
+				&& ((!(rpi[id].refTypeProps)) || rpi[id].refTypeProps.length === 0)
+				&& ((!(rpi[id].potentialPrimProps)) || rpi[id].potentialPrimProps.length === 0)
+			) {
 				console.log('all props null ')
 				def_aults[id] = true;
-				js.report().addForcedDefault(js, "condition")
+				js.report().addForcedDefault(js, demap.fromId[id], "condition")
 
-			}}
+			}
+		}
 
 	});
+
 
 	for (let id in rpis) {
 		let rpi = rpis[id];
@@ -122,11 +124,11 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 						if (node.left.type === "Identifier"
 							&& listOfVars.includes(node.left.name)) {
 							_forcedDefault[node.left.name] = true;
-							js.report().addForcedDefault(js, "condition")
+							js.report().addForcedDefault(js, demap.fromId[node.left.name],"condition")
 						}
 						if (node.right.type === "Identifier"
 							&& listOfVars.includes(node.right.name)) {
-							js.report().addForcedDefault(js, "condition")
+							js.report().addForcedDefault(js,demap.fromId[node.right.name], "condition")
 							_forcedDefault[node.right.name] = true;
 						}
 						break;
@@ -134,13 +136,13 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 						if (node.consequent.type === "Identifier"
 							&& listOfVars.includes(node.consequent.name)) {
 							_forcedDefault[node.consequent.name] = true;
-							js.report().addForcedDefault(js, "condition")
+							js.report().addForcedDefault(js,node.consequent.name, "condition")
 						}
 						if (node.alternate.type === "Identifier"
 							&& listOfVars.includes(node.alternate.name)) {
 
 							_forcedDefault[node.alternate.name] = true;
-							js.report().addForcedDefault(js, "condition")
+							js.report().addForcedDefault(js, demap.fromId[node.alternate.name],"condition")
 						}
 						break;
 					case "VariableDeclaration":
@@ -179,7 +181,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 								&& parent.left === node
 							) {
 								// console.log(`FORCED_DEFAULT:  ${name} in _ `)
-								js.report().addForcedDefault(js,'property_assignment')
+								js.report().addForcedDefault(js, demap.fromId[name],'property_assignment')
 
 								_forcedDefault[name] = true
 							}
@@ -420,6 +422,41 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 					}
 
 				}
+				if (node.type === "AssignmentExpression"
+					&& node.right.type === "Identifier"
+					&& node.right.name
+					&& listOfVars.includes(node.right.name)
+				) {
+					js.getReporter().reportOn().addForcedDefault(js,demap.fromId[node.right.name], "property_assignment")
+					//copy module reference
+					assert(node.right.name, "assigned to " + node.right.name)
+					_forcedDefault[node.right.name] = true;
+				}
+				if (node.type === "VariableDeclarator"
+					&& node.id.type === "Identifier"
+					&& node.init
+					&& node.init.type === "Identifier"
+					&& node.init.name
+					&& listOfVars.includes(node.init.name)
+				) {
+
+					js.getReporter().reportOn().addForcedDefault(js,demap.fromId[node.init.name], "property_assignment")
+					_forcedDefault[node.init.name] = true;
+				}
+
+				if ((node.type === "CallExpression" || node.type === "NewExpression")
+					&& node.arguments
+					&& node.arguments.length > 0
+				) {
+					node.arguments.forEach(e => {
+						if (e.type === "Identifier" && e.name && listOfVars.includes(e.name)) {
+
+
+							js.getReporter().reportOn().addForcedDefault(js, demap.fromId[e.name],"property_assignment")
+							_forcedDefault[e.name] = true;
+						}
+					})
+				}
 			},
 		});
 		return forcedDefault;
@@ -433,35 +470,31 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	}
 
 
-
-
-
 	let reporter: Reporter = js.getReporter()
 
-	traverse(ast,{enter:(node,parent)=>{
-		if (node.type==="AssignmentExpression"
-			&&  node.right.type==="Identifier"
-			&&  listOfVars.includes(node.right.name)
+	traverse(ast, {
+		enter: (node, parent) => {
+			if (node.type === "AssignmentExpression"
+				&& node.right.type === "Identifier"
+				&& listOfVars.includes(node.right.name)
 
-		){
-			reporter.reportOn().addForcedDefault(js,"property_assignment")
-def_aults[node.right.name]=true ;
+			) {
+				reporter.reportOn().addForcedDefault(js, demap.fromId[node.right.name],"property_assignment")
+				def_aults[node.right.name] = true;
+			} else if (node.type === "Property"
+				&& node.value.type === "Identifier"
+				&& listOfVars.includes(node.value.name)
+			) {
+				reporter.reportOn().addForcedDefault(js, demap.fromId[node.value.name],"property_assignment")
+				def_aults[node.value.name] = true;
+			}
 		}
-		else if (node.type === "Property"
-			&& node.value.type === "Identifier"
-			&&  listOfVars.includes(node.value.name)
-		){
-			reporter.reportOn().addForcedDefault(js,"property_assignment")
-			def_aults[node.value.name]=true ;
-		}
-		}});
-
-
+	});
 
 
 	requireMgr.setReqPropsAccessedMap(rpis);
 	let mmp = js.getAPIMap()
-	let demap = requireMgr.getDeMap()
+
 	for (let forced in def_aults) {
 		if (def_aults[forced]) {
 
@@ -470,12 +503,12 @@ def_aults[node.right.name]=true ;
 
 			// mmp.createOrSet(js, specD, (a) => {
 			// }, API_TYPE.default_only, true)
-			if ( js.getRelative().includes('formatter.test')){
+			if (js.getRelative().includes('formatter.test')) {
 				console.log(`setting forced def of ${specD}`)
 			}
 			mmp.resolveSpecifier(js, specD)
 				.setType(API_TYPE.default_only, true)
-			assert(mmp.resolveSpecifier(js, specD).getType()===API_TYPE.default_only , `expected set to default`)
+			assert(mmp.resolveSpecifier(js, specD).getType() === API_TYPE.default_only, `expected set to default`)
 
 			// let resolved = mmp.resolve(specD,js)
 			// js.getReporter().addSingleLine(Reporter.forcedDefault).data[resolved] = js.getRelative()

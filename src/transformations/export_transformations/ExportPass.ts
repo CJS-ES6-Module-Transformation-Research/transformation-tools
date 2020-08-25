@@ -457,7 +457,7 @@ export function __exports(js: JSFile) {
 					let decl: VariableDeclaration = {
 						type: "VariableDeclaration",
 						declarations: [declarator],
-						kind: 'const'
+						kind: 'var'
 					}
 					prop.value = local
 					// console.log(`inserting declaration ${generate(decl)}`)

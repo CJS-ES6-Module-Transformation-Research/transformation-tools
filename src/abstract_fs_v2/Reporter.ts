@@ -103,6 +103,7 @@ interface MultiLineItem {
 // ml.data['x'] = ['a','b','c']
 //  r.writeOut()
 export class ReportBuilder implements RepJR, ReportBuilder_ {
+    forcedDfs: {[key:string]: { names:string[],count?:number }} = {} ;
 
 
 	addAccessReplace(js: JSFile): void {
@@ -137,9 +138,17 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 
 	forcedDReasons: ("condition" | "property_assignment")[] = []
 
-	addForcedDefault(js: JSFile, str: "condition" | "property_assignment"): void {
+	addForcedDefault(js: JSFile,id:string, str: "condition" | "property_assignment"): void {
 		this.forcedDefCT++
 		this.forcedDReasons.push(str)
+		if (!this.forcedDfs[js.getRelative()]){
+			this.forcedDfs[js.getRelative()] = {names:[]}
+		}
+		let spec = js.getAPIMap().resolve(id, js)
+		if (!(this.forcedDfs[js.getRelative()].names.includes(spec))){
+			this.forcedDfs[js.getRelative()].names.push(spec)
+		}
+
 	}
 
 	addJSONRequire(js: JSFile, str: string = ''): void {
@@ -221,6 +230,12 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 			namedExports:this.namedExCount,
 			defaultExports:this.defExCount
 		}
+		for (let key in this.forcedDfs){
+			let val = this.forcedDfs[key]
+			val.count  =val.names.length
+		}
+
+		let u = JSON.stringify(this.forcedDfs,null,3)
 
 		let sanitize = JSON.stringify(x,null,3)
 		let importEtc = JSON.stringify(y,null,3)
@@ -228,6 +243,7 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 		writeFile('sanitize.report.js.txt',sanitize,()=>{} )
 		writeFile('imports.etc..report.js.txt',importEtc,()=>{})
 		writeFile('exports.report.js.txt',exports_,()=>{})
+		writeFile('forced_defaultWithUniq.report.js.txt',u,()=>{})
 
 	}
 
@@ -249,7 +265,7 @@ interface ReportBuilder_ {
 	addJSONRequire: extraAdder
 	addSaniRequire: basicAdder
 	addCopyByValue: basicAdder
-	addForcedDefault: reasonAdd<forcedDefaultReason>
+	addForcedDefault: (js:JSFile, id:string, fdr:forcedDefaultReason)=>void
 
 
 	//and total count

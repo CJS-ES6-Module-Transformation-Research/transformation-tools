@@ -1,6 +1,6 @@
 
 var defaultExport = {}
-const a = 'a';
+var a = 'a';
 defaultExport = {
 	a:a
 };
