@@ -86,6 +86,7 @@ class ExportPass {
 		this.namespace = js.getNamespace()
 		this.js = js
 		this.api = js.getApi()
+		assert(js.getApi().id === js.getAPIMap().resolveSpecifier(js, js.getRelative()).id, "apis should have had same id")
 		this.forcedDefault = this.js.getApi().isForced()
 
 		this.tracker = {
@@ -139,6 +140,7 @@ class ExportPass {
 						type: "ExportDefaultDeclaration",
 						declaration: objExpr
 					}
+
 					mli.data[this.js.getRelative()] = ['default']
 					this.api.setType(API_TYPE.default_only)
 					this.api.setNames(names)
@@ -206,7 +208,7 @@ class ExportPass {
 			names.push(val.exported.name)
 			specifiers.push(val)
 		}
-	
+
  		this.api.setType(API_TYPE.named_only)
 		this.api.setNames(names)
 		try {

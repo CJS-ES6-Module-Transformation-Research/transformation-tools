@@ -1,0 +1,12 @@
+{
+  "name": "call_or_access_prop_invoke",
+  "version": "1.0.0",
+  "description": "",
+  "main": "call_or_access_prop_invoke.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

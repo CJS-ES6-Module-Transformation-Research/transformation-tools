@@ -1,0 +1,12 @@
+{
+  "name": "identifier_direct_assign",
+  "version": "1.0.0",
+  "description": "",
+  "main": "identifier_direct_assign.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

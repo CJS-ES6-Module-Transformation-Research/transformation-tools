@@ -1,0 +1,12 @@
+{
+  "name": "rpi_info_general",
+  "version": "1.0.0",
+  "description": "",
+  "main": "rpi_info_general.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

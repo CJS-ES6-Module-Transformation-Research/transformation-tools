@@ -1,0 +1,12 @@
+{
+  "name": "dirname_in_callexpr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dirname_in_callexpr.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,13 @@
+{
+    "name": "multi_name_one_copied__named",
+    "version": "1.0.0",
+    "description": "",
+    "main": "multi_name_one_copied__named.actual.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module"
+}

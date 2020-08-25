@@ -49,9 +49,8 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				potentialPrimProps: [],
 				refTypeProps: []
 			}
-			def_aults[id] = true;
+			// def_aults[id] = true;
 			js.report().addForcedDefault(js, "condition")
-
 
 		}
 		 else {
@@ -68,6 +67,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				&&	((!(rpi[id].refTypeProps)) ||rpi[id].refTypeProps.length===0)
 				&&	((!(rpi[id].potentialPrimProps) ) ||rpi[id].potentialPrimProps.length===0)
 			){
+				console.log('all props null ')
 				def_aults[id] = true;
 				js.report().addForcedDefault(js, "condition")
 

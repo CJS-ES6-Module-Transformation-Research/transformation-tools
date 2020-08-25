@@ -1,0 +1,12 @@
+{
+  "name": "down_one_json_require",
+  "version": "1.0.0",
+  "description": "",
+  "main": "down_one_json_require.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

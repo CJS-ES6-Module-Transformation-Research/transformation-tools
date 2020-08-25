@@ -1,0 +1,12 @@
+{
+  "name": "for_flatten_triple_decons_from_requireleft_",
+  "version": "1.0.0",
+  "description": "",
+  "main": "for_flatten_triple_decons_from_requireleft_.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "6"
+  - "8"
+  - "10"
+  - "12"
+script: npm run travis
+
+before_install:
+  - '[ "${TRAVIS_NODE_VERSION}" != "0.10" ] || npm install -g npm'
+
+after_success:
+  - cat ./coverage/lcov.info | node_modules/.bin/coveralls --verbose
+  - cat ./coverage/coverage.json | node_modules/codecov.depr.io/bin/codecov.depr.io.js
+  - rm -rf ./coverage

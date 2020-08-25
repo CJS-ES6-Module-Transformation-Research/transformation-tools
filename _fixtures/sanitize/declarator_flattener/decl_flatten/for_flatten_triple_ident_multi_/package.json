@@ -1,0 +1,12 @@
+{
+  "name": "for_flatten_triple_ident_multi_",
+  "version": "1.0.0",
+  "description": "",
+  "main": "for_flatten_triple_ident_multi_.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
