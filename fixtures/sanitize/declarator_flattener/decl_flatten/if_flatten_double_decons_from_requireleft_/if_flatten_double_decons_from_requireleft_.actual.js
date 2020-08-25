@@ -1,0 +1,1 @@
+if(true){var {val} = require('deconstructable'),a = 32}

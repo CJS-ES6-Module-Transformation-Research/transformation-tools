@@ -25,9 +25,12 @@ coverage
 coverage/**/*
 
 #root
-*.js
+
 *.js.map
 ./*.js
+./cjs-transform.js
+./index.js
+
 ./*.js.map
 
 .nyc_output

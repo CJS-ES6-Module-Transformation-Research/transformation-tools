@@ -1,0 +1,1 @@
+var c = new _class(__dirname)

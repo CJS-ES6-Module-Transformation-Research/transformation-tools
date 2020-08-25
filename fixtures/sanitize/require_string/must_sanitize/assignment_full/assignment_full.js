@@ -1,0 +1,1 @@
+imported = require('./index.js');

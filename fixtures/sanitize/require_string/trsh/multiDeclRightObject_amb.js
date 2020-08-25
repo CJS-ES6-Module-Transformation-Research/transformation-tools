@@ -1,0 +1,1 @@
+var imported = require('./lib'),  x = {a : 35};
