@@ -1,4 +1,3 @@
-import exp from "constants";
 import {writeFile} from "fs";
 import {join} from "path";
 import {JSFile} from "./JSv2";
@@ -103,7 +102,7 @@ interface MultiLineItem {
 // ml.data['x'] = ['a','b','c']
 //  r.writeOut()
 export class ReportBuilder implements RepJR, ReportBuilder_ {
-    forcedDfs: {[key:string]: { names:string[],count?:number }} = {} ;
+	forcedDfs: { [key: string]: { names: string[], count?: number } } = {};
 
 
 	addAccessReplace(js: JSFile): void {
@@ -138,14 +137,14 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 
 	forcedDReasons: ("condition" | "property_assignment")[] = []
 
-	addForcedDefault(js: JSFile,id:string, str: "condition" | "property_assignment"): void {
+	addForcedDefault(js: JSFile, id: string, str: "condition" | "property_assignment"): void {
 		this.forcedDefCT++
 		this.forcedDReasons.push(str)
-		if (!this.forcedDfs[js.getRelative()]){
-			this.forcedDfs[js.getRelative()] = {names:[]}
+		if (!this.forcedDfs[js.getRelative()]) {
+			this.forcedDfs[js.getRelative()] = {names: []}
 		}
 		let spec = js.getAPIMap().resolve(id, js)
-		if (!(this.forcedDfs[js.getRelative()].names.includes(spec))){
+		if (!(this.forcedDfs[js.getRelative()].names.includes(spec))) {
 			this.forcedDfs[js.getRelative()].names.push(spec)
 		}
 
@@ -206,44 +205,101 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 	sanitizedRCT: number = 0;
 	nameCt: number = 0;
 
+	esmNamedExports: number = 0;
+	esmDefaultExports: number = 0;
+	esmForcedDefaultExports: number = 0;
+	esmTotalExports: number = 0;
+
+	addESMEx(_type: "named" | "default" | "forced") {
+		switch (_type) {
+			case "named":
+				this.esmNamedExports++
+				break
+			case "default":
+				this.esmDefaultExports++
+				break;
+			case "forced":
+				this.esmForcedDefaultExports++
+				break;
+		}
+		this.esmTotalExports++;
+	}
+
+	addImportInfo(js:JSFile ,info:{
+		relativizedImportString: string,
+		isDefault: boolean,
+		isForced: boolean
+	} ){
+		if(!this.importInfo[js.getRelative()]){
+			this.importInfo[js.getRelative()] = []
+		}
+		this.importInfo[js.getRelative()].push(info)
+	}
+	importInfo: {
+		[jsFileRelative: string]: {
+			relativizedImportString: string,
+			isDefault: boolean,
+			isForced: boolean
+		}[]
+	} = {}
+
 	addNamedSpecifier(js: JSFile): void {
 		this.nameCt++
 	}
-	build(){
+
+	build() {
+let w = this.importInfo
+
+		let v = {
+			esmNamedExports: this.esmNamedExports,
+			esmDefaultExports: this.esmDefaultExports,
+			esmForcedDefaultExports: this.esmForcedDefaultExports,
+			esmTotalExports: this.esmTotalExports
+		}
 		let x = {
-			accessReplace:this.accessReplaceCt,
-			filenaemCount:this.filenameCT,
-			dirnameCount:this.dirnameCT,
-			sanitizedRequireTotal:this.sanitizedRCT,
-			requireTotal:this.requireCTTotal
+			accessReplace: this.accessReplaceCt,
+			filenaemCount: this.filenameCT,
+			dirnameCount: this.dirnameCT,
+			sanitizedRequireTotal: this.sanitizedRCT,
+			requireTotal: this.requireCTTotal
 		}
 		let y = {
-			forcedDef:this.forcedDefCT,
-			copyByValue:this.copyByValueCT,
-			importDefault:this.importDefStmtCt,
-			importNamespace:this.importNSStmtCt,
-			importNamedDecls:this.importNamedStmtCt,
-			importNAMES:this.nameCt
+			forcedDef: this.forcedDefCT,
+			copyByValue: this.copyByValueCT,
+			importDefault: this.importDefStmtCt,
+			importNamespace: this.importNSStmtCt,
+			importNamedDecls: this.importNamedStmtCt,
+			importNAMES: this.nameCt
 		}
 		let z = {
-			exports:this.exCountTotal,
-			namedExports:this.namedExCount,
-			defaultExports:this.defExCount
+			exports: this.exCountTotal,
+			namedExports: this.namedExCount,
+			defaultExports: this.defExCount
 		}
-		for (let key in this.forcedDfs){
+		for (let key in this.forcedDfs) {
 			let val = this.forcedDfs[key]
-			val.count  =val.names.length
+			val.count = val.names.length
 		}
 
-		let u = JSON.stringify(this.forcedDfs,null,3)
+		let u = JSON.stringify(this.forcedDfs, null, 3)
 
-		let sanitize = JSON.stringify(x,null,3)
-		let importEtc = JSON.stringify(y,null,3)
-		let exports_ = JSON.stringify(z,null,3)
-		writeFile('sanitize.report.js.txt',sanitize,()=>{} )
-		writeFile('imports.etc..report.js.txt',importEtc,()=>{})
-		writeFile('exports.report.js.txt',exports_,()=>{})
-		writeFile('forced_defaultWithUniq.report.js.txt',u,()=>{})
+		let sanitize = JSON.stringify(x, null, 3)
+		let importEtc = JSON.stringify(y, null, 3)
+		let exports_ = JSON.stringify(z, null, 3)
+		let esmExports = JSON.stringify(v, null, 3)
+		let importInfo = JSON.stringify(w , null, 3)
+		writeFile('sanitize.report.js.txt', sanitize, () => {
+		})
+		writeFile('imports.etc..report.js.txt', importEtc, () => {
+		})
+		writeFile('exports.report.js.txt', exports_, () => {
+		})
+		writeFile('esmExports.report.js.txt', esmExports, () => {
+		})
+		writeFile('forced_defaultWithUniq.report.js.txt', u, () => {
+		})
+	writeFile('importInfo_pt2.report.js.txt', importInfo, () => {
+		})
 
 	}
 
@@ -265,7 +321,7 @@ interface ReportBuilder_ {
 	addJSONRequire: extraAdder
 	addSaniRequire: basicAdder
 	addCopyByValue: basicAdder
-	addForcedDefault: (js:JSFile, id:string, fdr:forcedDefaultReason)=>void
+	addForcedDefault: (js: JSFile, id: string, fdr: forcedDefaultReason) => void
 
 
 	//and total count

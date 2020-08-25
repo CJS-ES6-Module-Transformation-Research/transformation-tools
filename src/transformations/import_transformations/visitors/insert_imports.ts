@@ -121,10 +121,21 @@ export function insertImports(js: JSFile) {
 						// }
 
 						if (js.usesNamed() && (isBuiltin || api.getType() === API_TYPE.named_only) && (!api.isForced())) {
+							js.getReporter().reportOn().addImportInfo(js,  {
+								isForced:false,
+								isDefault:false,
+								relativizedImportString:map.resolve(module_specifier,js)
+							})
 							namedImports(_id, module_specifier, api)
 						} else {
+
 							let idecl: ImportDeclaration
 							if (isNamespace && (!js.usesNamed()) && (!api.isForced())) {
+								js.getReporter().reportOn().addImportInfo(js,  {
+									isForced:false,
+									isDefault:false,
+									relativizedImportString:map.resolve(module_specifier,js)
+								})
 								report.addNamespaceImportStatement(js)
 								idecl = {
 									type: "ImportDeclaration",
@@ -144,6 +155,19 @@ export function insertImports(js: JSFile) {
 
 								let resolved = mod_map.resolve(module_specifier, js)
 								xImportsY.data[js.getRelative()].push(resolved + "|default" + (api && api.isForced() ? "-forced" : "standard"));
+								if (api && api.isForced()){
+									js.getReporter().reportOn().addImportInfo(js,  {
+										isForced:true,
+										isDefault:true,
+										relativizedImportString:map.resolve(module_specifier,js)
+									})
+								}else{
+									js.getReporter().reportOn().addImportInfo(js,  {
+										isForced:false,
+										isDefault:true,
+										relativizedImportString:map.resolve(module_specifier,js)
+									})
+								}
 								if (js.usesNamed()) {
 									js.setUseDefaultCopy(true)
 								}

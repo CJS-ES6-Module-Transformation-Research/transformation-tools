@@ -123,6 +123,7 @@ class ExportPass {
 		// 	console.log('fd' + this.forcedDefault)
 		// }
 		if (this.forcedDefault) {
+			reporter.reportOn().addESMEx("forced")
 			switch (this.tracker.type) {
 				case API_TYPE.default_only:
 
@@ -154,6 +155,7 @@ class ExportPass {
 
 
 			case API_TYPE.default_only:
+				reporter.reportOn().addESMEx("default")
 
 				declaration = {
 					type: "ExportDefaultDeclaration",
@@ -207,6 +209,8 @@ class ExportPass {
 			let val: ExportSpecifier = this.tracker.names[name]
 			names.push(val.exported.name)
 			specifiers.push(val)
+			this.js.getReporter().reportOn().addESMEx("named")
+
 		}
 
  		this.api.setType(API_TYPE.named_only)
