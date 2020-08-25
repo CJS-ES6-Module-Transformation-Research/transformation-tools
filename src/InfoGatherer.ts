@@ -166,7 +166,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 								&& parent.left === node
 							) {
 								// console.log(`FORCED_DEFAULT:  ${name} in _ `)
-								js.report().addForcedDefault(js,'property_assignment')
+								js.report().addForcedDefault(js, 'property_assignment')
 
 								_forcedDefault[name] = true
 							}
@@ -431,9 +431,19 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 
 			// mmp.createOrSet(js, specD, (a) => {
 			// }, API_TYPE.default_only, true)
-			mmp.resolveSpecifier(js, specD)
-				.setType(API_TYPE.default_only, true)
-			assert(mmp.resolveSpecifier(js, specD).getType()===API_TYPE.default_only , `expected set to default`)
+			// let resolved = mmp.resolve( specD,js)
+			let resolved = 'ignore'
+			//resolved = mmp.resolve( specD,js)
+			let api = mmp.resolveSpecifier(js, specD)
+		assert (mmp.resolveSpecifier(js, specD) && true,`api:${api? api: 'undef || null'}  id:${forced}  specifier:${specD} resolves to resolved:${resolved} ` )
+				try {
+					api.setType(API_TYPE.default_only, true)
+				}catch (e) {
+					console.error(`api:${api}   id:${forced}  specifier:${specD} `)
+					assert.strictEqual(!api,true,`api:${api}   id:${forced}  specifier:${specD} `)
+					// throw e
+				}
+			assert(mmp.resolveSpecifier(js, specD).getType() === API_TYPE.default_only, `expected set to default`)
 
 			// let resolved = mmp.resolve(specD,js)
 			// js.getReporter().addSingleLine(Reporter.forcedDefault).data[resolved] = js.getRelative()

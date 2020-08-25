@@ -33,12 +33,12 @@ describe('api_build', () => {
 	});
 	it('check_some_forced_default_after_info_gather', () => {
 		const project = createProject(join(FIXTURES, 'api_build/check_some_forced_default_after_info_gather'), false)
-		let actualJS: JSFile = project.getJS('main.js');
+		let actualJS: JSFile = project.getJS('mod.js');
 		project.forEachSource(getDeclaredModuleImports)
 		project.forEachSource(reqPropertyInfoGather)
 		let _type = actualJS
 			.getAPIMap()
-			.resolveSpecifier(actualJS, 'fs')
+			.resolveSpecifier(actualJS, 'mod.js')
 			.getType()
 		expect(_type).to.be.eq(API_TYPE.default_only)
  	});
