@@ -40,6 +40,5 @@ test/*.js
 test/*.js.map
 test/tests/*.js
 test/tests/*.js.map
-test/test_resources
 
 /redirect/
