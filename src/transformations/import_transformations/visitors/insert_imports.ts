@@ -86,6 +86,13 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.arguments
 						&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
+						let dmp = js.getInfoTracker().getDeMap()
+
+console.log(`processing file ${js.getRelative()} `)
+						if (js.getRelative().includes('lib/ping-pcap.js')){
+						console.log(`API:  ${JSON.stringify(js.getApi())}
+							\n DEMAP: ${JSON.stringify(dmp.fromId)}\n${JSON.stringify(dmp.fromSpec)} `)
+						}
 
 						let _id = node.declarations[0].id.name
 						let q = node.declarations[0].init
@@ -247,7 +254,7 @@ export function insertImports(js: JSFile) {
 		let wpn: WithPropNames = _imports.getWPN()
 
 		let rpi = info.getRPI(id);
-
+		console.log (`getting RPI for: ${id}: ${rpi }`)
 		let specifiers: ImportSpecifier[] = []
 		let ns = js.getNamespace()
 

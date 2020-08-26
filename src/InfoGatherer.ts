@@ -1,10 +1,11 @@
 import assert from "assert";
+import {generate} from "escodegen";
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {Reporter} from "./abstract_fs_v2/Reporter";
 import {InfoTracker} from "./InfoTracker.js";
-import {API_TYPE} from "./transformations/export_transformations/API";
+ import {API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -524,6 +525,14 @@ interface ShadowVariableMap {
 }
 
 function createFuncID(node: Node) {
+	if (node){
+		if (node.loc){
+		}else{
+			return generate(node)
+			// throw new Error('node exists and not node.loc for node: '+generate(node))
+
+		}
+	}
 	return node.loc.start.line + "_" + node.loc.start.column
 }
 

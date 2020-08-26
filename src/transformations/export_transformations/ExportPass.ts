@@ -92,7 +92,7 @@ class ExportPass {
 		this.tracker = {
 			type: this.forcedDefault ? API_TYPE.default_only : API_TYPE.none,
 			names: {},
-			defaultIdentifier: null
+			defaultIdentifier: this.namespace.getDefaultExport()
 		}
 	}
 
@@ -118,23 +118,29 @@ class ExportPass {
 		let exprs: ExpressionStatement[] = []
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
-		// if (this.js.getRelative().includes('format.js')) {
-		// 	console.log('fd' + this.tracker.type)
-		// 	console.log('fd' + this.forcedDefault)
-		// }
-		if (this.forcedDefault) {
-			reporter.reportOn().addESMEx("forced")
-			switch (this.tracker.type) {
-				case API_TYPE.default_only:
+if (this.js.getRelative().includes('promise')) {
+	console.log(`in file: ${this.js.getRelative()}`)
+	console.log(`forced default: ${this.forcedDefault}, trackertype: ${this.tracker.type} apiTYpe:${this.api.getType()}`)
+}
+		if (this.forcedDefault && this.tracker.type===API_TYPE.named_only) {'' +
+		console.log('entered')
 
-					break;
-				case API_TYPE.named_only:
+			reporter.reportOn().addESMEx("forced")
+			// switch (this.tracker.type) {
+			// 	case API_TYPE.default_only:
+			//
+			// 		break;
+			// 	case API_TYPE.named_only:
 
 					let objExpr: ObjectExpression = {type: "ObjectExpression", properties: []}
 					let names: string[] = []
+			console.log(`names: ${this.tracker.names}`)
 					for (let name in this.tracker.names) {
+						console.log(`added name: ${name}`)
 						let exported = this.tracker.names[name]
 						objExpr.properties.push(createProperty(exported))
+						console.log((objExpr.properties[objExpr.properties.length-1] as Property).key)
+						console.log((objExpr.properties[objExpr.properties.length-1] as Property).value)
 						names.push(exported.exported.name)
 					}
 					let declaration: ExportDefaultDeclaration = {
@@ -146,21 +152,23 @@ class ExportPass {
 					this.api.setType(API_TYPE.default_only)
 					this.api.setNames(names)
 					return declaration
-				case API_TYPE.none:
-					break;
-			}
+			console.log(declaration)
+			// 	case API_TYPE.none:
+			// 		break;
+			// }
 		}
 		// this.js.getAPIMap().resolveSpecifier(js,)
-		switch (this.tracker.type) {
+ 		switch (this.tracker.type) {
 
 
 			case API_TYPE.default_only:
+				if (this.js.getRelative().includes('promise')) {
+					console.log(`in file: ${this.js.getRelative()}`)
+					console.log(`$$$ forced default: ${this.forcedDefault}, trackertype: ${this.tracker.type} apiTYpe:${this.api.getType()}`)
+				}
 				reporter.reportOn().addESMEx("default")
 
-				declaration = {
-					type: "ExportDefaultDeclaration",
-					declaration: this.tracker.defaultIdentifier
-				}
+
 				// api = new API(API_TYPE.default_only)
 				this.api.setType(API_TYPE.default_only)
 				mli.data[this.js.getRelative()] = ['default']
@@ -185,10 +193,12 @@ class ExportPass {
 						expression: assign
 					})
 				}
+				return {
+					type: "ExportDefaultDeclaration",
+					declaration: this.tracker.defaultIdentifier
+				}
 
-
-				return declaration
-			case API_TYPE.named_only:
+ 			case API_TYPE.named_only:
 
 				//
 				// if (this.js.getRelative().includes('format.js')) {
@@ -268,6 +278,7 @@ class ExportPass {
 
 	registerName(local: string, exported: string): void {
 		this.js.report().addNamedExport(this.js)
+		console.log(`registering local:${local}, exported:${exported}`)
 		//
 		// if (this.js.getRelative().includes('format.js')) {
 		// 	console.log('format' + this.tracker.type)
@@ -276,7 +287,8 @@ class ExportPass {
 
 			this.tracker.type = API_TYPE.named_only
 		}
-		this.tracker.names[exported] = makeExSpecifier(local, exported);
+		let specifier = makeExSpecifier(local, exported)
+		this.tracker.names[exported] = specifier;
 
 	}
 
@@ -287,8 +299,15 @@ class ExportPass {
 export function __exports(js: JSFile) {
 	const infoTracker: InfoTracker = js.getInfoTracker();
 	let namespace: Namespace = js.getNamespace();
-	let expType = infoTracker.getExportType() === API_TYPE.default_only
-	let __default_exports_id: Identifier = null;
+	// let expType = infoTracker.getExportType() === API_TYPE.default_only
+	let expType = js.getAPIMap()
+		.resolveSpecifier(js,js.getRelative())
+		.getType()=== API_TYPE.default_only
+	let __default_exports_id: Identifier = null
+	if(expType ){
+		setDefaultID()
+	}
+
 	// if (js.getAPIMap().forceMap()[js.getRelative()]) {
 	// 	expType = true ;//fixme
 	// }
@@ -508,6 +527,10 @@ export function __exports(js: JSFile) {
 
 	// let exData =
 	let ex_decl = exportPass.build()
+	if (js.getRelative().includes('promise')) {
+		console.log(`export pass was: ${ JSON.stringify(ex_decl)}`)
+
+	}
 	if (ex_decl && (
 		(ex_decl.type === "ExportDefaultDeclaration" && ex_decl.declaration)
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {

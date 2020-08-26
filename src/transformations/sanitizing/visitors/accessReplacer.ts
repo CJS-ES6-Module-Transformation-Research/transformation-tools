@@ -193,7 +193,7 @@ export function accessReplace(js: JSFile) {
 			// triesCaughtEtc[imports[requireStr]] = requireStr
 			ns.addToNamespace(imports[requireStr])
 		}
-		js.getInfoTracker().insertDeclPair(idName, requireStr)
+		js.getInfoTracker().insertDeclPair(imports[requireStr], requireStr)
 
 		return id(imports[requireStr]) //identifier = {type: "Identifier", name: }
 	}
