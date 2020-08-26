@@ -14,8 +14,8 @@ echo "Starting transformation and data collection"
 for projName in "${projs[@]}"; do
 	echo "Working on" $projName
 	curProjDir=$projDirName$projName
-	./resetProject.sh $curProjDir > /dev/null
+	./resetProject.sh $curProjDir > /dev/null 2>&1
 	./runTransformer.sh $curProjDir
-	python3 collectData.py $projName $outputFile
+	python3 collectData.py $projName $outputFile 
 done
 echo "Done!"
