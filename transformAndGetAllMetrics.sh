@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Usage: ./transfromAndGetAllMetrics.sh listOfProjsFile outputFile
+# Usage: ./transfromAndGetAllMetrics.sh listOfProjsFile outputFile projDir
 
 tsc # make sure to build the current project
 
 listFile=$1
 outputFile=$2
-curDir=`pwd`
-projDirName="../Benchmarks/"
+projDirName=$3
 
 declare -a projs=( `cat $listFile` )
 
