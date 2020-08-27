@@ -7,4 +7,4 @@ if [ ! -d "$transformRoot" ]; then
 	exit
 fi
 
-ts-node cjs-transform.ts i --import_type named $transformRoot --report
+ts-node cjs-transform.ts i --import_type named $transformRoot --report --ignored dist

@@ -18,12 +18,12 @@ if test -f "$timeOutFile"; then
 fi
 
 
-#./resetProj.sh $projDir
-cd $projDir
+./resetProject.sh $projDir
+#cd $projDir
 for x in $(eval echo {1..$1}); do
 	echo "Running transformation: " $x
-	 #{ time (./runTransformer.sh $projDir>> $testOutFile 2>&1) ; } 2>>$timeOutFile
-	#./resetProj.sh $projDir
-	{ time (node test/* >> $testOutFile 2>&1) ; } 2>>$timeOutFile
+	 { time (./runTransformer.sh $projDir>> $testOutFile 2>&1) ; } 2>>$timeOutFile
+	./resetProject.sh $projDir
+	#{ time (node test/* >> $testOutFile 2>&1) ; } 2>>$timeOutFile
 done
 cd $curDir
