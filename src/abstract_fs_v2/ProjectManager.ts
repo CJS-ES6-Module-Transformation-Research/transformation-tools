@@ -1,6 +1,6 @@
 import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
-import {existsSync, lstatSync, mkdirSync, unlinkSync, writeFileSync, writeFile} from "fs";
+import {existsSync, lstatSync, mkdirSync, unlink, writeFile, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
@@ -119,36 +119,20 @@ export class ProjectManager {
 			})
 	}
 
-	forEachSource(func: (value: JSFile) => void, tfName: string = func.name ): void {
+	forEachSource(func: (value: JSFile) => void, tfName: string = func.name): void {
 		let curr: string = ''
-
-		// this.jsFiles.forEach(f =>{
-		// 	console.log(f ? f.getRelative():"null")
-		// 	// console.log()
-		// })
-		// let jsf: JSFile
-		// if (this.jsFiles.includes(d)){
-		// 	throw new Error("UNDEFINED~!!!! ")
-		// }
-		// this.jsFiles.forEach( e=>{
-		// 	if (e === undefined){
-		// 		throw new Error("UNDEFINED~!!!! ")
-		// 	}
-		// })
 
 		try {
 
 			this.jsFiles.forEach(jsFile => {
-				assert(jsFile, 'jsfile was negative in '+tfName )
+				assert(jsFile, 'jsfile was negative in ' + tfName)
 				curr = jsFile.getRelative()
-// jsFile = jsf
- 				// console.log(`LOGGER: about to run transformation ${tfName} on file ${curr}`)
 				func(jsFile)
 			})
 		} catch (e) {
 
 			console.log(`EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}`)
-			console.log(e )
+			console.log(e)
 
 			throw e;
 
@@ -163,72 +147,60 @@ export class ProjectManager {
 		this.reporter.writeOut()
 	}
 
-	public writeOut() {
+	public async writeOut() {
 
 		if (this.write_status === "in-place") {
-			this.writeInPlace()
+			await this.writeInPlace()
 		} else if (this.write_status === "copy") {
 			this.copyOut()
 		} else {
 			throw new Error('write status not set!')
 		}
-
+		console.log('DONE')
 	}
 
 
-	private writeInPlace() {
+	private async writeInPlace() {
 
-		// if (suffix) {
-		//     allFiles.forEach((file: AbstractDataFile) => {
-		//         let absolute = join(this.root.getAbsolute(), file.getRelative())
-		//         console.log(`absolute: ${absolute}`)
-		//         console.log(`root : ${this.root.getAbsolute()}`)
-		//         console.log(`relaritve : ${file.getRelative()}`)
-		//
-		//         // copyFileSync(absolute, absolute + suffix)
-		//     });
-		//         // }
 		for (let relative in this.suffixFsData) {
 			let data = this.suffixFsData[relative]
 			writeFileSync(join(this.root.getAbsolute(), relative), data)
 		}
 
-		this.removeAll()
-		this.writeAll()
-		// console.log("DONE!")
+		await this.removeAll()
+		await this.writeAll()
+
 	}
 
-	private removeAll(root_dir: string = this.root.getAbsolute()) {
-		let unlinkAsyncFunc = (file) => unlinkSync(file
-			//     , (err) => {
-			//     if (err) {
-			//         console.log('error deleting old files: ' + err)
-			//     }
-			// }
-		);
-		this.dataFiles.forEach((file: AbstractDataFile) => {
-			// join(root_dir, file.getRelative());
-			unlinkSync(join(root_dir, file.getRelative()))
-		})
+	private async removeAll(root_dir: string = this.root.getAbsolute()) {
 
-		// this.dataFiles.forEach((file: AbstractDataFile) => {
-		//     let toRemove: string = join(root_dir, file.getRelative());
-		//     unlinkSync(toRemove)
-		// });
+		await Promise.all(this.dataFiles.map(async (file: AbstractDataFile) => {
+				unlink(join(root_dir, file.getRelative()), (err) => {
+					if (err) {
+						console.log(err)
+						throw err
+					}
+				})
+			})
+		)
 	}
 
 
-	private writeAll(root_dir: string = this.root.getAbsolute()) {
-		this.dataFiles.forEach(  (file) => {
+	private async writeAll(root_dir: string = this.root.getAbsolute()) {
+		Promise.all(this.dataFiles.map(async (file) => {
 			let serialized: SerializedJSData
 
 
-
-			serialized = file.makeSerializable() ;
+			serialized = file.makeSerializable();
 			try {
 				// console.log(root_dir)
 
-				writeFileSync(join(root_dir, (serialized.relativePath)), serialized.fileData  )
+				writeFile(join(root_dir, (serialized.relativePath)), serialized.fileData, (err) => {
+					if (err) {
+						console.log(err)
+						throw err
+					}
+				})
 			} catch (ex) {
 				console.log(`root dir: ${root_dir}`)
 				console.log(`filename relative: ${file.getRelative()}`)
@@ -238,50 +210,20 @@ export class ProjectManager {
 				console.log(`excpetion : ${ex}`)
 			}
 
-		})
-		// writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
-
-		for (let filename in this.additions) {
-			let serialized: SerializedJSData = this.additions[filename].makeSerializable()
-			let file = join(root_dir, serialized.relativePath)
-			// console.log(`writing out file R: ${serialized.relativePath}`)
-			// console.log(`writing out file : ${file}`)
-			// require('fs').open(file,'w',(e,f)=>{
-
-			writeFileSync(file, serialized.fileData)
-			//     , (err) => {
-			//     if (err) {
-			//         console.log('error occurred: ' + err)
-			//         throw err;
-			//     }
-			// }
-
-
-			// })
-
-			// let dir = path.dirname(join(root_dir, serialized.relativePath))
+		})).then(() => {
 			// writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
-		}
-	}
 
-	//
-	// private writeAll(root_dir: string = this.root.getAbsolute()) {
-	//     this.dataFiles.forEach((file: AbstractDataFile) => {
-	//         let serialized: SerializedJSData = file.makeSerializable()
-	//         let dir = path.dirname(join(root_dir, serialized.relativePath))
-	//         if (!existsSync(dir)) {
-	//             mkdirSync(dir, {recursive: true})
-	//         }
-	//         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
-	//     })
-	//     for (let filename in this.additions) {
-	//         let file = this.additions[filename]
-	//         let serialized: SerializedJSData = file.makeSerializable()
-	//         let dir = path.dirname(join(root_dir, serialized.relativePath))
-	//         writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
-	//
-	//     }
-	// }
+			for (let filename in this.additions) {
+				let serialized: SerializedJSData = this.additions[filename].makeSerializable()
+				let file = join(root_dir, serialized.relativePath)
+
+
+				writeFile(file, serialized.fileData, () => {
+				})
+
+			}
+		})
+	}
 
 	private copyOut() {
 
