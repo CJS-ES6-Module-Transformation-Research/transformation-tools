@@ -5,7 +5,7 @@ import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
 import {Reporter} from "./abstract_fs_v2/Reporter";
 import {InfoTracker} from "./InfoTracker.js";
- import {API_TYPE} from "./transformations/export_transformations/API";
+import {API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
 // import {__dirnameHandlerPlusPlus, hasLocationVar__} from './transformations/sanitizing/visitors/__dirname';
 
@@ -82,12 +82,15 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		let rpi = rpis[id];
 		rpi.allAccessedProps.forEach((prop: string) => {
 			if (!(rpi.refTypeProps.includes(prop))) {
+
 				rpi.potentialPrimProps.push(prop)
+				i++
 				// console.log(prop)
 			}
 		});
 
 	}
+	console.log(js.getParent().getRootDirPath() + "    " + i)
 
 	function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap) {
 		let retval: boolean = false;

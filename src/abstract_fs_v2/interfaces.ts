@@ -31,11 +31,6 @@ export enum FileType {
 	js = "js"
 }
 
-export interface Visitable {
-	visit: (visitor: FileVisitor) => void
-}
-
-
 export interface CJSBuilderData {
 	dir: Dir
 	dataAsString: string
@@ -50,8 +45,6 @@ export interface DirSupplier {
 }
 
 export type write_status = "copy" | "in-place"
-
-export type script_or_module = "script" | "module"
 
 export interface MetaData {
 	moduleAPIMap: ModuleAPIMap
@@ -85,39 +78,16 @@ export interface RequireCall extends BaseCallExpression {
 	type: "CallExpression"
 	callee: RequireID
 	arguments: [Literal]
-	// callee:Identifier
-	// arguments:
 }
 
 interface RequireID extends Identifier {
 	name: "require"
 }
 
-export const requireID: RequireID = {type: "Identifier", name: 'require'}
-
 export type TransformFunction = (js: JSFile) => void
 
 export function id(name: string): Identifier {
 	return {type: "Identifier", name: name}
-}
-
-export function createRequireDec(imported_id: string, specifier: string): RequireDeclaration {
-	// let decl: RequireDeclarator =
-	// b
-	// }
-	return {
-		type: "VariableDeclaration",
-		kind: "var",
-		declarations: [{
-			type: "VariableDeclarator",
-			id: id(imported_id),
-			init: {
-				type: "CallExpression",
-				callee: requireID,
-				arguments: [{type: 'Literal', value: `${specifier}`}]
-			}
-		}]
-	}
 }
 
 
@@ -247,8 +217,7 @@ export function createRequireDecl(varStr: string, importStr: string, kindStr: "v
 					arguments: [
 						{
 							type: "Literal",
-							value: importStr,
-							raw: `'${importStr}'`
+							value: importStr
 						}
 					]
 				},

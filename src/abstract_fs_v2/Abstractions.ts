@@ -45,14 +45,6 @@ export abstract class AbstractFile {
         return this.type
     }
 
-    getStats(): Stats {
-        return this.stat
-    }
-
-    getExt(): string {
-        return this.ext
-    }
-
     getParent(): Dir {
         return this.isRoot ? null : this.parent()
     }
@@ -68,7 +60,6 @@ export abstract class AbstractFile {
     visit(visitor: FileVisitor): void {
         visitor(this)
     }
-
 
 }
 

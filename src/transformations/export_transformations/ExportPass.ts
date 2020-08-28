@@ -118,12 +118,8 @@ class ExportPass {
 		let exprs: ExpressionStatement[] = []
 		let reporter = this.js.getReporter()
 		let mli = reporter.addMultiLine('export_name_report')
-if (this.js.getRelative().includes('promise')) {
-	console.log(`in file: ${this.js.getRelative()}`)
-	console.log(`forced default: ${this.forcedDefault}, trackertype: ${this.tracker.type} apiTYpe:${this.api.getType()}`)
-}
+
 		if (this.forcedDefault && this.tracker.type===API_TYPE.named_only) {'' +
-		console.log('entered')
 
 			reporter.reportOn().addESMEx("forced")
 			// switch (this.tracker.type) {
@@ -134,8 +130,7 @@ if (this.js.getRelative().includes('promise')) {
 
 					let objExpr: ObjectExpression = {type: "ObjectExpression", properties: []}
 					let names: string[] = []
-			console.log(`names: ${this.tracker.names}`)
-					for (let name in this.tracker.names) {
+ 					for (let name in this.tracker.names) {
 						console.log(`added name: ${name}`)
 						let exported = this.tracker.names[name]
 						objExpr.properties.push(createProperty(exported))
@@ -152,8 +147,7 @@ if (this.js.getRelative().includes('promise')) {
 					this.api.setType(API_TYPE.default_only)
 					this.api.setNames(names)
 					return declaration
-			console.log(declaration)
-			// 	case API_TYPE.none:
+ 			// 	case API_TYPE.none:
 			// 		break;
 			// }
 		}
@@ -162,10 +156,7 @@ if (this.js.getRelative().includes('promise')) {
 
 
 			case API_TYPE.default_only:
-				if (this.js.getRelative().includes('promise')) {
-					console.log(`in file: ${this.js.getRelative()}`)
-					console.log(`$$$ forced default: ${this.forcedDefault}, trackertype: ${this.tracker.type} apiTYpe:${this.api.getType()}`)
-				}
+
 				reporter.reportOn().addESMEx("default")
 
 
@@ -225,13 +216,9 @@ if (this.js.getRelative().includes('promise')) {
 
  		this.api.setType(API_TYPE.named_only)
 		this.api.setNames(names)
-		try {
+
 			assert(this.api.getType() === API_TYPE.named_only, this.api.getType() + "")
-		} catch (e) {
-			console.log("ERR :: ")
-			console.log(this.api)
-			throw e
-		}
+
 		mli.data[this.js.getRelative()] = names
 
 
@@ -278,8 +265,7 @@ if (this.js.getRelative().includes('promise')) {
 
 	registerName(local: string, exported: string): void {
 		this.js.report().addNamedExport(this.js)
-		console.log(`registering local:${local}, exported:${exported}`)
-		//
+ 		//
 		// if (this.js.getRelative().includes('format.js')) {
 		// 	console.log('format' + this.tracker.type)
 		// }

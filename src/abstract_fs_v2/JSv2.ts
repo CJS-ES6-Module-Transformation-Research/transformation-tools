@@ -17,25 +17,22 @@ type script_or_module = "script" | "module"
 
 
 export class JSFile extends AbstractDataFile {
-	report(){
+	report() {
 		return this.reporter.reportOn()
 	}
-    setUseDefaultCopy(arg0: boolean=true) {
-    	this.useDefaultCopy = arg0
-      }private useDefaultCopy :boolean=false
-getUseDefaultCopy(){
-    	return this.useDefaultCopy
-}
+
+	setUseDefaultCopy(arg0: boolean = true) {
+		this.useDefaultCopy = arg0
+	}
+
+	private useDefaultCopy: boolean = false
 
 	private readonly api: API;
 	private readonly apiMap: ModuleAPIMap;
 	private readonly _usesNames: boolean;
 	private readonly test: boolean;
 
-
-	getInfoTracker(): InfoTracker {
-		return this.infoTracker;
-	}
+	private data_based_imports: Imports;
 
 	private readonly infoTracker: InfoTracker;
 	private readonly ast: Program;
@@ -49,7 +46,7 @@ getUseDefaultCopy(){
 
 	private to_insert_copyByValue: VariableDeclaration[] = []
 
-	private namespace: Namespace
+	private readonly namespace: Namespace
 	private moduleType: script_or_module;
 
 	private isShebang: RegExp = /^#!.*/
@@ -57,7 +54,7 @@ getUseDefaultCopy(){
 	constructor(path: string, b: MetaData, parent: Dir, isModule: boolean, data = '') {
 
 		super(path, b, parent, data);
- 		this._usesNames = b.uses_names;
+		this._usesNames = b.uses_names;
 		this.moduleType = isModule ? "module" : "script" //TODO delete or find purpose
 
 		this.test = b.test
@@ -69,17 +66,19 @@ getUseDefaultCopy(){
 		this.apiMap = b.moduleAPIMap
 		this.api = new API(API_TYPE.none)
 		this.apiMap.initJS(this, this.api)
- 		traverse(this.ast,{enter:(node,parent) => {
- 			if (node.type === "Identifier" && node.name==="delete"){
+		traverse(this.ast, {
+			enter: (node, parent) => {
+				if (node.type === "Identifier" && node.name === "delete") {
 
 
- 				let gen = this.namespace.generateBestName('__delete')
- 				node.name = gen.name
-				this.registerReplace(gen.name,'__delete')
-				// this.namespace.addToNamespace()
+					let gen = this.namespace.generateBestName('__delete')
+					node.name = gen.name
+					this.registerReplace(gen.name, '__delete')
+					// this.namespace.addToNamespace()
 
+				}
 			}
-			} })
+		})
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
 
@@ -87,12 +86,13 @@ getUseDefaultCopy(){
 	public createCJSFromIdentifier(moduleID: string): string {
 
 		let parent: Dir = this.parent();
-		let json_loc = join(dirname(this.getAbsolute()), moduleID)
 
+		let json_abs = join(this.path_abs, moduleID)
 		let parentDir = parent.getAbsolute()
 
 
 		let base = basename(moduleID, ".json");
+		// require('assert').strictEqual(join(json_dir, moduleID  ),json_abs )
 
 		let cjsName = `${base}.cjs`
 
@@ -104,26 +104,16 @@ getUseDefaultCopy(){
 				i++
 			}
 		}
-		let json = join(this.path_abs, moduleID)
-		let relativeToRoot = relative(this.parent().getRootDirPath(), json)
-		let dirRelativeToRoot = dirname(relativeToRoot)
 
-		//FIXME
-		dirRelativeToRoot = dirname(this.getRelative())
-
-		let loc = `${(json_loc)}.cjs`
-		let builder = {//${dirRelativeToRoot}/
-			// cjsFileName: `${join(this.parent().getRootDirPath(), basename(json))}.cjs`,
-			cjsFileName: loc,
-			jsonFileName: relative(this.parent().getRootDirPath(), json),
+		this.parent().spawnCJS({
+			cjsFileName: `${
+				join(parentDir, moduleID)
+			}.cjs`,
+			jsonFileName: relative(this.parent().getRootDirPath(), json_abs),
 			dataAsString: `module.exports = require('./${basename(moduleID)}');`,
 			dir: parent
 
-		}
-		let x
-
-
-		let spawn = this.parent().spawnCJS(builder)
+		})
 
 		return moduleID + '.cjs'// join()
 
@@ -157,34 +147,23 @@ getUseDefaultCopy(){
 		return this.ast;
 	}
 
-	public getSheBang(): string {
-		return this.shebang;
-	}
-
-	setPotentialPrims(decls: VariableDeclaration[]) {
-		this.potentialPrims = decls
-	}
-
+	// public getSheBang(): string {
+	// 	return this.shebang;
+	// }
 
 	getJS(js: string): JSFile {
 		return this.getParent().getJS(js)
 	}
 
 	public registerReplace(replace: string, value: string): void {
-		// this.stringReplace.set(replace, value);
 		this.stringReplace[replace] = value
 	}
 
 	private buildProgram(): Program {
-		// let  addToTop: (Directive | Statement | ModuleDeclaration)[] = []
-		// this.toAddToTop.forEach(e => addToTop.push(e));
-		// let addToBottom: (Directive | Statement | ModuleDeclaration)[] = []
-		// this.toAddToBottom.forEach(e => addToBottom.push(e));
 
-		let newAST = this.ast;
 		let body
-			= newAST.body;
-		newAST.sourceType = this.moduleType
+			= this.ast.body;
+		this.ast.sourceType = "module"
 
 		this.to_insert_copyByValue.reverse().forEach((e) => {
 			body.splice(0, 0, e)
@@ -192,38 +171,21 @@ getUseDefaultCopy(){
 		this.toAddToTop.reverse().forEach((e) => {
 			body.splice(0, 0, e)
 		})
-
-		// if (this.exportRegistry.hasDefaultExports()) {
-		// 	body.splice(0, 0,{
-		// 		type:"VariableDeclaration",
-		// 		declarations:[{
-		// 			type:"VariableDeclarator",
-		// 			id:this.exportRegistry.getDefaultIdentifier()
-		// 		}],
-		// 		kind:"var"
-		// 	})
-		// }
 		this.toAddToBottom.reverse().forEach((e) => {
 			body.push(e)
 		})
-
-
-		// if (this.moduleType === "module") {
-		// 	this.makeExportsArray(newAST.body)
-		// }
-
 		this.potentialPrims.reverse().forEach((e) => {
 			body.splice(0, 0, e)
 		})
 
 		if (this.test && (!this.data_based_imports)) {
-			 //skip cause test
+			//skip cause test
 		} else {
 			this.data_based_imports.getDeclarations().reverse().forEach(e => {
-				newAST.body.splice(0, 0, e)
+				this.ast.body.splice(0, 0, e)
 			})
 		}
-		return newAST;
+		return this.ast;
 	}
 
 	protected static readonly useStrict: Directive = {
@@ -250,7 +212,7 @@ getUseDefaultCopy(){
 			try {
 				_program = (isModule ? parseModule : parseScript)(program, {loc: true})
 			} catch (e2) {
-				if (this.test ) {
+				if (this.test) {
 					_program = parseModule(program, {loc: true})
 				} else {
 					throw e2;
@@ -262,58 +224,10 @@ getUseDefaultCopy(){
 		}
 	}
 
-	requireResolve(moduleIdentifier: string): string {
-		let dirnameOf = dirname(this.path_relative)
-		return join(dirnameOf, moduleIdentifier)
-	}
-
-
-	/**
-	 * returns true if identifier is in the namespace.
-	 */
-	namespaceContains(identifier: string) {
-		return this.namespace.containsName(identifier);
-	}
-
-	/**
-	 * gets the current object representing the namespace for the ast.
-	 */
-	getNamespace(): Namespace {
-		return this.namespace;
-	}
-
-	//
-	// /**
-	//  * gets the JSFiles ImportManager.
-	//  */
-	// getImportManager(): ImportManager {
-	// 	if (!this.imports) {
-	// 		let apiFunc = (e: string) => {
-	// 			return this.apiMap.resolveSpecifier(e, this)
-	// 		}
-	// 		this.imports = new ImportManager(this.apiMap, apiFunc, this);
-	// 	}
-	// 	return this.imports;
-	// }
-
-
-	// getExportBuilder(exportType: API_TYPE.default_only | API_TYPE.synthetic_named = null): ExportBuilder {
-	// 	if (!this.exports) {
-	// 		this.exports = new ExportBuilder(this, this.infoTracker);
-	// 	}
-	// 	return this.exports;
-	// }
-
 
 	makeSerializable(): SerializedJSData {
 		let program: Program = this.buildProgram()
 		let programString: string
-		let stringified = (JSON.stringify(program, null, 2))
-		//
-		// parse
-		// JSON = JSON.parse(stringified) as Program
-		// console.log(parseJSON)
-		// console.log(JSON.stringify(program,null,3)	)
 
 		try {
 
@@ -321,15 +235,6 @@ getUseDefaultCopy(){
 
 			programString = generate(program)
 
-			// console.log  (`PROGRAM LENGTH: ${program.body.length}`)
-			// console.log  (program.body)
-			// program.body.forEach((node,index:number,arr)=>{
-			// 	JPP(node)
-			// });
-			// // console.log(generate(node))
-			// if(programString) {
-			// 	console.log(this.getRelative())
-			// } else throw new Error()
 
 		} catch (e) {
 
@@ -366,10 +271,6 @@ getUseDefaultCopy(){
 		};
 	}
 
-	insertCopyByValue(copiedValue: VariableDeclaration) {
-		this.to_insert_copyByValue.push(copiedValue)
-	}
-
 	static mockedMetaDefault: MetaData = {
 		moduleAPIMap: null,
 		isRoot: false,
@@ -395,25 +296,43 @@ getUseDefaultCopy(){
 		uses_names: true
 	};
 
+
+	/**
+	 * returns true if identifier is in the namespace.
+	 */
+	namespaceContains(identifier: string) {
+		return this.namespace.containsName(identifier);
+	}
+
+	/**
+	 * gets the current object representing the namespace for the ast.
+	 */
+	getNamespace(): Namespace {
+		return this.namespace;
+	}
+
+	insertCopyByValue(copiedValue: VariableDeclaration) {
+		this.to_insert_copyByValue.push(copiedValue)
+	}
+
 	getAPIMap() {
 		return this.apiMap;
 	}
 
 	usesNamed() {
-		// return true;
 		return this._usesNames;
 	}
-
-
-	private data_based_imports: Imports;
 
 	setImports(imports: Imports) {
 		this.data_based_imports = imports
 	}
 
-	getDImports(): Imports {
-		return this.data_based_imports
+	getUseDefaultCopy() {
+		return this.useDefaultCopy
 	}
 
+	getInfoTracker(): InfoTracker {
+		return this.infoTracker;
+	}
 
 }

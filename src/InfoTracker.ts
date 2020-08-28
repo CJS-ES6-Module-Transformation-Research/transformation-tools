@@ -110,7 +110,6 @@ export class InfoTracker {
 
 	getDeclarations() {
 		return this.declList
-		// return   this .
 	}
 
 	getExportType(): API_TYPE.default_only | null {
