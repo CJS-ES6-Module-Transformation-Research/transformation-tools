@@ -68,7 +68,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				&& ((!(rpi[id].refTypeProps)) || rpi[id].refTypeProps.length === 0)
 				&& ((!(rpi[id].potentialPrimProps)) || rpi[id].potentialPrimProps.length === 0)
 			) {
-				console.log('all props null ')
+				// console.log('all props null ')
 				def_aults[id] = true;
 				js.report().addForcedDefault(js, demap.fromId[id], "condition")
 
@@ -76,7 +76,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		}
 
 	});
-
+	let i = 0
 
 	for (let id in rpis) {
 		let rpi = rpis[id];
