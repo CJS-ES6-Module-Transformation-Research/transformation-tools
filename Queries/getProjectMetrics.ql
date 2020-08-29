@@ -25,7 +25,7 @@ int getNumRequires() {
 }
 
 int getNumExports() {
-	result = sum( count(any(LocalAnalyzedModule am).getAnExportedValue(_)))	
+	result = sum( count(string s | exists(LocalAnalyzedModule am | exists(am.getAnExportedValue(s)))))	
 }
 
-select getNumLOC(), getNumJSFiles(), getNumRequires(), getNumExports()
+select getNumLOC(), getNumJSFiles(), getNumRequires(), getNumExports() 

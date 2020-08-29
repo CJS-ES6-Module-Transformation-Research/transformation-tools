@@ -9,3 +9,7 @@ fs-write-stream-atomic
 unbzip2-stream
 min-req-promise
 hull
+node-ping
+suncalc
+simplify-js
+yosay
