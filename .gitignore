@@ -6,6 +6,10 @@ node_modules
 
 */node_modules
 
+#utility file
+src/playground.ts
+
+
 out/*
 Data/*.out
 
