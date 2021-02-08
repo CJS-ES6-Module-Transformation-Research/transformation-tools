@@ -25,8 +25,7 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 			if (node.type === "CallExpression"
 				&& node.callee.type === "Identifier"
 				&& node.callee.name === "require"
-				&& node.arguments[0].type === "Literal") {
-				let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
+				&& node.arguments[0].type === "Literal") {let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
 				report.addARequire(js)
 
 				// console.log(`import ing in ${js.getRelative()}  from m${literal.value.toString()}   which is in dir: ${_dir.getRelative()}`)

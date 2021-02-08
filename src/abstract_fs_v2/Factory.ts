@@ -1,7 +1,6 @@
 import {lstatSync, Stats} from "fs";
 import path, {basename, extname, join, normalize, relative, resolve} from "path";
 import {API, API_TYPE} from "../transformations/export_transformations/API";
-import {cleanMIS} from "../transformations/import_transformations/visitors/insert_imports";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
 import {built_ins, builtins_funcs, CJSBuilderData, FileType, MetaData} from "./interfaces";
@@ -18,36 +17,8 @@ export class ModuleAPIMap {
 	apiKey: API_KeyMap = {}
 	readonly id: number = Math.floor(Math.random() * 100)
 
-	submitNodeModule(moduleSpecifier: string): API {
-		moduleSpecifier = cleanMIS(moduleSpecifier)
-		let builtin: boolean = built_ins.includes(moduleSpecifier)
-		let funcs: boolean = builtins_funcs.includes(moduleSpecifier)
-		if ((!builtin) && (!funcs)) {
-			if (!this.apiKey[moduleSpecifier]) {
-				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only)
-			}
-			return this.apiKey[moduleSpecifier]
-		} else {
-			console.log(`logic error: ${moduleSpecifier} be an insantlled module! `)
-		}
-
-	}
-
-
 	initJS(js: JSFile | CJSToJSON, api: API) {
 		this.apiKey[js.getRelative()] = api;
-	}
-
-
-
-	getResolve(js: JSFile) {
-
-		return function (moduleSpecifier: string) {
-			moduleSpecifier = join(path.dirname(js.getRelative()), moduleSpecifier)
-			if (this.apiKey[moduleSpecifier]) {
-				return this.apiKey[moduleSpecifier]
-			}
-		}
 	}
 
 	resolve(moduleSpecifier: string, jsFile: JSFile | CJSToJSON): string {
@@ -66,7 +37,6 @@ export class ModuleAPIMap {
 		let resolved = this.resolve(moduleSpecifier, js)
 
 		if (!(this.apiKey[resolved])) {
-		// console.log("resolved")
 			this.apiKey[resolved] = new API(_type)
 		}
 		this.apiKey[resolved].setType(_type, isForced)
@@ -75,7 +45,8 @@ export class ModuleAPIMap {
 
 	private builtinDefault = (x: string) => builtins_funcs.includes(x)
 	private builtInReg = (x: string) => built_ins.includes(x) && (!builtins_funcs.includes(x))
-	readonly defautlKey = new API(API_TYPE.default_only )
+	readonly defautlKey = new API(API_TYPE.default_only)
+
 	resolveSpecifier(js: JSFile | CJSToJSON, moduleSpecifier: string): API {
 
 		//is not bare
@@ -83,9 +54,9 @@ export class ModuleAPIMap {
 			let resolved = this.resolve(moduleSpecifier, js)
 			let jsdirname = path.dirname(js.getRelative())
 
-			let retV= this.apiKey[resolved]
-			if (!retV){
- 				console.log (`ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${js.getRelative() } but instead resolved to ${resolved}`)
+			let retV = this.apiKey[resolved]
+			if (!retV) {
+				console.log(`ERROR module specifier: ${moduleSpecifier} did not ressolve to a file when called from ${js.getRelative()} but instead resolved to ${resolved}`)
 
 			}
 			return retV
@@ -94,36 +65,29 @@ export class ModuleAPIMap {
 		} else {
 			if (this.builtinDefault(moduleSpecifier)) {
 
-					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, true)
+				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, true)
 				return this.apiKey[moduleSpecifier]
 
 
 			} else if (this.builtInReg(moduleSpecifier)) {
-				// throw new Error("TODO add info")
 
-
-					let _type = API_TYPE.named_only
-					this.apiKey[moduleSpecifier] = new API(_type, true)
+				let _type = API_TYPE.named_only
+				this.apiKey[moduleSpecifier] = new API(_type, true)
 
 				return this.apiKey[moduleSpecifier]
 
 
 			} else {
- 					this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, false)
-return this.apiKey[moduleSpecifier]
+				this.apiKey[moduleSpecifier] = new API(API_TYPE.default_only, false)
+				return this.apiKey[moduleSpecifier]
 			}
 		}
-		 if (this.apiKey[moduleSpecifier]){
-		 	return this.apiKey[moduleSpecifier]
-		 }else {
-			 return this.defautlKey
-		 }
+		if (this.apiKey[moduleSpecifier]) {
+			return this.apiKey[moduleSpecifier]
+		} else {
+			return this.defautlKey
+		}
 
-	}
-
-
-	register(jsFile: JSFile | CJSToJSON, api: API) {
-		return this.apiKey[cleanMIS(join(path.dirname(jsFile.getRelative())))] = api
 	}
 }
 

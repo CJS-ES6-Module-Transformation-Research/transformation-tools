@@ -397,6 +397,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 							addFromID((val2 as Identifier).name, 'part of a ternary operator')
 						}
 					}
+				//ToDO extract method so i can read this (make sure OREQUALS)
 					if (node.left.type === "MemberExpression"
 						&& node.left.object.type === "Identifier"
 						&& node.left.property.type === "Identifier") {
@@ -409,6 +410,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 						}
 					}
 				}
+				//ToDO extract method so i can read this (make sure OREQUALS)
 				if (node.type === "AssignmentExpression"
 					&& node.left.type === "MemberExpression"
 					&& node.left.object.type === "Identifier"
@@ -592,33 +594,55 @@ interface ForcedDefaultMap {
 }
 
 export function getDeclaredModuleImports(js: JSFile) {
-	traverse(js.getAST(),
-		{
-			enter: (node: Node, parent: Node | null) => {
-				if (node.type === "VariableDeclaration"
-					&& node.declarations
-					&& node.declarations[0]
+	js.getAST().body.forEach(node=>{
+if (node.type === "VariableDeclaration"&& node.declarations
+	&& node.declarations[0]){
+	let decl: VariableDeclarator = node.declarations[0];
+	if (
+		decl.init
+		&& decl.id.type === "Identifier"
+		&& decl.init.type === "CallExpression"
+		&& decl.init.callee.type === "Identifier"
+		&& decl.init.callee.name === "require"
+		&& decl.init.arguments
+		&& decl.init.arguments[0]
+		&& decl.init.arguments[0].type === "Literal"
 
-				) {
-					let decl: VariableDeclarator = node.declarations[0];
-					if (
-						decl.init
-						&& decl.id.type === "Identifier"
-						&& decl.init.type === "CallExpression"
-						&& decl.init.callee.type === "Identifier"
-						&& decl.init.callee.name === "require"
-						&& decl.init.arguments
-						&& decl.init.arguments[0]
-						&& decl.init.arguments[0].type === "Literal"
+	) {
+		// console.log(generate(decl))
+		js.getInfoTracker().insertDeclPair(decl.id.name, (decl.init.arguments[0] as SimpleLiteral).value.toString())
+		// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
+	}
+}
 
-					) {
-						// console.log(generate(decl))
-						js.getInfoTracker().insertDeclPair(decl.id.name, (decl.init.arguments[0] as SimpleLiteral).value.toString())
-						// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
-					}
-				}
-			}
-		})
+	})
+	// traverse(js.getAST(),
+	// 	{
+	// 		enter: (node: Node, parent: Node | null) => {
+	// 			if (node.type === "VariableDeclaration"
+	// 				&& node.declarations
+	// 				&& node.declarations[0]
+	//
+	// 			) {
+	// 				let decl: VariableDeclarator = node.declarations[0];
+	// 				if (
+	// 					decl.init
+	// 					&& decl.id.type === "Identifier"
+	// 					&& decl.init.type === "CallExpression"
+	// 					&& decl.init.callee.type === "Identifier"
+	// 					&& decl.init.callee.name === "require"
+	// 					&& decl.init.arguments
+	// 					&& decl.init.arguments[0]
+	// 					&& decl.init.arguments[0].type === "Literal"
+	//
+	// 				) {
+	// 					// console.log(generate(decl))
+	// 					js.getInfoTracker().insertDeclPair(decl.id.name, (decl.init.arguments[0] as SimpleLiteral).value.toString())
+	// 					// console.log(`${decl.id.name}    ${decl.init.arguments[0].value.toString()} `)
+	// 				}
+	// 			}
+	// 		}
+	// 	})
 }
 
 

@@ -92,7 +92,6 @@ export class JSFile extends AbstractDataFile {
 
 
 		let base = basename(moduleID, ".json");
-		// require('assert').strictEqual(join(json_dir, moduleID  ),json_abs )
 
 		let cjsName = `${base}.cjs`
 

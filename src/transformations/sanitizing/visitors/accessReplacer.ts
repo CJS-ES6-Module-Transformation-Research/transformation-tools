@@ -88,7 +88,7 @@ export function accessReplace(js: JSFile) {
 				let require: Require = node as Require
 				let requireString: string = (require.arguments[0] as Literal).value.toString();
 				report.addAccessReplace(js)
-				let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
+				let idStr: string = requireTracker.getDeMap().fromSpec[requireString]
 				// console.log(`acc   ${idStr}`
 				// )
 				if (!idStr) {
