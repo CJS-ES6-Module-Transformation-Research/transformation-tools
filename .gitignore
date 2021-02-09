@@ -9,6 +9,8 @@ node_modules
 #utility file
 src/playground.ts
 
+*.report.txt
+
 
 out/*
 Data/*.out

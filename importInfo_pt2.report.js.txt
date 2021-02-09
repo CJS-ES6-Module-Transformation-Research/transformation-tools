@@ -1,0 +1,38 @@
+{
+   "test/interleave2.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "tape"
+      },
+      {
+         "isForced": false,
+         "isDefault": false,
+         "relativizedImportString": "twiddle.js"
+      }
+   ],
+   "test/interleave3.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "tape"
+      },
+      {
+         "isForced": false,
+         "isDefault": false,
+         "relativizedImportString": "twiddle.js"
+      }
+   ],
+   "test/test.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "tape"
+      },
+      {
+         "isForced": false,
+         "isDefault": false,
+         "relativizedImportString": "twiddle.js"
+      }
+   ]
+}
