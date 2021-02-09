@@ -1,4 +1,0 @@
-test/interleave2.js|0|
-test/interleave3.js|0|
-test/test.js|0|
-twiddle.js|0|
