@@ -25,6 +25,7 @@
     "esprima": "^4.0.1",
     "fs": "0.0.1-security",
     "has-shebang": "^1.0.1",
+    "isexe": "^2.0.0",
     "ncp": "^2.0.0",
     "relative": "^3.0.2",
     "shebang-regex": "^3.0.0",

@@ -2,9 +2,12 @@ import {join} from 'path';
 import {project} from '../index'
 import {ProjConstructionOpts, ProjectManager} from "../src/abstract_fs_v2/ProjectManager";
 
+//     __dirname / test /
 export const TEST_DIR = join(project, 'test')
 
 export const test_root = `${project}`
+
+//     __dirname / test / project_sanitize_tests
 export const project_sanitize_resources_root = `${test_root}/project_sanitize_tests`
 export const FIXTURES = join(project, 'fixtures')
 

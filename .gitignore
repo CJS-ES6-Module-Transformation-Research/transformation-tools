@@ -32,7 +32,7 @@ coverage
 coverage/**/*
 
 #root
-
+./index.js
 *.js.map
 ./*.js
 ./*.js.map
