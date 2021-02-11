@@ -1,0 +1,4 @@
+#!/bin/bash
+  scripts/clean-src
+  scripts/clean-test
+  rm -f index.js  index.js.map cjs-transform.js cjs-transform.js.map &

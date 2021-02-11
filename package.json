@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "tsc && mocha test/tests",
-    "coverage": "tsc && nyc bmocha test/tests"
+    "coverage": "tsc && nyc mocha test/tests",
+    "refresh": "./scripts/clean-base"
   },
   "author": "",
   "license": "ISC",

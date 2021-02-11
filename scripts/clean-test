@@ -1,0 +1,5 @@
+#!/bin/bash
+rm -f test/tests/*.js &
+rm -f test/tests/*.js.map &
+rm -f test/index.js.map & 
+ 

@@ -1,0 +1,3 @@
+#!/bin/bash
+find src -name '*.js' | xargs rm -rf > /dev/null & 
+find src -name '*.js.map' | xargs rm -rf > /dev/null &
