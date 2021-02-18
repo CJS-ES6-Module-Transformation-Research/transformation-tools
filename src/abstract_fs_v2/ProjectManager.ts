@@ -5,13 +5,13 @@ import {basename, dirname, extname, join, relative} from "path";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
 import {FileFactory} from "./Factory";
-import {FileType, SerializedJSData, write_status} from "./interfaces";
+import {FileType, SerializedJSData, write_status as op_type} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {PackageJSON} from "./PackageJSONv2";
-import {Reporter} from "./Reporter";
+import {AbstractReporter, dummyReporter,   Reporter} from "./Reporter";
 
 export interface ProjConstructionOpts {
-	write_status: write_status
+	write_status: op_type
 	target_dir: string
 	suffix: string
 	isModule?: boolean
@@ -24,7 +24,7 @@ export interface ProjConstructionOpts {
 
 export class ProjectManager {
 
-	private readonly write_status: write_status
+	private readonly write_status: op_type
 	private readonly root: Dir
 
 	private dirs: { [key: string]: Dir } = {}
@@ -48,7 +48,7 @@ export class ProjectManager {
 	private includeGit: boolean = false;
 	private includeNodeModules: boolean = false;
 	private readonly uses_names: boolean;
-	private readonly reporter: Reporter;
+	private readonly reporter: AbstractReporter;
 	private readonly test: boolean;
 
 
@@ -58,7 +58,10 @@ export class ProjectManager {
 		this.src = path
 		this.write_status = opts.write_status
 		this.suffix = opts.suffix;
-		this.reporter = new Reporter(process.cwd(), opts.report)
+		this.reporter =dummyReporter
+		if (opts.report) {
+			this.reporter = new Reporter(process.cwd(), opts.report)
+		}
 		assertTrue(lstatSync(path).isDirectory(), `project path: ${path} was not a directory!`)
 		this.test = opts.testing
 		this.factory = new FileFactory(path, opts, this, this.reporter);

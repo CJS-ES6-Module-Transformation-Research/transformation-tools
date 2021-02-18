@@ -51,3 +51,4 @@ test/tests/*.js.map
 test/test_resources
 
 /redirect/
+/cjs-transform.js

@@ -11,10 +11,12 @@ const cwd = process.cwd()
 
 
 type naming = "default" | "named"
-let {input, output, suffix, operation, naming_format,ignored,tf_args } = getOptionData();
+let {input, output, suffix, operation, naming_format, ignored, tf_args} = getOptionData();
+
+
 
 if (input) {
-	let pm:ProjectManager
+	let pm: ProjectManager
 	pm = new ProjectManager(input,
 		getProjConstructionOpts(suffix, output, operation, naming_format, ignored))
 	executioner(pm)
@@ -27,6 +29,7 @@ if (input) {
 		pm.report()
 	}
 }
+
 export interface ProgramArgs {
 	source: string
 	dest?: string
@@ -39,7 +42,7 @@ export interface ProgramArgs {
 	// import_type?:naming
 }
 
-export function getProjConstructionOpts(suffix, output, operation, naming_format: "default" | "named",ignored ): ProjConstructionOpts {
+export function getProjConstructionOpts(suffix, output, operation, naming_format: "default" | "named", ignored): ProjConstructionOpts {
 	return {
 		isModule: false,
 		suffix: suffix,
@@ -47,8 +50,8 @@ export function getProjConstructionOpts(suffix, output, operation, naming_format
 		write_status: operation,
 		copy_node_modules: false, //TODO
 		isNamed: naming_format === "named",
-		ignored:ignored,
-		report:tf_args.report
+		ignored: ignored,
+		report: tf_args.report
 	};
 }
 
@@ -56,13 +59,11 @@ function getOptionData() {
 	let tf_args = yargs
 		.command(copyCommandModule())
 		.command(inPlaceCommandModule())
-		.option('import_type',   {choices: ["named", "default"], nargs: 1})
-		.option(	'ignored', {type: "string", array: true})
-		.option('report',{type:"boolean", nargs:0})
-		// .option({
-		// 	import_type: {choices: ["named", "default"], nargs: 1},
-		//
-		// 	ignored: {type: "string", array: true} )
+		.option('import_type', {choices: ["named", "default"], nargs: 1})
+		.option('n', {nargs: 0})
+		.option('ignored', {type: "string", array: true})
+		.option('report', {type: "boolean", nargs: 0})
+
 		.strict()
 		.argv
 	let input: string = tf_args.source;
@@ -70,10 +71,18 @@ function getOptionData() {
 	let suffix = '';
 	let operation: write_status
 	// @ts-ignore
-	let naming_format: naming = tf_args.import_type  ? tf_args.import_type  : "default";
+	let naming_format: naming;
+
+	if (tf_args.import_type) {
+		naming_format = tf_args.import_type as naming
+	} else if (tf_args.n) {
+		naming_format = "named"
+	} else {
+		naming_format = "default";
+	}
 
 	// @ts-ignore
-	let ignored:string[] = tf_args.ignored ? tf_args.ignored:[] ;
+	let ignored: string[] = tf_args.ignored ? tf_args.ignored : [];
 	if (tf_args._[0] === "tf-proj") {
 		operation = "in-place";
 		suffix = tf_args.suffix
@@ -88,9 +97,9 @@ function getOptionData() {
 	if (!isAbsolute(input)) {
 		input = join(cwd, input)
 	}
-	ignored.forEach((elem, index,arr)=>{
-		if (!isAbsolute(elem)){
-			arr[index] = join(cwd, elem )
+	ignored.forEach((elem, index, arr) => {
+		if (!isAbsolute(elem)) {
+			arr[index] = join(cwd, elem)
 		}
 	});
 
@@ -106,7 +115,7 @@ function copyCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {
 		builder: (args: Argv<ProgramArgs>): Argv<ProgramArgs> => {
 			// .option('filter',{})
 			return optionized(args)
-				// .option('include-node_modules', {type:"boolean"})
+			// .option('include-node_modules', {type:"boolean"})
 
 		},
 		aliases: 'c',
@@ -137,7 +146,7 @@ function inPlaceCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {
 	return {
 		command: "tf-proj <source> [suffix]",
 		builder: (args: Argv<ProgramArgs>): Argv<ProgramArgs> => {
-			return  args
+			return args
 			//optionized(args);
 		},
 		aliases: 'i',

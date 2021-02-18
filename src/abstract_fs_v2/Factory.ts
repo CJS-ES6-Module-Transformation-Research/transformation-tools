@@ -7,8 +7,7 @@ import {built_ins, builtins_funcs, CJSBuilderData, FileType, MetaData} from "./i
 import {JSFile} from "./JSv2";
 import {CJSToJSON, PackageJSON} from "./PackageJSONv2";
 import {ProjConstructionOpts, ProjectManager} from "./ProjectManager";
-import {Reporter} from "./Reporter";
-
+import { AbstractReporter } from "./Reporter";
 export interface API_KeyMap {
 	[moduleSpecifier: string]: API
 }
@@ -100,10 +99,10 @@ export class FileFactory {
 	readonly rc: ModuleAPIMap = new ModuleAPIMap();
 	private readonly uses_names: boolean;
 	private ignored: string[];
-	private reporter: Reporter;
+	private reporter: AbstractReporter;
 	private isTest: boolean;
 
-	constructor(path: string, opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: Reporter = null) {
+	constructor(path: string, opts: ProjConstructionOpts, pm: ProjectManager = null, reporter: AbstractReporter = null) {
 		this.reporter = reporter
 		this.isModule = opts.isModule;
 		this.rootPath = resolve(path);

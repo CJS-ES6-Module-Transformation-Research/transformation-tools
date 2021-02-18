@@ -3,7 +3,7 @@ import {generate} from "escodegen";
 import {traverse} from "estraverse";
 import {Expression, Identifier, Node, Program, SimpleLiteral, VariableDeclarator} from "estree";
 import {JSFile} from "./abstract_fs_v2/JSv2.js";
-import {Reporter} from "./abstract_fs_v2/Reporter";
+import {AbstractReporter, Reporter} from "./abstract_fs_v2/Reporter";
 import {InfoTracker} from "./InfoTracker.js";
 import {API_TYPE} from "./transformations/export_transformations/API";
 // import list = Mocha.reporters.Base.list;
@@ -486,7 +486,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 	}
 
 
-	let reporter: Reporter = js.getReporter()
+	let reporter: AbstractReporter = js.getReporter()
 
 	traverse(ast, {
 		enter: (node, parent) => {
