@@ -52,7 +52,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				refTypeProps: []
 			}
 			// def_aults[id] = true;
-			js.report().addForcedDefault(js, demap.fromId[id],"condition")
+			js.report().addForcedDefault(js, demap.fromId[id], "condition")
 
 		} else {
 
@@ -128,25 +128,35 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 						if (node.left.type === "Identifier"
 							&& listOfVars.includes(node.left.name)) {
 							_forcedDefault[node.left.name] = true;
-							js.report().addForcedDefault(js, demap.fromId[node.left.name],"condition")
+							js.report().addForcedDefault(js, demap.fromId[node.left.name], "condition")
 						}
 						if (node.right.type === "Identifier"
 							&& listOfVars.includes(node.right.name)) {
-							js.report().addForcedDefault(js,demap.fromId[node.right.name], "condition")
+							js.report().addForcedDefault(js, demap.fromId[node.right.name], "condition")
 							_forcedDefault[node.right.name] = true;
 						}
+						break;
+					case "UpdateExpression":
+
+						let arg = node.argument
+						if (arg.type ==="Identifier"
+							//TODO ADD TEST FOR THIS
+					&& listOfVars.includes(arg.name)) {
+						_forcedDefault[arg.name] = true;
+						js.report().addForcedDefault(js,arg.name, "update")
+					}
 						break;
 					case "ConditionalExpression":
 						if (node.consequent.type === "Identifier"
 							&& listOfVars.includes(node.consequent.name)) {
 							_forcedDefault[node.consequent.name] = true;
-							js.report().addForcedDefault(js,node.consequent.name, "condition")
+							js.report().addForcedDefault(js, node.consequent.name, "condition")
 						}
 						if (node.alternate.type === "Identifier"
 							&& listOfVars.includes(node.alternate.name)) {
 
 							_forcedDefault[node.alternate.name] = true;
-							js.report().addForcedDefault(js, demap.fromId[node.alternate.name],"condition")
+							js.report().addForcedDefault(js, demap.fromId[node.alternate.name], "condition")
 						}
 						break;
 					case "VariableDeclaration":
@@ -185,7 +195,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 								&& parent.left === node
 							) {
 								// console.log(`FORCED_DEFAULT:  ${name} in _ `)
-								js.report().addForcedDefault(js, demap.fromId[name],'property_assignment')
+								js.report().addForcedDefault(js, demap.fromId[name], 'property_assignment')
 
 								_forcedDefault[name] = true
 							}
@@ -433,7 +443,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 					&& node.right.name
 					&& listOfVars.includes(node.right.name)
 				) {
-					js.getReporter().reportOn().addForcedDefault(js,demap.fromId[node.right.name], "property_assignment")
+					js.getReporter().reportOn().addForcedDefault(js, demap.fromId[node.right.name], "property_assignment")
 					//copy module reference
 					assert(node.right.name, "assigned to " + node.right.name)
 					_forcedDefault[node.right.name] = true;
@@ -446,7 +456,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 					&& listOfVars.includes(node.init.name)
 				) {
 
-					js.getReporter().reportOn().addForcedDefault(js,demap.fromId[node.init.name], "property_assignment")
+					js.getReporter().reportOn().addForcedDefault(js, demap.fromId[node.init.name], "property_assignment")
 					_forcedDefault[node.init.name] = true;
 				}
 
@@ -458,7 +468,7 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 						if (e.type === "Identifier" && e.name && listOfVars.includes(e.name)) {
 
 
-							js.getReporter().reportOn().addForcedDefault(js, demap.fromId[e.name],"property_assignment")
+							js.getReporter().reportOn().addForcedDefault(js, demap.fromId[e.name], "property_assignment")
 							_forcedDefault[e.name] = true;
 						}
 					})
@@ -485,13 +495,13 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 				&& listOfVars.includes(node.right.name)
 
 			) {
-				reporter.reportOn().addForcedDefault(js, demap.fromId[node.right.name],"property_assignment")
+				reporter.reportOn().addForcedDefault(js, demap.fromId[node.right.name], "property_assignment")
 				def_aults[node.right.name] = true;
 			} else if (node.type === "Property"
 				&& node.value.type === "Identifier"
 				&& listOfVars.includes(node.value.name)
 			) {
-				reporter.reportOn().addForcedDefault(js, demap.fromId[node.value.name],"property_assignment")
+				reporter.reportOn().addForcedDefault(js, demap.fromId[node.value.name], "property_assignment")
 				def_aults[node.value.name] = true;
 			}
 		}

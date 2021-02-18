@@ -135,11 +135,11 @@ export class ReportBuilder implements RepJR, ReportBuilder_ {
 		this.importDefStmtCt++
 	}
 
-	forcedDReasons: ("condition" | "property_assignment")[] = []
+	forcedDReasons: ("condition" | "property_assignment"|"update")[] = []
 
-	addForcedDefault(js: JSFile, id: string, str: "condition" | "property_assignment"): void {
+	addForcedDefault(js: JSFile, id: string, fdr: "condition" | "property_assignment"|"update"): void {
 		this.forcedDefCT++
-		this.forcedDReasons.push(str)
+		this.forcedDReasons.push(fdr)
 		if (!this.forcedDfs[js.getRelative()]) {
 			this.forcedDfs[js.getRelative()] = {names: []}
 		}
@@ -321,7 +321,7 @@ interface ReportBuilder_ {
 	addJSONRequire: extraAdder
 	addSaniRequire: basicAdder
 	addCopyByValue: basicAdder
-	addForcedDefault: (js: JSFile, id: string, fdr: forcedDefaultReason) => void
+	addForcedDefault: (js: JSFile, id: string, fdr: string) => void
 
 
 	//and total count
