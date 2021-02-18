@@ -30,7 +30,7 @@ repos-test/**/*
 
 coverage
 coverage/**/*
-
+./*.js
 #root
 ./index.js
 *.js.map
