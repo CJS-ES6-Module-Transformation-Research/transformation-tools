@@ -18,10 +18,10 @@ const IF_TEST_DATA = TEST_DIR.filter(e => e.split('_')[0] === 'if');
 function createOptions(dest:string='') :ProjConstructionOpts {
  return {
      suffix: "",
-     write_status: dest? "copy":"in-place",
+     operation_type: dest? "copy":"in-place",
      copy_node_modules: false,
      isModule: false,
-     target_dir: dest? dest:'',ignored:[],
+     output: dest? dest:'',ignored:[],
      isNamed:false,report:false,testing:true
  }
 }

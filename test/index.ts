@@ -12,8 +12,8 @@ export const project_sanitize_resources_root = `${test_root}/project_sanitize_te
 export const FIXTURES = join(project, 'fixtures')
 
 export const mock_opts: ProjConstructionOpts = {
-	write_status: "in-place",
-	target_dir: "",
+	operation_type: "in-place",
+	output: "",
 	suffix: "",
 	isModule: false,
 	copy_node_modules: false,
@@ -24,8 +24,8 @@ export const mock_opts: ProjConstructionOpts = {
 }
 const namedProjOps: ProjConstructionOpts = {
 	isNamed: true,
-	write_status: "in-place",
-	target_dir: "",
+	operation_type: "in-place",
+	output: "",
 	suffix: "",
 	ignored: [],
 	testing: true, report: false
@@ -34,8 +34,8 @@ const namedProjOps: ProjConstructionOpts = {
 }
 const defaultProjOpts: ProjConstructionOpts = {
 	isNamed: false,
-	write_status: "in-place",
-	target_dir: "",
+	operation_type: "in-place",
+	output: "",
 	suffix: "",
 	ignored: [],
 	testing: true,
@@ -46,8 +46,8 @@ const defaultProjOpts: ProjConstructionOpts = {
 export function createProject(projPath: string, isNamed: boolean) {
 	return new ProjectManager(projPath, {
 			isNamed: isNamed,
-			write_status: "in-place",
-			target_dir: "",
+			operation_type: "in-place",
+			output: "",
 			suffix: "",
 			ignored: [],
 			testing: true,

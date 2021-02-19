@@ -11,8 +11,8 @@ import {PackageJSON} from "./PackageJSONv2";
 import {AbstractReporter, dummyReporter,   Reporter} from "./Reporter";
 
 export interface ProjConstructionOpts {
-	write_status: op_type
-	target_dir: string
+	operation_type: op_type
+	output: string
 	suffix: string
 	isModule?: boolean
 	isNamed: boolean
@@ -56,7 +56,7 @@ export class ProjectManager {
 		opts.isNamed = opts.isNamed || _named;
 		this.uses_names = opts.isNamed || _named;
 		this.src = path
-		this.write_status = opts.write_status
+		this.write_status = opts.operation_type
 		this.suffix = opts.suffix;
 		this.reporter =dummyReporter
 		if (opts.report) {
@@ -68,7 +68,7 @@ export class ProjectManager {
 		this.root = this.factory.getRoot();
 		this.root.buildTree();
 
-		this.target = opts.target_dir ? opts.target_dir : path
+		this.target = opts.output ? opts.output : path
 
 		if (this.target && this.write_status) {
 			if (!existsSync(this.target)) {

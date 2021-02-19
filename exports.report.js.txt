@@ -1,0 +1,5 @@
+{
+   "exports": 1,
+   "namedExports": 0,
+   "defaultExports": 1
+}

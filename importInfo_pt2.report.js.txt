@@ -1,0 +1,16 @@
+{
+   "main.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "mod.js"
+      }
+   ],
+   "main2.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "mod.js"
+      }
+   ]
+}
