@@ -1,7 +1,0 @@
-{
-   "accessReplace": 2,
-   "filenaemCount": 0,
-   "dirnameCount": 0,
-   "sanitizedRequireTotal": 0,
-   "requireTotal": 2
-}

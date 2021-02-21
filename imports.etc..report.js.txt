@@ -1,8 +1,0 @@
-{
-   "forcedDef": 0,
-   "copyByValue": 2,
-   "importDefault": 2,
-   "importNamespace": 0,
-   "importNamedDecls": 0,
-   "importNAMES": 0
-}
