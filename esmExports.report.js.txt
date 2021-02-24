@@ -1,6 +1,0 @@
-{
-   "esmNamedExports": 3,
-   "esmDefaultExports": 3,
-   "esmForcedDefaultExports": 0,
-   "esmTotalExports": 6
-}
