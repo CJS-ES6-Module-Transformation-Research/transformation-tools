@@ -1,0 +1,12 @@
+{
+  "name": "decons-json-forced-default",
+  "version": "1.0.0",
+  "description": "",
+  "main": "decons-json-forced-default.actual.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -5,12 +5,13 @@ node_modules
 .DS_Store
 
 */node_modules
-
+fixtures/.git
+fixtures/.gitignore
 #utility file
 src/playground.ts
 
 *.report.txt
-
+*.report.js.txt
 
 out/*
 Data/*.out
@@ -52,3 +53,4 @@ test/test_resources
 
 /redirect/
 /cjs-transform.js
+/index.js

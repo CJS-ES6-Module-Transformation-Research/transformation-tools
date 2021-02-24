@@ -1,0 +1,54 @@
+{
+   "asdfghj.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "module"
+      }
+   ],
+   "index.js": [
+      {
+         "isForced": true,
+         "isDefault": true,
+         "relativizedImportString": "lib/num.js"
+      },
+      {
+         "isForced": true,
+         "isDefault": true,
+         "relativizedImportString": "lib/mod2.js"
+      },
+      {
+         "isForced": false,
+         "isDefault": false,
+         "relativizedImportString": "lib/mod.js"
+      }
+   ],
+   "test/import-prop-from-direct-A.js": [
+      {
+         "isForced": false,
+         "isDefault": true,
+         "relativizedImportString": "lib/classwithprop.js"
+      }
+   ],
+   "test/num-default-import.js": [
+      {
+         "isForced": true,
+         "isDefault": true,
+         "relativizedImportString": "lib/num.js"
+      }
+   ],
+   "test/prop-is-num-inc.js": [
+      {
+         "isForced": false,
+         "isDefault": false,
+         "relativizedImportString": "lib/mod.js"
+      }
+   ],
+   "test/reassign-ref-prop.js": [
+      {
+         "isForced": true,
+         "isDefault": true,
+         "relativizedImportString": "lib/mod2.js"
+      }
+   ]
+}
