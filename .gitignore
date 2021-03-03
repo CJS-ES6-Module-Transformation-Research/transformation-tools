@@ -54,3 +54,4 @@ test/test_resources
 /redirect/
 /cjs-transform.js
 /index.js
+.project-dirs
