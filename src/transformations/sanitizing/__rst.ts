@@ -1,8 +1,7 @@
 import * as fs from "fs";
-import {existsSync, lstatSync, readdirSync, readFileSync} from 'fs'
-import {extname, resolve} from 'path'
+import {existsSync, lstatSync, readdirSync, readFileSync} from "fs";
+import {extname, join, resolve} from 'path'
 import relative from "relative";
-import {join} from 'path'
 
 const _JS = ".js";
 const _JSON = ".json";
@@ -65,11 +64,7 @@ export class RequireStringTransformer {
 			}
 			return path
 		} else if (isJS(absolute)) {
-			// ((
-			// 	&& isDir(absolute)) && (absolute.lastIndexOf('/') !== (path.length - 1)))
-			// 	|| (!isDir(absolute))) {
-// console.log(" extname(absolute)  b")
-// console.log( extname(absolute) )
+
 			computedPath = extname(absolute) !== "" ? absolute : absolute + _JS
 
 			computedPath = absolute
@@ -90,7 +85,6 @@ export class RequireStringTransformer {
 
 
 		} else if (isDir(absolute)) {//directory
-			// console.log('computing dir file')
 			let fname = 'index.js'
 			let files = readdirSync(absolute)
 			let pkg:string = '' ;
@@ -106,8 +100,6 @@ export class RequireStringTransformer {
 			}
 
 		}
-		// console.log(absolute)
-		// console.log(absolute + ".js")
 
 		// if (existsSync(absolute + ".js")) {
 		// 	computedPath=absolute + ".js"
@@ -149,7 +141,6 @@ function isBoth(path: string) {
 function isJS(path: string) {
 	let isjs = (extname(path) === _JS
 		|| existsSync(path + _JS))
-	// console.log(path + " -- " + isjs)
 	return isjs
 }
 

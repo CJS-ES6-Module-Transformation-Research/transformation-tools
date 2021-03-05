@@ -131,11 +131,8 @@ class ExportPass {
 					let objExpr: ObjectExpression = {type: "ObjectExpression", properties: []}
 					let names: string[] = []
  					for (let name in this.tracker.names) {
-						console.log(`added name: ${name}`)
 						let exported = this.tracker.names[name]
 						objExpr.properties.push(createProperty(exported))
-						console.log((objExpr.properties[objExpr.properties.length-1] as Property).key)
-						console.log((objExpr.properties[objExpr.properties.length-1] as Property).value)
 						names.push(exported.exported.name)
 					}
 					let declaration: ExportDefaultDeclaration = {
@@ -190,11 +187,6 @@ class ExportPass {
 				}
 
  			case API_TYPE.named_only:
-
-				//
-				// if (this.js.getRelative().includes('format.js')) {
-				// 	console.log(`reached`)
-				// }
 				return this.createNamedExports();
 
 		}
@@ -243,9 +235,7 @@ class ExportPass {
 	}
 
 	clear(objExpr: boolean = false): void {
-		// if (this.js.getRelative().includes('format.js')) {
-		// 	console.log('fd' + this.forcedDefault)
-		// }
+
 		this.tracker = {
 			defaultIdentifier: this.tracker.defaultIdentifier,
 			names: {},
@@ -265,10 +255,6 @@ class ExportPass {
 
 	registerName(local: string, exported: string): void {
 		this.js.report().addNamedExport(this.js)
- 		//
-		// if (this.js.getRelative().includes('format.js')) {
-		// 	console.log('format' + this.tracker.type)
-		// }
 		if (this.tracker.type !== API_TYPE.default_only) {
 
 			this.tracker.type = API_TYPE.named_only
@@ -448,7 +434,6 @@ export function __exports(js: JSFile) {
 
 		let toAdd: VariableDeclaration[] = []
 		properties.forEach(prop => {
-			// console.log(`processing ${generate(prop)}`)
 			if (prop.type === "Property" && prop.key && prop.value
 				&& prop.key.type === "Identifier") {
 
@@ -469,15 +454,12 @@ export function __exports(js: JSFile) {
 						kind: 'var'
 					}
 					prop.value = local
-					// console.log(`inserting declaration ${generate(decl)}`)
 					toAdd.push(decl)
 				} else {
 					local = prop.value
 					exported = prop.key
 				}
 				exportPass.registerName(local.name, exported.name)
-				// console.log(` registering names local:${local.name}    and exported:${exported.name}`)
-
 			}
 		});
 		return toAdd;
@@ -504,24 +486,15 @@ export function __exports(js: JSFile) {
 				&& test.object.object.name === "module"
 				&& test.object.property.name === "exports"
 			) {
-				// console.log(`prop:${test.property.name}`)
 				return {isDefault: false, id: test.property}
 			}
 		}
 	}
-
-
-	// let exData =
 	let ex_decl = exportPass.build()
-	if (js.getRelative().includes('promise')) {
-		console.log(`export pass was: ${ JSON.stringify(ex_decl)}`)
 
-	}
 	if (ex_decl && (
 		(ex_decl.type === "ExportDefaultDeclaration" && ex_decl.declaration)
 		|| (ex_decl.type === "ExportNamedDeclaration"))) {
-		// console.log(generate(ex_decl))
-
 		js.getAST().body.push(ex_decl)
 	}
 

@@ -104,7 +104,7 @@ export class Reporter implements AbstractReporter  {
 		}
 
 		for (let w in writeOuts) {
-			// console.log(`${w}${writeOuts[w]}`)
+
 			writeFile(join(this.path, `${w}.report.txt`), `${writeOuts[w]}`, () => {
 			})
 		}

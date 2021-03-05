@@ -1,13 +1,14 @@
-import {generate} from "escodegen";
 import {Identifier, ImportDeclaration} from "estree";
 import {ModuleAPIMap} from "./abstract_fs_v2/Factory";
 import {RequireDeclaration, RequireExpression} from "./abstract_fs_v2/interfaces";
+import {errHandle} from './abstract_fs_v2/ProjectManager'
 import {ReqPropInfo} from "./InfoGatherer";
 import {API, API_TYPE} from "./transformations/export_transformations/API";
 
 interface ToDeclMap {
 	[id: string]: requireDecl
 }
+
 
 export class InfoTracker {
 	private readonly fromVarIDMap: ToDeclMap = {}
@@ -40,7 +41,6 @@ export class InfoTracker {
 	}
 
 
-
 	getFromDeMap(thing: string, _type: "id" | "ms") {
 		switch (_type) {
 			case "id":
@@ -58,14 +58,13 @@ export class InfoTracker {
 	getIDs(): string[] {
 		let ids: string[] = []
 		for (let id in this.fromVarIDMap) {
- 				ids.push(id)
+			ids.push(id)
 		}
 		return ids
 	}
 
 
 	setReqPropsAccessedMap(rPropData: { [id: string]: ReqPropInfo }) {
-		// console.log(`rpis set!  value: ${JSON.stringify(rPropData, null, 3)}`)
 		this.rPropData = rPropData;
 	}
 
@@ -147,21 +146,21 @@ export class Imports {
 	private info: InfoTracker;
 	private readonly declarations: ImportDeclaration[];
 
-	constructor(map: DeMap, apiGetter: (string) => API, MAM: ModuleAPIMap, info:InfoTracker) {
-		this.info = info ;
-	this.declarations = []
+	constructor(map: DeMap, apiGetter: (string) => API, MAM: ModuleAPIMap, info: InfoTracker) {
+		this.info = info;
+		this.declarations = []
 		this.mapiM = MAM
 		this.apiGetter = apiGetter
 		let _api: { [moduleSpecifier: string]: API } = {};
- 		let po={}
+		let po = {}
 		for (let spec in map.fromSpec) {
-try {
-	_api[spec] = apiGetter(spec  )
-	po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
-}catch (e) {
-	console.log(`err:  ${map.fromSpec[spec]}` )
-}
-		};
+			try {
+				_api[spec] = apiGetter(spec)
+				po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
+			} catch (e) {
+				errHandle(e, `err:  ${map.fromSpec[spec]}`)
+			}
+		}
 
 		this.withPropNames = {
 			fromId: map.fromId,
@@ -174,16 +173,17 @@ try {
 
 	}
 
-	add(declaration:ImportDeclaration) {
+	add(declaration: ImportDeclaration) {
 
 		this.declarations.push(declaration)
 	}
-	getWPN( ){
+
+	getWPN() {
 		return this.withPropNames
 	}
 
 	getDeclarations() {
-		return this.declarations 
+		return this.declarations
 	}
 }
 

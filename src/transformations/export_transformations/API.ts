@@ -1,6 +1,3 @@
-import {API_KeyMap} from "../../abstract_fs_v2/Factory";
-
-
 export class API {
 	private _isForced: boolean=false ;
 	constructor(type: API_TYPE, isBuiltin = false, names: string[] = []) {
@@ -37,12 +34,12 @@ getID(){
 
 	setType(_type: API_TYPE, isForced=false) {
 		if (this._isForced){
-			// console.log("IS FORCED: RETURN")
+
 			return
 		}
 		if (isForced){
 			this._isForced = true;
-			// console.log("SET FORCED: RETURN")
+
 
 			return
 		}

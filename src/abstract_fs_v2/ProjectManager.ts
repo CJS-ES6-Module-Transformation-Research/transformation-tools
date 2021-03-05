@@ -1,6 +1,6 @@
 import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
-import {existsSync, lstatSync, mkdirSync, unlink, writeFile, writeFileSync} from "fs";
+import {appendFileSync, existsSync, lstatSync, mkdirSync, unlink, unlinkSync, writeFile, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
@@ -8,7 +8,36 @@ import {FileFactory} from "./Factory";
 import {FileType, SerializedJSData, write_status as op_type} from "./interfaces";
 import {JSFile} from "./JSv2";
 import {PackageJSON} from "./PackageJSONv2";
-import {AbstractReporter, dummyReporter,   Reporter} from "./Reporter";
+import {AbstractReporter, dummyReporter, Reporter} from "./Reporter";
+
+
+const LOGFILE = join(__dirname, './log');
+console.log(LOGFILE)
+if (existsSync(LOGFILE)) {
+	unlinkSync(LOGFILE)
+}
+writeFileSync(LOGFILE, ' ')
+
+
+export const log: (msg: string, tag?: string) => void = function (msg: string, tag: string = "") {
+	let data: string = '→ ';
+	if (tag) {
+		data += `${tag}:  ${msg}`
+	} else {
+		data += ` ${msg}`
+	}
+	// console.log(data )
+	data += "\n"
+	appendFileSync(LOGFILE, data);
+}
+// 	 (function () {
+// 		// unlinkSync(LOGFILE);
+// 		writeFileSync(LOGFILE,'' );
+//
+// 		return
+// 	}()
+// )
+
 
 export interface ProjConstructionOpts {
 	operation_type: op_type
@@ -20,6 +49,14 @@ export interface ProjConstructionOpts {
 	ignored?: string[]
 	report: boolean
 	testing?: boolean
+}
+
+export function errHandle(err: Error, msg: string = ""): void {
+	console.log(err.message)
+	if (msg) {
+		console.log(msg)
+	}
+	throw err;
 }
 
 export class ProjectManager {
@@ -134,11 +171,7 @@ export class ProjectManager {
 			})
 		} catch (e) {
 
-			console.log(`EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}`)
-			console.log(e)
-
-			throw e;
-
+			errHandle(e, `EXCEPTION: exception occurred when processing file: ${curr} in phase ${tfName}\n${e}`);
 		}
 	}
 
@@ -159,7 +192,7 @@ export class ProjectManager {
 		} else {
 			throw new Error('write status not set!')
 		}
-		console.log('DONE')
+		console.log('Done!')
 	}
 
 
@@ -179,10 +212,7 @@ export class ProjectManager {
 
 		await Promise.all(this.dataFiles.map(async (file: AbstractDataFile) => {
 				unlink(join(root_dir, file.getRelative()), (err) => {
-					if (err) {
-						console.log(err)
-						throw err
-					}
+					errHandle(err);
 				})
 			})
 		)
@@ -196,25 +226,19 @@ export class ProjectManager {
 
 			serialized = file.makeSerializable();
 			try {
-				// console.log(root_dir)
-
 				writeFile(join(root_dir, (serialized.relativePath)), serialized.fileData, (err) => {
-					if (err) {
-						console.log(err)
-						throw err
-					}
+					errHandle(err);
 				})
 			} catch (ex) {
-				console.log(`root dir: ${root_dir}`)
-				console.log(`filename relative: ${file.getRelative()}`)
-				console.log(`filename absolute: ${file.getAbsolute()}`)
-				console.log(`data length: ${file.makeSerializable().fileData}`)
-
-				console.log(`excpetion : ${ex}`)
+				let err_msg = `root dir: ${root_dir}
+filename relative: ${file.getRelative()}
+filename absolute: ${file.getAbsolute()}
+data length: ${file.makeSerializable().fileData}
+exception : ${ex}`;
+				errHandle(ex, err_msg)
 			}
 
 		})).then(() => {
-			// writeFileSync(join(root_dir, serialized.relativePath), serialized.fileData);
 
 			for (let filename in this.additions) {
 				let serialized: SerializedJSData = this.additions[filename].makeSerializable()
@@ -230,58 +254,19 @@ export class ProjectManager {
 
 	private copyOut() {
 
-		// require('ncp')(this.src, this.target, {}, () => {
-		//     this.removeAll(allFiles, this.target);
-		//     this.writeAll(allFiles, this.target);
-		// })
-		// .then(()=>{
-
-		// })
 		let src = this.src
 		let _target = this.target
 		let cpy = require('cpy')
 		this.root.mkdirs(this.target)
-		// cpy(this.src, this.target, {
-		//     // parents: true,
-		//     filter: (file) => {
-		//
-		//
-		//     return _filter(file.path)
-		//     }
-		// }).then(() => {
-		//     this.writeAll(_target)
-		// }).then(()=>{
-		//     console.log("DONE!")
-		// }).catch(err => console.log(err))
+
 
 		//
 		cpr(this.src, this.target, {
 			confirm: false, filter: _filter
-			// function (testFile) {
-			//     let rel_proj_root = relative(src, testFile)
-			//     console.log(rel_proj_root)
-			//     if (dirname(testFile) === ".git") {
-			//         return false;
-			//     } else if (rel_proj_root.startsWith('.git')) {
-			//
-			//         return false;
-			//     }
-			//
-			//     // if (nodeMod.includes("node_modules")) {
-			//     //     return false;
-			//     // }
-			//     let ext = extname(testFile)
-			//
-			//     let js = ext === '.js'
-			//     let cjs = ext === '.cjs'
-			//     let pkg = basename(testFile) === 'package.json'
-			//
-			//     return !(pkg || js || cjs)
-			// }
 		}, () => {
 
 			this.writeAll(_target)
-			// console.log("DONE!")
+
 		})
 		let includeGit = this.includeGit;
 		let includeModules = this.includeNodeModules

@@ -3,10 +3,9 @@ import {parseModule, parseScript} from "esprima";
 import {traverse} from "estraverse";
 import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
-import {basename, dirname, join, relative} from "path";
+import {basename, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
 import {API, API_TYPE} from "../transformations/export_transformations/API";
-// test_resources.import {ExportRegistry} from "../transformations/export_transformations/ExportRegistry.js";
 import {AbstractDataFile} from './Abstractions'
 import {Dir} from './Dirv2'
 import {ModuleAPIMap} from "./Factory";

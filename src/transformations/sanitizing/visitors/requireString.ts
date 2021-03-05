@@ -25,10 +25,9 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 			if (node.type === "CallExpression"
 				&& node.callee.type === "Identifier"
 				&& node.callee.name === "require"
-				&& node.arguments[0].type === "Literal") {let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
+				&& node.arguments[0].type === "Literal") {
+				let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
 				report.addARequire(js)
-
-				// console.log(`import ing in ${js.getRelative()}  from m${literal.value.toString()}   which is in dir: ${_dir.getRelative()}`)
 				let requireString: string = rst.getTransformed(literal.value.toString()) //requireStringTF.getTransformed(literal.value.toString(),js.getParent())
 				dataRep[js.getRelative()].push(requireString)
 				if (requireString !== literal.value.toString()) {
@@ -47,8 +46,6 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 				//         literal.raw = `'${requireString}'`
 				//     }
 				node.arguments[0] = {type: "Literal", value: requireString}
-				// console.log (generate(node))
-				// console.log(node.argume nnts[0] .toString() )
 			}
 		}
 	};

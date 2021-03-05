@@ -13,6 +13,7 @@ import {
 } from "estree";
 import {built_ins, builtins_funcs} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {errHandle} from "../../../abstract_fs_v2/ProjectManager";
 import {Reporter} from "../../../abstract_fs_v2/Reporter";
 import {getListOfVars} from "../../../InfoGatherer";
 import {Imports, WithPropNames} from "../../../InfoTracker";
@@ -20,8 +21,6 @@ import {API, API_TYPE} from "../../export_transformations/API";
 
 export function cleanMIS(moduleSpecifier: string): string {
 	let mos = moduleSpecifier.replace(/^\.{0,2}\//, '')
-	// console.log('mos: ' + mos)
-
 	return mos
 }
 
@@ -53,13 +52,10 @@ export function insertImports(js: JSFile) {
 				return false;
 			}
 		} catch (e) {
-			console.log('failed on ' + js.getRelative() + "      " + moduleSpecifier)
+			errHandle(e, `failed on  ${js.getRelative()} \t ${moduleSpecifier}`)
 		}
 		return true;
 	}
-
-	// if (moduleSpecifier.includes('src/format.js')){}
-
 
 	//for readability in debugging
 	traverse(js.getAST(), {
@@ -86,12 +82,6 @@ export function insertImports(js: JSFile) {
 						&& node.declarations[0].init.arguments
 						&& node.declarations[0].init.arguments[0].type === "Literal"
 					) {
-						let dmp = js.getInfoTracker().getDeMap()
-
- 						if (js.getRelative().includes('lib/ping-pcap.js')){
-						console.log(`API:  ${JSON.stringify(js.getApi())}
-							\n DEMAP: ${JSON.stringify(dmp.fromId)}\n${JSON.stringify(dmp.fromSpec)} `)
-						}
 
 						let _id = node.declarations[0].id.name
 						let q = node.declarations[0].init
@@ -102,13 +92,12 @@ export function insertImports(js: JSFile) {
 							if (args.type === "Literal" && (!((args as RegExpLiteral).regex))) {
 								lit = args
 							} else {
-								throw new Error(generate(args))
+								errHandle(new Error(generate(args)))
 							}
 
 						} catch
 							(e) {
-							console.log(js.getRelative())
-							throw exports
+							errHandle(e, `err: ${e}: ${js.getRelative()}`)
 						}
 
 
@@ -120,11 +109,7 @@ export function insertImports(js: JSFile) {
 							&& (!builtins_funcs.includes(module_specifier)))
 						let api = map.resolveSpecifier(js, module_specifier);
 						let isNamespace = false
-						// if (api) {
 						isNamespace = api.getType() === API_TYPE.named_only
-						// }else{
-						// 	console.log(`failed to resolve specifier: ${module_specifier} in file ${js.getRelative()} `)
-						// }
 
 						if (js.usesNamed() && (isBuiltin || api.getType() === API_TYPE.named_only) && (!api.isForced())) {
 							js.getReporter().reportOn().addImportInfo(js,  {

@@ -1,6 +1,7 @@
 import {replace} from "estraverse";
 import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {log} from "../../../abstract_fs_v2/ProjectManager";
 import {API_TYPE} from "../../export_transformations/API";
 
 
@@ -11,39 +12,35 @@ export let hacker_defaults = (js: JSFile) => {
 	let ns = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
 	let getRPI = (x: string) => js.getInfoTracker().getRPI(x)
-
-	let idSet: { [base: string]: { [prop: string]: Identifier } } = {}
+	type ID_SET = { [base: string]: { [prop: string]: Identifier } }
+	let idSet: ID_SET = {}
 	let infoTracker = js.getInfoTracker()
-	if (js.getRelative().includes('test-ping')) {
-		console.log(infoTracker.getMaybePrims())
-	}
 	infoTracker
 		.getMaybePrims()
 		.forEach(e => {
 			// if (getRPI(e.modId).forceDefault) {
 			// 	return null;
 			// }
-			js.report().addCopyByValue(js  )
+			js.report().addCopyByValue(js)
 			let api = js.getAPIMap().resolveSpecifier(js, infoTracker.getDeMap().fromId[e.modId])
 			if (api.getType() === API_TYPE.default_only && api.isForced()) {
 				return null;
 			}
 			let best = ns.generateBestName(e.propName)
+			log(`best_name: ${best.name} | mod_name: ${e.modId} | prop_name: ${e.propName}`, "COPY_VALUE")
 			if (!idSet[e.modId]) {
 				idSet[e.modId] = {}
 			}
 			if (!idSet[e.modId][e.propName]) {
 				idSet[e.modId][e.propName] = best
 			}
-			ns.addToNamespace(best.name)
+			//FIXME shouldn't be neccessary
+			// ns.addToNamespace(best.name)
 			replace_identifiers.push(best)
 
-				let declaration = createAccessedDeclFromBest(e, best);
+			let declaration = createAccessedDeclFromBest(e, best);
 			js.insertCopyByValue(declaration);
 		})
-		// .filter(e => e !== null)
-		// .forEach((value: VariableDeclaration) => {
-		// });
 
 
 	replace(js.getAST(), {
@@ -113,9 +110,7 @@ export function named_copyByValue(js: JSFile) {
 	// 				}
 	// 			}
 	// 		}
-	// 	 );}catch (e) {
-	// 		console.log(spec)
-	// 		console.log(_e)
+	// 	 );}catch (e)
 	// 	}
 	// });
 }

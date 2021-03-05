@@ -4,7 +4,7 @@
   "description": "transformation-tools repository for CommonJS to ES6 Module transformations",
   "main": "index.js",
   "scripts": {
-    "test": "tsc && mocha test/tests",
+    "test": "ts-mocha test/tests/*.ts",
     "coverage": "tsc && nyc mocha test/tests",
     "refresh": "./scripts/clean-base"
   },
@@ -23,6 +23,7 @@
     "cpr": "^3.0.1",
     "cpy": "^8.1.0",
     "escodegen": "^1.14.1",
+    "escope": "^3.6.0",
     "esprima": "^4.0.1",
     "fs": "0.0.1-security",
     "has-shebang": "^1.0.1",
