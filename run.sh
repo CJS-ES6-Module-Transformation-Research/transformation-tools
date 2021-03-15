@@ -22,7 +22,7 @@ function execProject(){
 rebulild)
 	cd $PROJ_PATH || exit 1
 	git reset --hard
-	cd $$CJS || exit 1 
+	cd $CJS || exit 1 
 	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
  ;;
 
@@ -33,8 +33,8 @@ reset)
 ;; 
 
 	complete)
-	cd $PROJ_PATH || exit 1
-	git reset --hard
+	cd $PROJ_PATH || hardexit 1
+	git reset --
 	cd $CJS || exit 1 
 	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
 	cd $PROJ_PATH || exit 1
