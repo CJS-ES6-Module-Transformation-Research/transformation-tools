@@ -18,15 +18,32 @@ function execProject(){
 	case $2 in
 
 	test-only)
+	npm run es-test 
+
 ;;
 
 rebulild)
+	cd $PROJ_PATH || exit 1
+	git reset --hard
+	cd $EXEC_DIR || exit 1 
+	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
+	cd $PROJ_PATH || exit 1
 ;;
 
 reset)
+	cd $PROJ_PATH || exit 1
+	git reset --hard
+
 ;; 
 
 	complete)
+	cd $PROJ_PATH || exit 1
+	git reset --hard
+	cd $EXEC_DIR || exit 1 
+	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
+	cd $PROJ_PATH || exit 1
+	npm install &&
+	npm run es-test 
 ;;
 
 
@@ -38,5 +55,5 @@ reset)
 
 grep -v '^ *#' < $LIST_OF_PROJECTS | while IFS= read -r project
 do
-  echo "Line: $line"
+  execProject "$PROJECTS_DIR/$project" $2
 done
