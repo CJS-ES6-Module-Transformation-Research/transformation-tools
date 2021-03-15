@@ -1,18 +1,15 @@
 
-EXEC_DIR=$1
-OPTs=$2
-if [ -z $EXEC_DIR ]
-then
-	EXEC_DIR="."
-fi
-cd $EXEC_DIR || exit 1
-BASE_DIR=$(pwd)
-_meta="$EXEC_DIR/.project-dirs"
+OPTs=$1
+ 
+# cd $EXEC_DIR || exit 1
+# BASE_DIR=$(pwd)
+_meta="$CJS/.project-dirs"
 LIST_OF_PROJECTS="$_meta/p.rojs2.TF"
 PROJECTS_DIR="$_meta/projects"
-
-TF_PATH=$EXEC_DIR
-
+echo "meta: $_meta "
+echo "list: $LIST_OF_PROJECTS"
+echo "dir: $PROJECTS_DIR"
+ 
 function execProject(){
 	PROJ_PATH=$1
 	case $2 in
@@ -25,10 +22,9 @@ function execProject(){
 rebulild)
 	cd $PROJ_PATH || exit 1
 	git reset --hard
-	cd $EXEC_DIR || exit 1 
+	cd $$CJS || exit 1 
 	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
-	cd $PROJ_PATH || exit 1
-;;
+ ;;
 
 reset)
 	cd $PROJ_PATH || exit 1
@@ -39,7 +35,7 @@ reset)
 	complete)
 	cd $PROJ_PATH || exit 1
 	git reset --hard
-	cd $EXEC_DIR || exit 1 
+	cd $CJS || exit 1 
 	ts-node cjs-transform.ts i --import_type named $PROJ_PATH --report --ignored dist
 	cd $PROJ_PATH || exit 1
 	npm install &&
@@ -55,5 +51,7 @@ reset)
 
 grep -v '^ *#' < $LIST_OF_PROJECTS | while IFS= read -r project
 do
-  execProject "$PROJECTS_DIR/$project" $2
+	# echo $project 
+	# echo $1 
+   execProject "$PROJECTS_DIR/$project" $1
 done
