@@ -126,6 +126,12 @@ predicate exportInFunction() {
                        pw.getFile() instanceof LocalFile)  
 }
 
+predicate assignDefaultPropModuleExports() {
+  exists( DataFlow::PropWrite pw | pw.getBase() instanceof ModuleExportsNode and
+                       pw.getPropertyName() = "default" and
+                       pw.getFile() instanceof LocalFile)  
+}
+
 predicate exportsInPkgJSON() {
   exists(PackageJSON pkgj | exists(pkgj.getPropValue("exports")) and pkgj.getFile() instanceof LocalFile) 
 }
@@ -135,7 +141,7 @@ predicate nonstringRequireArg() {
 }
 
 string projectViolatesCondition() {
-  hasOctal() and result = "has an octal literal" or 
+  hasOctal() and result = "warning: has an octal literal" or 
   hasWithStmt() and result = "has a with statement" or
   hasDeleteVar() and result = "can only use delete on properties" or 
   hasIllegalRedefinition() and result = "has a redefinition of eval, or arguments inside a function" or
@@ -151,10 +157,11 @@ string projectViolatesCondition() {
   accessModuleFields() and result = "accessing fields of module that dont exist in ESM" or 
   accessProcessMainModule() and result = "accessing process.mainModule" or 
   dynamicModuleExport() and result = "has a dynamic module export, module.exports[e] = o" or 
-  conditionalExport() and result = "has a conditional export" or 
-  exportInFunction() and result = "has an export in a function" or 
+  conditionalExport() and result = "warning: has a conditional export" or 
+  exportInFunction() and result = "warning: has an export in a function" or 
   exportsInPkgJSON() and result = "has an exports field in a package.json" or 
-  nonstringRequireArg() and result = "has a require with a non-string module specifier"
+  nonstringRequireArg() and result = "has a require with a non-string module specifier" or 
+  assignDefaultPropModuleExports() and result = "warning: assignment to module.exports.default"
 }
 
 string projectResult() {
