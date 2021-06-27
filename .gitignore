@@ -58,3 +58,5 @@ test/test_resources
 /cjs-transform.js
 /index.js
 .project-dirs
+.nyc_output/processinfo/index.json
+ast0.js

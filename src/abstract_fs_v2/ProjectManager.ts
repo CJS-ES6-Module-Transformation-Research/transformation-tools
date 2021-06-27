@@ -2,6 +2,9 @@ import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
 import {appendFileSync, existsSync, lstatSync, mkdirSync, unlink, unlinkSync, writeFile, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
+import {PM_Opts} from "../args/args";
+import {naming} from "../args/Commands";
+import {ExecutionGoal} from "../run-from-cli";
 import {AbstractDataFile, AbstractFile} from "./Abstractions";
 import {Dir} from "./Dirv2";
 import {FileFactory} from "./Factory";
@@ -12,7 +15,7 @@ import {AbstractReporter, dummyReporter, Reporter} from "./Reporter";
 
 
 const LOGFILE = join(__dirname, './log');
-console.log(LOGFILE)
+// console.log(LOGFILE)
 if (existsSync(LOGFILE)) {
 	unlinkSync(LOGFILE)
 }
@@ -52,11 +55,15 @@ export interface ProjConstructionOpts {
 }
 
 export function errHandle(err: Error, msg: string = ""): void {
-	console.log(err.message)
+	if ( err && err.message) {
+		console.log(err.message)
+	}
 	if (msg) {
 		console.log(msg)
 	}
-	throw err;
+	if(err) {
+		throw err;
+	}
 }
 
 export class ProjectManager {
@@ -89,7 +96,11 @@ export class ProjectManager {
 	private readonly test: boolean;
 
 
+
 	constructor(path: string, opts: ProjConstructionOpts, _named: boolean = false) {
+		if (!path){
+			throw new Error(`path value: ${path} was invalid`)
+		}
 		opts.isNamed = opts.isNamed || _named;
 		this.uses_names = opts.isNamed || _named;
 		this.src = path
@@ -138,7 +149,11 @@ export class ProjectManager {
 		return null
 
 	}
-
+	getJSRelativeStrings():string[]{
+		return this
+			.getJSNames()
+			.map(e => e.getRelative())
+	}
 	private loadFileClassLists() {
 		this.root.visit(
 			node => {
@@ -179,8 +194,10 @@ export class ProjectManager {
 		return this.jsMap[name]
 	};
 
-	report() {
-		this.reporter.writeOut()
+	report(__report) {
+		if(__report) {
+			this.reporter.writeOut();
+		}
 	}
 
 	public async writeOut() {
@@ -337,4 +354,57 @@ exception : ${ex}`;
 	usingNamed() {
 		return this.uses_names;
 	}
+	static builder(input:string,goal:ExecutionGoal):ProjectBuilder{
+		return new ProjectBuilder(input,goal)
+	}
+
 }
+class ProjectBuilder {
+
+	private readonly input:string
+	private naming_format: naming = 'named'
+
+	private operation_type: op_type = 'in-place'
+	private readonly goal:ExecutionGoal
+	private report:boolean = false
+
+	private output: string = ''
+	private suffix: string = ''
+	private isNamed: boolean = true
+
+	private isModule:boolean = false
+	private copy_node_modules: boolean = false;
+	private ignored:string[] = []
+	private testing: boolean =false
+	constructor(input:string,goal:ExecutionGoal){
+		this.input = input;
+		this.goal = goal
+	}
+	setNaming(X:naming):ProjectBuilder{ this.naming_format =  X;return this}
+	setCopy():ProjectBuilder{ this.operation_type = "copy" ;return this}
+	setIsModule(X:boolean):ProjectBuilder{ this.isModule =  X;return this}
+	setOutDir(out:string):ProjectBuilder{ this.output =  out;return this}
+	setIgnored(X:string[]):ProjectBuilder{ this.ignored =  X;return this}
+	setTesting(X:boolean):ProjectBuilder{ this.testing =  X;return this}
+
+	build():ProjectManager{
+
+		let opts:PM_Opts = {
+			input:this.input,
+			testing:this.testing,
+			isNamed:this.isNamed,
+			ignored:this.ignored,
+			isModule:this.isModule,
+			copy_node_modules : this.copy_node_modules  ,
+			suffix : this.suffix  ,
+			goal : this.goal,
+			naming_format : this.naming_format  ,
+			operation_type : this.operation_type  ,
+			output : this.output ,
+			report:this.report
+		}
+		return new ProjectManager(this.input,opts,this.naming_format ==="named")
+	}
+
+}
+

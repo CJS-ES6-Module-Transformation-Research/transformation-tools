@@ -1,11 +1,21 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
 import {traverse} from "estraverse";
-import {Directive, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {
+	Directive,
+	Identifier,
+	MemberExpression,
+	ModuleDeclaration,
+	Program,
+	Statement,
+	VariableDeclaration
+} from "estree";
 import {existsSync} from "fs";
 import {basename, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
+import {DataInterface} from "../janitor/pass0";
 import {API, API_TYPE} from "../transformations/export_transformations/API";
+import {RequireStringTransformer} from "../transformations/sanitizing/requireStringTransformer";
 import {AbstractDataFile} from './Abstractions'
 import {Dir} from './Dirv2'
 import {ModuleAPIMap} from "./Factory";
@@ -22,6 +32,16 @@ export class JSFile extends AbstractDataFile {
 
 	setUseDefaultCopy(arg0: boolean = true) {
 		this.useDefaultCopy = arg0
+	}
+
+	private sani_data_interface: DataInterface;
+
+	setSDI(di: DataInterface) {
+		this.sani_data_interface = di;
+	}
+
+	getSDI(): DataInterface {
+		return this.sani_data_interface
 	}
 
 	private useDefaultCopy: boolean = false
@@ -45,7 +65,7 @@ export class JSFile extends AbstractDataFile {
 
 	private to_insert_copyByValue: VariableDeclaration[] = []
 
-	private readonly namespace: Namespace
+	private namespace: Namespace
 	private moduleType: script_or_module;
 
 	private isShebang: RegExp = /^#!.*/
@@ -80,8 +100,18 @@ export class JSFile extends AbstractDataFile {
 		})
 		// this.exportRegistry = new ExportRegistry(this.namespace)
 	}
+	private rst:RequireStringTransformer;
+	public getRST(){
+		if (!this.rst){
+			this.rst =  new RequireStringTransformer(this)
+		}
+		return this.rst
+	}
 
-
+	public rebuildNamespace(defaultExportID:Identifier):Namespace{
+		this.namespace = Namespace.create(this.ast,defaultExportID)
+		return this.namespace
+	}
 	public createCJSFromIdentifier(moduleID: string): string {
 
 		let parent: Dir = this.parent();
@@ -157,7 +187,20 @@ export class JSFile extends AbstractDataFile {
 		this.stringReplace[replace] = value
 	}
 
-	private buildProgram(): Program {
+
+	private buildScript(): Program {
+		let body
+			= this.ast.body;
+		this.toAddToTop.reverse().forEach((e) => {
+			body.splice(0, 0, e)
+		})
+		this.toAddToBottom.reverse().forEach((e) => {
+			body.push(e)
+		})
+		return  this.ast
+	}
+
+	private buildEsm(): Program {
 
 		let body
 			= this.ast.body;
@@ -224,7 +267,8 @@ export class JSFile extends AbstractDataFile {
 
 
 	makeSerializable(): SerializedJSData {
-		let program: Program = this.buildProgram()
+		let program: Program = this.moduleType === "script" ? this.buildScript() : this.buildEsm()
+
 		let programString: string
 
 		try {
@@ -333,4 +377,7 @@ export class JSFile extends AbstractDataFile {
 		return this.infoTracker;
 	}
 
+	getDefaultExport(): Identifier  {
+		return this.namespace.getDefaultExport()
+	}
 }

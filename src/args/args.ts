@@ -1,11 +1,11 @@
 import {isAbsolute, join} from "path";
 import {Argv, CommandModule} from "yargs";
 import * as yargs from "yargs";
-import {write_status} from "./abstract_fs_v2/interfaces";
-import {ProjConstructionOpts} from "./abstract_fs_v2/ProjectManager";
-import {ExecutionGoal} from "./run-from-cli";
+import {write_status} from "../abstract_fs_v2/interfaces";
+import {ProjConstructionOpts} from "../abstract_fs_v2/ProjectManager";
+import {ExecutionGoal} from "../run-from-cli";
 
-export function getOptionData(cwd:string):PM_Opts {
+export function getOptionData(cwd:string):{ output: string; input: string; ignored: string[]; naming_format: "default" | "named"; goal: string; operation_type: "copy" | "in-place"; report: boolean; isNamed: boolean; suffix: string } {
 	let tf_args = yargs
 		.command(copyCommandModule())
 		.command(inPlaceCommandModule())
@@ -53,7 +53,7 @@ export function getOptionData(cwd:string):PM_Opts {
 		}
 	});
 
-	return {isNamed: naming_format==="named", input, output, suffix, operation_type, naming_format, ignored,report:tf_args.report };
+	return {goal:'transform',isNamed: naming_format==="named", input, output, suffix, operation_type, naming_format, ignored,report:tf_args.report };
 }
 
 function copyCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {
@@ -67,7 +67,7 @@ function copyCommandModule(): CommandModule<ProgramArgs, ProgramArgs> {
 			return optionized(args)
 			// .option('include-node_modules', {type:"boolean"})
 
-		},
+},
 		aliases: 'c',
 		describe: "Executes a transformation from CommonJS modules to ECMAScript modules on a project, copying the result to a destination.",
 		handler(args: yargs.Arguments<ProgramArgs>): void {
@@ -121,6 +121,8 @@ export interface PM_Opts extends ProjConstructionOpts{
 	input:string
 	naming_format: naming
 	goal:ExecutionGoal
+	report:boolean
+	output:string
 }
 export interface ProgramArgs {
 	source: string

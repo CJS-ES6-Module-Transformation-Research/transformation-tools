@@ -138,25 +138,30 @@ export interface DeMap {
 
 
 }
-
+type PropertiesOn = {
+	[mod: string]: string[]
+}
+type APITable = { [moduleSpecifier: string]: API };
 export class Imports {
-	private withPropNames: WithPropNames;
+	private readonly withPropNames: WithPropNames;
 	private apiGetter: (string) => API;
 	private mapiM: ModuleAPIMap;
 	private info: InfoTracker;
 	private readonly declarations: ImportDeclaration[];
-
+	private readonly apis :APITable= {}
+	private readonly propertiesOn :PropertiesOn = {};
 	constructor(map: DeMap, apiGetter: (string) => API, MAM: ModuleAPIMap, info: InfoTracker) {
 		this.info = info;
 		this.declarations = []
 		this.mapiM = MAM
 		this.apiGetter = apiGetter
-		let _api: { [moduleSpecifier: string]: API } = {};
-		let po = {}
+		// let _api: { [moduleSpecifier: string]: API } = {};	// @ts-ignore
+
 		for (let spec in map.fromSpec) {
 			try {
-				_api[spec] = apiGetter(spec)
-				po[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
+				this.apis[spec] = apiGetter(spec)
+
+				this.propertiesOn[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
 			} catch (e) {
 				errHandle(e, `err:  ${map.fromSpec[spec]}`)
 			}
@@ -166,15 +171,23 @@ export class Imports {
 			fromId: map.fromId,
 			fromSpec: map.fromSpec,
 			aliases: map.aliases,
-			propertiesOf: po,
-			api: _api
+			propertiesOf: this.propertiesOn
+			// ,
+			// api: _api
 
 		}
 
 	}
 
-	add(declaration: ImportDeclaration) {
+	getAPITable():APITable{
+		return this.apis
+	}
 
+	getPropertiesOn():PropertiesOn{
+		return this.propertiesOn
+	}
+
+	add(declaration: ImportDeclaration) {
 		this.declarations.push(declaration)
 	}
 
@@ -191,6 +204,7 @@ export interface WithPropNames
 	extends DeMap {
 	propertiesOf: {
 		[mod: string]: string[]
-	},
-	api: { [moduleSpecifier: string]: API }
+	}
+	// ,
+	// api: { [moduleSpecifier: string]: API }
 }

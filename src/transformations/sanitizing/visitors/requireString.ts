@@ -38,13 +38,8 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 					requireString = js.createCJSFromIdentifier(requireString)
 					_json_req[js.getRelative()].push(requireString)
 					report.addJSONRequire(js, requireString)
-					// literal.value = requireString
-					// literal.raw = `'${requireString}'`
 				}
-				// else {
-				//         literal.value = requireString
-				//         literal.raw = `'${requireString}'`
-				//     }
+
 				node.arguments[0] = {type: "Literal", value: requireString}
 			}
 		}

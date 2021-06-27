@@ -1,7 +1,6 @@
 import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from "estraverse";
-import * as ESTree from "estree";
-import {
+ import {
 	Identifier,
 	ImportDeclaration,
 	ImportSpecifier,
@@ -9,12 +8,14 @@ import {
 	RegExpLiteral,
 	SimpleLiteral,
 	VariableDeclaration,
-	VariableDeclarator
+	VariableDeclarator,
+	 Node
 } from "estree";
 import {built_ins, builtins_funcs} from "../../../abstract_fs_v2/interfaces";
 import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {Namespace} from "../../../abstract_fs_v2/Namespace";
 import {errHandle} from "../../../abstract_fs_v2/ProjectManager";
-import {Reporter} from "../../../abstract_fs_v2/Reporter";
+import {AbstractReportBuilder, Reporter} from "../../../abstract_fs_v2/Reporter";
 import {getListOfVars} from "../../../InfoGatherer";
 import {Imports, WithPropNames} from "../../../InfoTracker";
 import {API, API_TYPE} from "../../export_transformations/API";
@@ -23,8 +24,139 @@ export function cleanMIS(moduleSpecifier: string): string {
 	let mos = moduleSpecifier.replace(/^\.{0,2}\//, '')
 	return mos
 }
+export function replaceModExp_with_ID(propNameReplaceMap, js:JSFile ):Visitor {
+	 let  report:AbstractReportBuilder  =js.report();
+	 let names:Namespace = js.getNamespace()
+ 	let 	leave : (node:Node, parent:Node)  => Node =  (node:Node, parent:Node)  => {
+			if (node.type === "MemberExpression"
+				&& node.object.type === "Identifier"
+				&& node.property.type === "Identifier"
+				&& propNameReplaceMap
+				&& propNameReplaceMap[node.object.name]
+				&& propNameReplaceMap[node.object.name][node.property.name]) {
+				report.addPropAccessLocation(js);
+				let replacement:Node = {
+					type: "Identifier",
+					name: propNameReplaceMap[node.object.name][node.property.name]
+				};
+				names.addToNamespace(replacement.name);
+				return replacement;
+			}
+		}
 
+	return {leave}
+}
+function initHandleImports(js) {
+	return {
+		info: js.getInfoTracker(),
+		report: js.report(),
+		reporter: js.getReporter(),
+		mod_map: js.getAPIMap(),
+		ns: js.getNamespace()
+	};
+}
+export function handleNamedImports(_imports, id, js, module_specifier, propNameReplaceMap, xImportsY) {
+	let { info, report, reporter, mod_map, ns } = initHandleImports(js);
+	let wpn = _imports.getWPN();
+	let rpi = info.getRPI(id);
+	let specifiers = [];
+	let primReport = [];
 
+	report.addNamedImportStatement(js);
+	let dataRep = reporter.addMultiLine('used_named_imports');
+	rpi.allAccessedProps.forEach((accessedProp) => {
+		report.addNamedSpecifier(js);
+		let imported;
+		let _id = wpn.fromSpec[module_specifier];
+		if (_id) {
+			imported = { type: "Identifier", name: accessedProp };
+		}
+		else {
+			throw new Error('accessed could not find id from spec: ' + module_specifier);
+		}
+		let local;
+		if (!ns.containsName(accessedProp)) {
+			local = { type: "Identifier", name: accessedProp };
+			ns.addToNamespace(accessedProp);
+		}
+		else {
+			local = ns.generateBestName(accessedProp);
+		}
+		let prev = local;
+		if (!propNameReplaceMap[id]) {
+			propNameReplaceMap[id] = {};
+		}
+		// copyRegistry.add(local.name)
+		//todo determine if this can remove prev
+		propNameReplaceMap[id][accessedProp] = local.name;
+		if (js.usesNamed()
+			&& rpi.potentialPrimProps.includes(accessedProp)
+			// && !copyRegistry.testIsCopy(id,accessedProp)
+			/*&& (!js.getCopiedIds()[local.name])*/
+		) {
+			// console.log(`In file : ${__dirname}`)
+			// 			red(id+' => '+accessedProp+' isCp:'+copyRegistry.testIsCopy(id,accessedProp)+' prim:'
+			// 				+rpi.potentialPrimProps.includes(accessedProp))
+			prev = createCopy(local)();
+			primReport.push(`${prev.name}>>${local.name}`);
+		}
+		let is = {
+			type: "ImportSpecifier",
+			local: prev,
+			imported: imported
+		};
+		let resolved = mod_map
+			.resolve(module_specifier, js);
+		if (!dataRep.data[resolved]) {
+			dataRep.data[resolved] = [];
+		}
+		dataRep.data[resolved].push(`${imported.name}|${js.getRelative()}`);
+		specifiers.push(is);
+		xImportsY.data[js.getRelative()].push(mod_map
+			.resolve(module_specifier, js) + "|named");
+	});
+	// js.addAnImport
+	let decl = {
+		type: "ImportDeclaration",
+		source: { type: "Literal", value: module_specifier },
+		specifiers: specifiers
+	};
+	_imports.add(decl);
+	reporter
+		.addMultiLine(Reporter.copyPrimCount)
+		.data[module_specifier] = primReport;
+	function createCopy(local) {
+		//TODO introduce second type for default version
+		// if (js.getInfoTracker().getCopyRegistry().testIsCopy(local.name)) {
+		// 	js.getInfoTracker().getCopyRegistry().add(local.name)
+		// 	return () => local
+		// }
+		report.addCopyByValue(js);
+		return () => {
+			let copy = ns.generateBestName(local.name);
+			js.getReporter().reportOn().cbvExt(js.getRelative(), copy, local, module_specifier);
+			// js.getInfoTracker().getCopyRegistry().add(copy.name)
+			// js.getInfoTracker().getCopyRegistry().add(local.name)
+			// js.getInfoTracker().getCopyRegistry().testIsCopy()
+			// Blue(JSON.stringify(js.getInfoTracker().getCopyRegistry().copies, null, 4))
+			js.insertCopyByValue(createAliasedDeclarator(copy, local));
+			return copy;
+			function createAliasedDeclarator(copy, original) {
+				let declarator = {
+					type: "VariableDeclarator",
+					id: original,
+					init: copy
+				};
+				let declaration = {
+					type: "VariableDeclaration",
+					kind: 'var',
+					declarations: [declarator]
+				};
+				return declaration;
+			}
+		};
+	}
+}
 export function insertImports(js: JSFile) {
 	js.setAsModule()
 	let last: number = 0;
@@ -66,7 +198,7 @@ export function insertImports(js: JSFile) {
 
 	let visitor: Visitor = {
 
-		enter: (node, parent): VisitorOption | ESTree.Node | void => {
+		enter: (node, parent): VisitorOption |  Node | void => {
 
 
 			if (parent && parent.type === "Program") {
@@ -225,17 +357,12 @@ export function insertImports(js: JSFile) {
 				return replacement
 
 			}
-
-			// else if (node.type ==="Identifier"
-			// && infoTracker.
-			// )
 		}
 	});
 
 
 	function namedImports(id: string, module_specifier: string, api: API) {
 
-		let wpn: WithPropNames = _imports.getWPN()
 
 		let rpi = info.getRPI(id);
  		let specifiers: ImportSpecifier[] = []
@@ -270,7 +397,7 @@ export function insertImports(js: JSFile) {
 			// if (wpn.aliases[module_specifier] && wpn.aliases[module_specifier][accessedProp] === accessedProp) {
 			// 	accessed = {type: "Identifier", name: wpn.aliases[module_specifier][accessedProp]}
 			// } else {
-			let _id = wpn.fromSpec[module_specifier]
+			let _id = demap.fromSpec[module_specifier]
 			if (_id) {
 				imported = {type: "Identifier", name: accessedProp}
 			} else {

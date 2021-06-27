@@ -264,7 +264,7 @@ interface RequireAccessIDs {
 
 function cleanValue(requireStr: string): string {
 	let replaceDotJS: RegExp = new RegExp(`(\.json)|(\.js)`, 'g')// /[\.js|]/gi
-	let illegal: RegExp = new RegExp(`([^${alphaNumericString}_])`, "g"); ///[alphaNumericString|_]/g
+	let illegal: RegExp = new RegExp(`([^${alphaNumericString}_\$])`, "g"); ///[alphaNumericString|_]/g
 	let cleaned = requireStr.replace(replaceDotJS, '');
 	cleaned = cleaned.replace(illegal, "_");
 

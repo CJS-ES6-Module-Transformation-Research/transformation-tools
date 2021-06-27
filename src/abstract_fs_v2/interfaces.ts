@@ -2,7 +2,7 @@ import {
 	BaseCallExpression,
 	ExpressionStatement,
 	Identifier,
-	Literal,
+	Literal, MemberExpression,
 	VariableDeclaration,
 	VariableDeclarator
 } from "estree";
@@ -88,6 +88,10 @@ export type TransformFunction = (js: JSFile) => void
 
 export function id(name: string): Identifier {
 	return {type: "Identifier", name: name}
+}
+
+export function lit(value: string): Literal {
+	return {type: "Literal", value}
 }
 
 
@@ -226,4 +230,10 @@ export function createRequireDecl(varStr: string, importStr: string, kindStr: "v
 		kind: kindStr
 	};
 	return varDecl;
+}
+export const module_dot_exports: MemberExpression = {
+	type: "MemberExpression",
+	object: id('module'),
+	property: id('exports'),
+	computed: false
 }

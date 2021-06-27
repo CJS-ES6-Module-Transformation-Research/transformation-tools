@@ -84,8 +84,10 @@
     //    "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
   },
   "include": [
+    "test/newtests/*",
     "src/**/*",
     "test/tests/*",
+    "test/*",
     "./index.ts",
     "./cjs-transform.ts",
     "node_modules/@types/mocha/index.d.ts"

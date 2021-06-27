@@ -233,7 +233,9 @@ export const reqPropertyInfoGather = (js: JSFile) => {
 		});
 		// return listOfProps;
 	}
-
+	function gatherShadowedIDs(){
+		let fctStack: string[] = [];
+	}
 
 	function getPropsCalledOrAccd(ast: Program, mapOfRPIs: { [id: string]: ReqPropInfo }, shadows: ShadowVariableMap): void {
 		// let notPrimProps = []

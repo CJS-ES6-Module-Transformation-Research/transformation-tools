@@ -1,55 +1,79 @@
 import {Program} from "esprima";
 import {traverse} from "estraverse";
 import {ArrayPattern, AssignmentPattern, Identifier, MemberExpression, Node, ObjectPattern, RestElement} from "estree";
+import {id} from "./interfaces";
+
+
 
 /**
  * represents a namespace for a javascript file. includes potential variables (any LHS assignment even if not declared ) for safety.
  */
 export class Namespace {
-	private names: Set<string>;
+	private names: Set<string> = new Set<string>();
 	private hasDirname: boolean = false
 	private hasFilename: boolean = false
+	private potentialShadow: { [key: string]: number } = {};
+	private moduleSpecifierData: {
+		moduleSpecifier:{ [key: string]: string },
+		identifierMS:{ [key: string]: string }
+	} = {moduleSpecifier: {}, identifierMS:{}} ;
 
-	private constructor(ast: Program) {
 
+
+	castShadow(identifier:Identifier): void {
+	// @ts-ignore
+		identifier.markings = identifier.markings || []
+		 // @ts-ignore
+		identifier.markings.push('maybe_shadow')
+}
+	private constructor(ast: Program,defaultExport:Identifier= undefined) {
+		if(defaultExport){
+			this.__export = defaultExport
+		}
 		this.names = new Set<string>();
 		traverse(ast, {
 			enter: (node: Node) => {
 				switch (node.type) {
 					case "VariableDeclarator": {
-						walkPatternToIdentifier(node.id, this.names);
+						walkPatternToIdentifier(node.id,  node,this.names, true);
+
 						if (node.init && node.init.type === 'Identifier') {
-							walkPatternToIdentifier(node.init, this.names)
+							walkPatternToIdentifier(node.init, node,this.names)
 						}
 						break;
 					}
 					case "AssignmentExpression": {
-						walkPatternToIdentifier(node.left, this.names);
+						walkPatternToIdentifier(node.left,  node,this.names);
 						break;
 					}
 					case "FunctionDeclaration": {
-						node.params.forEach((e) => walkPatternToIdentifier(e, this.names))
+						node.params.forEach((e) => walkPatternToIdentifier(e,  node,this.names, true))
 						this.names.add(node.id.name)
+						this.castShadow(node.id)
 						break;
 					}
 					case "ClassDeclaration": {
 						this.names.add(node.id.name);
+						this.castShadow(node.id)
+
 						break;
 					}
 					case "Identifier":
 						if (this.hasDirname && this.hasFilename) {
 							return
 						}
-						let str = node.name
-						if (str === "__filename") {
-							this.names.add(str)
-							this.hasFilename = true;
+						switch (node.name) {
+							case "__filename":
+								this.names.add(node.name)
+								this.hasFilename = true;
+								break;
+							case "__dirname":
+								this.names.add(node.name)
+								this.hasFilename = true;
+								break;
 						}
-						if (str === "__dirname") {
-							this.names.add(str)
-							this.hasDirname = true;
-						}
-						break
+
+						break;
 				}
 			}
 		});
@@ -80,8 +104,9 @@ export class Namespace {
 	 * creates a Namespace object from a Program AST interface object.
 	 * @param ast the Program object.
 	 */
-	static create(ast: Program): Namespace {
-		return new Namespace(ast);
+	static create(ast: Program, defaultExport:Identifier= undefined): Namespace {
+
+		return new Namespace(ast,defaultExport);
 	}
 
 
@@ -93,8 +118,11 @@ export class Namespace {
 	generateBestName(name: string): Identifier {
 		if (!this.names.has(name)) {
 			this.addToNamespace(name)
+			console.log(`--> ${name}`)
+
 			return {name: name, type: "Identifier"};
 		}
+
 		let nameGen = [
 			numberNameFormula(name, '', -4, this.names),
 			numberNameFormula(name, '_', 0, this.names),
@@ -105,7 +133,9 @@ export class Namespace {
 		].sort((a, b) => a.quality - b.quality)
 
 		// [0].name
-		this.addToNamespace(nameGen[0].name )
+		this.addToNamespace(nameGen[0].name)
+		// console.log(`--> ${nameGen[0].name}`)
+
 		return {name: nameGen[0].name, type: "Identifier"};
 
 		function numberNameFormula(name: string, symbol: string, startQuality: number, namespace: Set<string>): NameQuality {
@@ -126,23 +156,46 @@ export class Namespace {
 
 	}
 
-private importMeta:Identifier = null
+	private importMeta: Identifier = null
+
 	getImportMeta() {
-		if (this.importMeta){
+		if (this.importMeta) {
 			return this.importMeta
 		}
 		this.importMeta = this.generateBestName("IMPORT_META_URL")
- 		return this.importMeta;
+		return this.importMeta;
 	}
 
-	private __export: Identifier = null;
+	private __export: Identifier = this.getDefaultExport();
 
-	getDefaultExport() {
+	getDefaultExport():Identifier {
 		if (!this.__export) {
-			this.__export = this.generateBestName("defaultExport")
+			this.__export = this.generateBestName("__exports")
 		}
+	return id(this.__export.name )
+		//return {type:"MemberExpression",computed:false, object:id('module'),property:id('exports')};
+	}
 
-		return this.__export;
+	getMSID(requireStr: string) {
+		if (!this.moduleSpecifierData.identifierMS[requireStr]) {
+
+			let cleaned = requireStr.replace(new RegExp(`(\.json)|(\.js)`, 'g'),'').replace(new RegExp(`([^a-zA-Z0-9_\$])|(\.json)|(\.js)`, "g"),'_')
+			// let replaceDotJS: RegExp = // /[\.js|]/gi
+			// let illegal: RegExp = new RegExp(`([^a-zA-Z0-9_\$])|(\.json)|(\.js)`, "g"); ///[alphaNumericString|_]/g
+			// let cleaned = requireStr.replace(replaceDotJS, '');
+			// cleaned = cleaned.replace(illegal, "_");
+			if (cleaned[0] !== '_') {
+				cleaned = '_' + cleaned;
+			}
+
+			let gbsn = this.generateBestName(cleaned)
+			cleaned = gbsn.name
+			this.moduleSpecifierData.moduleSpecifier[requireStr] = cleaned
+			this.moduleSpecifierData.identifierMS[cleaned] = requireStr
+
+			return cleaned
+		}
+		return this.moduleSpecifierData.moduleSpecifier[requireStr]
 	}
 }
 
@@ -153,38 +206,41 @@ private importMeta:Identifier = null
  * @param ids the set of Identifier strings found so far.
  */
 function walkPatternToIdentifier(node: (Identifier | ObjectPattern | ArrayPattern | RestElement |
-	AssignmentPattern | MemberExpression), ids: Set<string>) {
+	AssignmentPattern | MemberExpression),parent:Node, ids: Set<string>, isADeclaration: boolean = false) {
 	switch (node.type) {
 		case "ArrayPattern":
-			node.elements.forEach((e) => walkPatternToIdentifier(e, ids))
+			node.elements.forEach((e) => walkPatternToIdentifier(e,node, ids))
 			break;
 		case "AssignmentPattern":
-			walkPatternToIdentifier(node.left, ids)
+			walkPatternToIdentifier(node.left,node, ids)
 			if (node.right.type === 'Identifier') {
-				walkPatternToIdentifier(node.right, ids)
+				walkPatternToIdentifier(node.right,node, ids)
 			}
 
 			break;
 		case "Identifier":
+			// (node.parent.type)
 			ids.add(node.name);
 			break;
 		case "ObjectPattern":
 			node.properties.forEach((e) => {
 				if (e.type === "Property") {
-					walkPatternToIdentifier(e.value, ids)
+					walkPatternToIdentifier(e.value,e, ids)
 				} else {
-					walkPatternToIdentifier(e, ids)
+
+					throw new Error('unsupported operation non-property')
+					//walkPatternToIdentifier(e, ids)
 				}
 			})
 			break;
 		case "RestElement":
-			walkPatternToIdentifier(node.argument, ids)
+			throw new Error('unsupported operation non-property')
 			break;
 		case "MemberExpression":
 			if (node.object.type === "Identifier") {
 				ids.add(node.object.name)
 			} else if (node.object.type === "MemberExpression") {
-				walkPatternToIdentifier(node.object, ids)
+				walkPatternToIdentifier(node.object, node,ids)
 			}
 	}
 }
