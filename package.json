@@ -32,6 +32,7 @@
     "ncp": "^2.0.0",
     "relative": "^3.0.2",
     "shebang-regex": "^3.0.0",
+    "terminal-link": "^3.0.0",
     "ts-mocha": "^7.0.0",
     "typings": "^2.1.1",
     "yargs": "^15.3.1"

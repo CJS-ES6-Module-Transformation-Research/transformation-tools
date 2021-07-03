@@ -14,76 +14,12 @@ import {
 	Statement,
 	VariableDeclaration
 } from "estree";
-import {readdirSync, readFileSync, writeFileSync} from "fs";
+import {readdirSync, readFileSync, writeFileSync, watch} from "fs";
 import {basename, join} from "path";
-import {id, lit} from "../src/abstract_fs_v2/interfaces";
-
-type hookNames = 'describe' | 'it'
-
-interface HookIdentifier<T extends hookNames> extends Identifier {
-	name: T
-}
-
-interface TemplateHookCall extends ExpressionStatement {
-	expression: TestCallExpression<hookNames>
-
-}
-
-interface TestCallExpression<T extends hookNames> extends SimpleCallExpression {
-	callee: HookIdentifier<T>
-	arguments: Array<(SimpleLiteral | TestHook<T>)>
-}
-
-interface SuiteBlock extends BlockStatement {
-	body: Array<VariableDeclaration | TemplateHookCall>;
-}
-
-class TestBlock implements BlockStatement {
-	body: Array<Statement>;
-	type: "BlockStatement";
-}
-
-abstract class TestHook<T extends hookNames> implements ArrowFunctionExpression {
-	abstract body: SuiteBlock | TestBlock;
-	abstract expression: boolean;
-	params: Array<Pattern> = [id('done')];
-	type: "ArrowFunctionExpression";
-
-}
 
 
-class DescribeHook extends TestHook<'describe'> {
-	body: SuiteBlock;
-	expression: boolean;
 
-}
 
-class ItHook extends TestHook<'it'> {
-	body: TestBlock;
-	expression: boolean;
-
-}
-
-function xst(name: string, test: ItHook | DescribeHook): ExpressionStatement {
-	return {
-		type: "ExpressionStatement",
-		expression: {
-			type: "CallExpression",
-			arguments: [lit('name'), test],
-			callee: id('describe')
-		}
-	}
-}
-
-function mkTest(): ItHook {
-	let hook = new ItHook()
-	// hook.body.push
-	// {
-	// 	body:[],
-	//
-	// }
-	return hook
-}
 
 
 let _test //= //`
@@ -92,6 +28,7 @@ const _Cleaning_Test_Root = join(_Testing_Data_Root, `cleaning`)
 const _Cleaning_Equality = join(_Cleaning_Test_Root, `equality`)
 const SUITES: { [suiteName: string]: string } = {};
 SUITES['cleaning'] = _Cleaning_Equality
+/*
 
 if (SUITES.x) {
 	readdirSync(join(process.env.CJS, 'test', 'templates')).map(file => {
@@ -121,11 +58,7 @@ if (SUITES.x) {
 		})
 
 	})
-}
-// .filter(e=> e.endsWith('.js'))
-// .map(e=> e.replace((/\.ts/g),''))
-// .map(e=>e)
-// Object.keys()
+}*/
 let _init_suites = 'let suites =readdirSync(`${process.env.CJS}/test_data/cleaning/equality`);\n'
 
 // console.log(JSON.stringify(testprogram.body,null,3)   )
@@ -135,43 +68,23 @@ let _init_suites = 'let suites =readdirSync(`${process.env.CJS}/test_data/cleani
 let describep = parseScript(`describe('name', ()=>{})`).body[0].expression
 // @ts-ignore
 let itp = parseScript(`it('test-name',()=>{test})`).body[0].expression
-//
-// console.log(describe.type)
-// console.log(it.body[0].expression.type)
-// let _describe = generate(describe)
-// let _it = generate(it)
+
 let TR = `${process.env.CJS}/test_data`
 let clean_root = join(TR, `cleaning/equality`)
 let test_data = join(process.env.CJS, 'test_data')
 let test_root = join(test_data, 'cleaning/equality')
-let suites = readdirSync(clean_root)
+console.log( readdirSync(clean_root).filter(e=> e != '.DS_Store'))
+// let suites = readdirSync(clean_root).filter(e=> e != '.DS_Store')
 
-let import_statements = `
-import {expect} from 'chai';
-import 'mocha';
-import {join} from "path";
-import {clean} from "../src/janitor/janitor";
-import {createProject} from "../test";
-`
+
+
+
 let format = (program: string) => generate(parseScript(program))
 
-let preamble = `
-let test_data = join(process.env.CJS , 'test_data' )
-let test_root =join (test_data, 'cleaning/equality')
-`
-
-let all = suites.map((suite) => forEachSuite(suite, clean_root))
-	.reduce((s1, s2) => `${s1}\n\n${s2}`, '')
-
-all = preamble + '\n\n\n' + all
-all = format(all)
-all = import_statements + '\n\n\n' + all
-writeFileSync(`${process.env.CJS}/test/${'cleaning'}.generated.ts`, all)
 
 function forEachSuite(suite: string, test_root: string) {
 	let _suite = '';
-
-	let tests = readdirSync(join(test_root, suite))
+	let tests = readdirSync(join(test_root, suite)).filter(e=> e != '.DS_Store')
 	_suite += `describe('${suite}', () => {`
 	_suite += tests.map(forEachTest).reduce((e, r) => e + '\n\n' + r)
 
@@ -196,4 +109,55 @@ function forEachSuite(suite: string, test_root: string) {
 	}
 
 }
+
+const import_statements =  `
+import {expect} from 'chai';
+import 'mocha';
+import {join} from "path";
+import {clean} from "../src/janitor/janitor";
+import {createProject} from "../test";
+
+`
+const preamble =   (`
+let test_data = join(process.env.CJS , 'test_data' )
+let test_root =join (test_data, 'cleaning/equality')
+`)
+let stringReducer = ((str='\n') =>  (e:string,r:string)=> e + str + r)
+let getSuites =() => readdirSync(clean_root).filter(e=> e != '.DS_Store')
+let generateCleanSuite = (suite:string)=> forEachSuite(suite, clean_root)
+let suites = readdirSync(clean_root).filter(e=> e != '.DS_Store')
+function regenerate():string{
+	return getSuites()
+		.map(e=> generateCleanSuite(e))
+		.reduce(stringReducer('\n\n\n') , '')
+}
+
+let zzt = suites
+	.map((suite) =>
+		forEachSuite(suite, clean_root))
+	.reduce(
+		(s1, s2) => `${s1}\n\n${s2}`, '')
+let total =   `
+${import_statements}
+
+${preamble}
+
+${format ( regenerate() )
+}
+`;
+// let z = readdirSync(clean_root).filter(e=> e != '.DS_Store').map(e=>  join (clean_root, e))
+// z.map(e=>[e,readdirSync(e)])
+// 	.map(e=>
+// 			e[1].map(r => join(e[0],r)))
+// // watch()
+writeFileSync(`${process.env.CJS}/test/cleaning.generated.ts`, total)
+
+
+
+
+
+
+
+
+
 

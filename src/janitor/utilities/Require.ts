@@ -27,20 +27,21 @@ class RequireCallz implements RequireCall {
 	private readonly cleaned:string
 
 	constructor(rstring: string) {
+		this.rstring = rstring
+		this.arguments = [{type: "Literal", value: rstring}]
 		this.cleaned = cleanMS(this.rstring)
 		this.callee = id('require')
-		this.arguments = [{type: "Literal", value: rstring}]
-		this.rstring = rstring
 	}
 
 	arguments: Array<SimpleLiteral>;
 	callee: Identifier;
-	type: "CallExpression";
+	type: "CallExpression"= "CallExpression"
 
 	getRS(): string {
 		return this.rstring;
 	}
 	getCleaned(): string {
+		console.log(this.cleaned)
 		return this.cleaned;
 	}
 

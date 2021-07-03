@@ -1,21 +1,13 @@
 import {generate} from "escodegen";
-import {Program} from "esprima";
-import {replace, Visitor} from "estraverse";
+import {replace, traverse, Visitor, VisitorOption} from "estraverse";
 import {
-	AssignmentExpression,
-	AssignmentProperty,
-	BlockStatement,
 	CallExpression,
 	Directive,
-	Expression,
-	ExpressionStatement,
 	Identifier,
 	Literal,
 	MemberExpression,
 	ModuleDeclaration,
 	Node,
-	Property,
-	SpreadElement,
 	Statement,
 	VariableDeclaration,
 	VariableDeclarator
@@ -23,29 +15,35 @@ import {
 import {id} from "../abstract_fs_v2/interfaces";
 import {JSFile} from "../abstract_fs_v2/JSv2";
 import {JanitorData} from "./data_management/DataController";
-import {JanitorRequireData} from "./data_management/RequireStringData";
+import {gatherExportInfo} from './functions'
+import {exportCopyAndDeclare} from "./subvisitors/exports/exports.main";
+// import {flattenDirectAssignOfObjectLiteralToModuleDotExports} from "./subvisitors/exports/FlattenExportObjectAssignment";
+// import {flattenVariableDeclarations} from "./subvisitors/general/FlattenVariableDeclarators";
+// import {
+// 	flattenRequireObjectDeconstructions,
+// 	flattenRequireObjectDeconstructions2
+// } from "./subvisitors/require/FlattenObjectDeconstructions";
+import {requireCleanAndHoist} from "./subvisitors/require/hoist";
 import {
 	cleanMS,
 	cleanRequires,
-	declare,
+	// declare,
 	EXPORT_INFO,
-	exportsDot,
 	isARequire,
-	isModule_Dot_Exports, requireCleanAndHoist
+	isModule_Dot_Exports,
+	module_dot_exports
 } from "./utilities/helpers";
-import {
-	gatherExportInfo,
-	flattenRequireObjectDeconstructions,
-	flattenVariableDeclarations,
-	flattenDirectAssignOfObjectLiteralToModuleDotExports,
-	getPass2
-} from './functions'
-import {asRequire} from "./utilities/Require";
+import {asRequire, RequireCall} from "./utilities/Require";
 // import {flattenObjectPattern} from "./subvisitors/ObjDeconstFlatten";
 
 // import { flattenObjectPattern, getToFlatten} from "./subvisitors/flattening";
 
-export interface requireData {raw:string, clean:string, id:string}
+export interface requireData {
+	raw: string,
+	clean: string,
+	id: string
+}
+
 export interface DataInterface {
 	reqStrToIDMap: { [key: string]: string }
 	exportNameToNodeList: { [key: string]: Node[] }
@@ -57,17 +55,210 @@ interface ExportInfo {
 	hasBoth: boolean;
 	hasDEfault: boolean
 }
+
 type Body = (Directive | Statement | ModuleDeclaration)[]
+/*
+ function janitor(js: JSFile) {
+	let rst = js.getRST()
+	traverse(js.getAST(), {
+		leave: (node: Node, parent: Node) => {
+			if (isARequire(node)) {
+				let rs = (node as RequireCall).arguments[0].value.toString();
+				(node as RequireCall).arguments[0].value = rst.getTransformed(rs);
+			}
 
 
+			flattenDirectAssignOfObjectLiteralToModuleDotExports().leave(node, parent)
+			flattenRequireObjectDeconstructions2(js).enter(node, parent)
+			if (node.type === "MemberExpression" && node.object.type === "Identifier" && node.object.name === "exports") {
+				node.object = module_dot_exports()
+			}
+		}
+	})
+	traverse(js.getAST(), {leave: flattenVariableDeclarations});
+	js.rebuildNamespace(js.getDefaultExport())
+	cleanExports()
+
+
+	hoistRequires()
+
+	function cleanExports() {
+		let exportData: { [id: string]: string } = {}
+
+		let toDefineList: string[] = []
+		traverse(js.getAST(), {
+			enter: (node: Node, parent: Node) => {
+				if (
+					node.type === "ExpressionStatement"
+					&& node.expression.type === "AssignmentExpression"
+					&& node.expression.left.type === "MemberExpression"
+					&& (isModule_Dot_Exports(node.expression.left)
+						|| (isModule_Dot_Exports(node.expression.left.object))
+					)
+					&& (parent.type === "Program"
+					|| parent.type === "BlockStatement")
+				) {
+					let data = asModuleDotExports(node.expression.left)
+					if (data) {
+						let list: Statement[] = []
+						let identifier: Identifier
+						switch (data.type) {
+							case "name":
+								let copy = js.getNamespace().generateBestName(data.Export)
+								identifier = copy
+
+								break;
+							case "default":
+								identifier = js.getDefaultExport()
+
+								break;
+
+						}
+						list.push({
+							declarations: [declare(identifier.name, node.expression.right)],
+							type: "VariableDeclaration",
+							kind: "var"
+						})
+						if (!toDefineList.includes(identifier.name)) {
+							toDefineList.push(identifier.name)
+						}
+						node.expression.right = identifier
+						list.push(node)
+						let indexOf = parent.body.indexOf(node)
+						parent.body.splice(indexOf, 1, ... list)
+					}
+				}
+			}
+		})
+		let dcls = toDefineList.map(e => declare(e, null))
+		let dcl: VariableDeclaration = {
+			kind: "var",
+			type: "VariableDeclaration",
+			declarations: dcls
+		}
+		if(dcls.length>0){
+			js.getAST().body.splice(0, 0, dcl)
+		}
+	}
+
+	function hoistRequires() {
+		let ids: { [key: string]: string } = {}
+		let toAdd: Statement[] = []
+		replace(js.getAST(), {
+			leave: (node: Node, parent: Node) => {
+				if (node.type === "VariableDeclaration"
+					&& node.declarations.length === 1
+					&& node.declarations[0].init
+					&& node.declarations[0].id.type === "Identifier"
+					&& isARequire(node.declarations[0].init)
+				) {
+					console.log('INIT : ' + node.declarations[0].init)
+
+					if (parent.type === "Program") {
+						toAdd.push(node)
+
+
+						let $ = asRequire(node.declarations[0].init)
+						let rs = $.getRS()
+						ids[rs] = node.declarations[0].id.name
+						return VisitorOption.Remove
+					} else {
+						let $ = asRequire(node.declarations[0].init)
+						let id2: Identifier
+						let clean = $.getCleaned()
+						let rs = $.getRS()
+
+						if (!ids[rs]) {
+							id2 =js.getNamespace().generateBestName(  ids[rs])
+ 							ids[rs] =id2.name
+						} else{
+							id2 = id(id[rs])
+						}
+						toAdd.push(declaration(id2, $))
+						node.declarations[0].init = id2
+					}
+
+
+				} else if (node.type === "CallExpression" && isARequire(node)) {
+					let $ = asRequire(node)
+					let id2: Identifier
+					console.log(`CALLEX: ${(node.arguments[0] as Literal).value.toString()}`)
+					let clean = $.getCleaned()
+
+					let rs = $.getRS()
+					if (!ids[$.getRS()]) {
+						ids[$.getRS()] =clean
+					}
+					id2 =js.getNamespace().generateBestName(  ids[rs])
+					toAdd.push(declaration(id2, $))
+					return id2
+				}
+
+			}
+		})
+	}
+}
+function declaration($id:string | Identifier, requireCallString:string| RequireCall){
+	let _id = typeof $id =="string" ? $id: $id.name
+	let declaration:VariableDeclaration={kind:"var",type:"VariableDeclaration",declarations:[]}
+	 if( typeof requireCallString =="string"){
+	 	let callex :CallExpression={type:"CallExpression",arguments:[{type:"Literal",value:requireCallString}],callee:id('require')}
+	 	declaration.declarations.push(declare(_id, callex ))
+
+	 }else{
+		 declaration.declarations.push(declare(_id, requireCallString ))
+
+	 }
+	 return declaration
+}*/
+// export function asModuleDotExports(mx: MemberExpression): { Export: string, type: 'name' | 'default' } {
+// 	if (mx.property.type === "Identifier") {
+// 		if (mx.object.type === "Identifier"
+// 			&& mx.object.name === "module"
+// 			&& mx.property.name === "exports"
+// 		) {
+// 			return {Export: '', type: 'default'}
+// 		} else if (isModule_Dot_Exports(mx.object)) {
+// 			return {Export: mx.property.name, type: 'name'}
+// 		}
+// 	}
+// 	return null
+// }
+
+interface _Module extends Identifier {
+	name: 'module'
+}
+
+interface _Exports extends Identifier {
+	name: 'exports'
+}
+
+interface ExportOnExports extends MemberExpression {
+	object: ModuleDotExports,
+	property: Identifier,
+	computed: false,
+	type: "MemberExpression"
+}
+
+interface ModuleDotExports extends MemberExpression {
+	object: _Module,
+	property: _Exports,
+	computed: false,
+	type: "MemberExpression"
+}
+
+interface UtilityExport {
+
+}
 
 /**.
  * TransformFunction that does Variable Declaration Declarator flattening.
  * @param js the JSFile to transform.
  */
+/*
 export default function main(js: JSFile) {
 	let dc: JanitorData = new JanitorData(js)
-let rd : {[raw:string]: requireData } = {};
+	let rd: { [raw: string]: requireData } = {};
 	let defaultCount = 0;
 
 	let declareDefaultID = false;
@@ -82,8 +273,6 @@ let rd : {[raw:string]: requireData } = {};
 	// }
 
 
-
-
 	let hasDefault: boolean = false;
 	let hasNamed: boolean = false;
 
@@ -94,120 +283,52 @@ let rd : {[raw:string]: requireData } = {};
 
 	let pass0: Visitor = {
 		enter: (node: Node, parent: Node) => {
-			 cleanRequires(node, parent, rd, dc.Requires, js)
+			cleanRequires(node, parent, rd, dc.Requires, js)
 			flattenRequireObjectDeconstructions(node, js, dc.Requires)
 
 			gatherExportInfo(node, parent, export_info);
 		},
 		leave: (node: Node, parent: Node) => {
-			flattenDirectAssignOfObjectLiteralToModuleDotExports(node, parent);
+			// flattenDirectAssignOfObjectLiteralToModuleDotExports(node, parent);fixme maybe not
 		}
 	}
 	replace(js.getAST(), pass0);
-	requireCleanAndHoist(js,rd )
 	replace(js.getAST(), {enter: flattenVariableDeclarations})
-
+	let hoisted = requireCleanAndHoist(js, rd)//must be after flatten
 
 	js.rebuildNamespace(js.getNamespace().getDefaultExport())
-	let declarators = Object.keys(exportNames)
+	exportCopyAndDeclare(export_info, js)
+	let copyList: VariableDeclarator[] = Object.keys(exportNames)
 		.filter((str: string) => str !== 'default')
 		.map(e => declare(exportNames[e]))
-
-	let exportCopies: VariableDeclaration = {
+	let declaredExports: VariableDeclaration = {
 		kind: "var",
-		declarations: declarators,
+		declarations: copyList,
 		type: "VariableDeclaration"
 	}
-
-	//FIXME this is where the var a,b,c is added for exports... move it! `
-	if (exportCopies.declarations.length > 0) {
-		js.getAST().body.splice(0, 0, exportCopies)
-	}
-
-	// replace(js.getAST(), {
-	// 	leave: (node: Node, parent: Node) => {
-	//
-	// 		if (node) {
-	// 			return node
-	// 		}//fixme remove this
-	// 		let _export = '';
-	// 		if (node.type === "MemberExpression"
-	// 			&& node.property.type === "Identifier") {
-	//
-	// 			if (isModule_Dot_Exports(node)) {
-	// 				if (parent.type === "AssignmentExpression") {
-	// 					if (node == parent.left) {
-	// 						//default
-	// 					} else if (node == parent.right && parent.left.type === "Identifier") {
-	// 						potential_aliases.push(parent.left.name)
-	// 					}
-	// 				} else if (parent.type === "VariableDeclarator"
-	// 					&& parent.init === node
-	// 					&& parent.id.type === "Identifier"
-	// 				) {
-	// 					//is a read
-	// 					potential_aliases.push(parent.id.name)
-	// 				}
-	// 				defaultCount++
-	// 				hasDefault = true
-	// 				return js.getDefaultExport()
-	// 			} else if (isModule_Dot_Exports((node.object))
-	// 				|| (node.object.type === "Identifier"
-	// 					&& node.object.name === "exports")
-	// 			) {
-	// 				if (!exportNames[node.property.name]) {
-	// 					hasNamed = true
-	// 					let identifier = js
-	// 						.getNamespace()
-	// 						.generateBestName(`_${node.property.name}`)
-	// 					exportNames[node.property.name] = identifier.name
-	//
-	// 					return identifier
-	// 				} else {
-	// 					return id(exportNames[node.property.name])
-	// 				}
-	//
-	//
-	// 				//  node.property.name
-	// 			} else {
-	// 				///NIL
-	// 			}
-	//
-	//
-	// 			if (_export) {
-	// 				switch (_export) {
-	// 					case "default":
-	//
-	// 						break;
-	// 					default:
-	// 						break;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
+	// copyList.forEach(d=>{
+	// 	console.log (generate({
+	// 		type:"VariableDeclaration",
+	// 		kind:"var",
+	// 		declarations: [d]
+	// 	}))
 	//
 	// })
-	// let listofexports: Statement[]
-		// =
-		// Object.keys(exportNames).map(e => [e, exportNames[e]]).map(e => {
-		// 	return {
-		// 		type: "ExpressionStatement",
-		// 		expression: {
-		// 			type: "AssignmentExpression",
-		// 			left: {
-		// 				type: "MemberExpression",
-		// 				computed: false,
-		// 				object: js.getNamespace().getDefaultExport(),
-		// 				property: id(e[0])
-		// 			},
-		// 			right: id(e[1]),
-		// 			operator: '='
-		// 		}
-		// 	}
-		// })
-	// js.getAST().body.push(... listofexports)
+	console.log(generate(declaredExports))
+	console.log("copylist dcelarators", JSON.stringify(copyList, null, 3))
 
-}
+	console.log(JSON.stringify(declaredExports, null, 3))
+	// console.log(JSON.stringify(exportNames,null,3))
+	// declaredExports.forEach(e=> console.log(generate(e)))
+	if (declaredExports) {
+		js.getAST().body.splice(0, 0, declaredExports)
+	}
+	if (hoisted) {
+		console.log("HOISTED", JSON.stringify(hoisted, null, 3))
+		js.getAST().body.splice(0, 0, ... hoisted)
+
+	}
+}*/
 
 
 

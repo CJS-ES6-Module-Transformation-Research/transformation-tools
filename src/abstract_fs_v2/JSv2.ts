@@ -10,11 +10,12 @@ import {
 	Statement,
 	VariableDeclaration
 } from "estree";
-import {existsSync} from "fs";
+import {existsSync, writeFileSync} from "fs";
 import {basename, join, relative} from "path";
 import {Imports, InfoTracker} from "../InfoTracker";
 import {DataInterface} from "../janitor/pass0";
 import {API, API_TYPE} from "../transformations/export_transformations/API";
+import {cleanMIS} from "../transformations/import_transformations/visitors/insert_imports";
 import {RequireStringTransformer} from "../transformations/sanitizing/requireStringTransformer";
 import {AbstractDataFile} from './Abstractions'
 import {Dir} from './Dirv2'

@@ -116,6 +116,9 @@ export class Namespace {
 	 * @return the Identifier object with the non-colliding name.
 	 */
 	generateBestName(name: string): Identifier {
+		if (!name) {
+			throw new Error("illegal argument")
+		}
 		if (!this.names.has(name)) {
 			this.addToNamespace(name)
 			console.log(`--> ${name}`)

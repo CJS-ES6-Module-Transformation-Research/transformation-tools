@@ -2,7 +2,7 @@ import {ProjectManager} from "../abstract_fs_v2/ProjectManager";
 import {PM_Opts} from "../args/args";
 import * as arg from "../args/arrgs3";
 import {clean} from "./janitor";
-import pt1 from './pass0'
+// import pt1 from './pass0'
 // function run(cwd:string , transformJS){
 // let opts = getOptionData(cwd)
 // 	let opts:PM_Opts  = arg.parse()

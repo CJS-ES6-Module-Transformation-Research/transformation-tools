@@ -1,13 +1,16 @@
-import {replace, Visitor, VisitorOption} from "estraverse";
+import {generate} from "escodegen";
+import {replace, VisitorOption} from "estraverse";
 import {
 	AssignmentExpression,
 	CallExpression,
 	Expression,
+	Identifier,
 	Literal,
 	MemberExpression,
 	Node,
 	Pattern,
-	SourceLocation, Statement, VariableDeclaration,
+	SourceLocation,
+	Statement,
 	VariableDeclarator
 } from "estree";
 import {createRequireDecl, id} from "../../abstract_fs_v2/interfaces";
@@ -15,13 +18,14 @@ import {JSFile} from "../../abstract_fs_v2/JSv2";
 import {RequireStringTransformer} from "../../transformations/sanitizing/requireStringTransformer";
 import {JanitorRequireData} from "../data_management/RequireStringData";
 import {requireData} from "../pass0";
+import {ExportAssignment, ExportAssignmentStatement, LHSExport} from "./JanitorTypes";
 
 
 export const JSON_REGEX: RegExp = new RegExp('.+\.json$');
 
 
 export function cleanRequire(node: CallExpression, js: JSFile) {
-	let  rst: RequireStringTransformer = js.getRST()
+	let rst: RequireStringTransformer = js.getRST()
 	if (node.callee.type === "Identifier"
 		&& node.callee.name === "require"
 		&& node.arguments[0].type === "Literal") {
@@ -72,14 +76,16 @@ export function isAnExport(node: Node, parent: Node): boolean {
 }
 
 export interface ModuleDotExports extends DotExpr {
-	object:{type:"Identifier", name:"module"}
-	property:{type:"Identifier", name:"exports"}
+	object: { type: "Identifier", name: "module" }
+	property: { type: "Identifier", name: "exports" }
 }
-export interface DotExpr extends MemberExpression{
-	computed:false
+
+export interface DotExpr extends MemberExpression {
+	computed: false
 }
 
 export function cleanMS(requireStr: string) {
+
 	let replaceDotJS: RegExp = new RegExp(`(\.json)|(\.js)`, 'g')// /[\.js|]/gi
 	let illegal: RegExp = new RegExp(`([^a-zA-Z0-9_\$])`, "g"); ///[alphaNumericString|_]/g
 	let cleaned = requireStr.replace(replaceDotJS, '');
@@ -91,26 +97,26 @@ export function cleanMS(requireStr: string) {
 }
 
 
-export const module_dot_exports :(loc?:SourceLocation) =>  ModuleDotExports = (loc:SourceLocation= undefined)=>{
-	let retVal :ModuleDotExports =   {
+export const module_dot_exports: (loc?: SourceLocation) => ModuleDotExports = (loc: SourceLocation = undefined) => {
+	let retVal: ModuleDotExports = {
 		type: "MemberExpression",
-		object:{type:"Identifier", name:"module"} ,
-		property:{type:"Identifier", name:"exports"} ,
+		object: {type: "Identifier", name: "module"},
+		property: {type: "Identifier", name: "exports"},
 		computed: false,
 		loc: loc
 	}
 	return retVal
 }
 
-export function cleanRequires(node: Node, parent: Node,rd:{[k:string]:requireData}, data: JanitorRequireData,/* ids: { [p: string]: string },*/ js: JSFile): void {
-let raw:string, _id:string
-	let cleaned:string
+export function cleanRequires(node: Node, parent: Node, rd: { [k: string]: requireData }, data: JanitorRequireData,/* ids: { [p: string]: string },*/ js: JSFile): void {
+	let raw: string, _id: string
+	let cleaned: string
 	if (node.type === "CallExpression" && isARequire(node)) {
-	raw = (node.arguments[0]as Literal).value.toString()
+		raw = (node.arguments[0] as Literal).value.toString()
 		if (parent && parent.type === "VariableDeclarator"
 			&& parent.id.type === "Identifier") {
 			cleaned = cleanRequire(node, js)
-  			data.addSpecifier(cleaned, parent.id.name)
+			data.addSpecifier(cleaned, parent.id.name)
 			_id = parent.id.name
 			// ids[cleanRequire(node, js)] = parent.id.name
 			// return VisitorOption.
@@ -127,58 +133,26 @@ let raw:string, _id:string
 			// (handled in pattern flatten)
 			// id()return
 		}
-	if (!_id){
-		_id = cleanMS(raw)
-	}
-	rd[raw] = {raw,clean:cleaned,id:_id}
-
-	}
-}
-export function requireCleanAndHoist(js:JSFile,rd:{[k:string]:requireData}):Statement[]{
-	let ordering:string[] = []
-
-let vis:Visitor = {
-	leave:(node:Node,parent:Node)=>{
-		let clean:string, raw:string, _id:string
-
-		function update(): void {
-			if (!ordering.includes(raw)) {
-				ordering.push(raw)
-			}
-			ordering[raw] = ordering[raw] || {clean, raw, id: _id}
+		if (!_id) {
+			_id = cleanMS(raw)
 		}
+		rd[raw] = {raw, clean: cleaned, id: _id}
 
-		if (node.type === "CallExpression" && isARequire(node)){
-			raw = (node.arguments[0] as Literal).value.toString()
-			clean = cleanRequire(node, js)
-			{
-				if (parent && parent.type === "VariableDeclarator"
-					&& parent.id.type === "Identifier"
-				) {
-					_id = parent.id.name
-					update();
-					return VisitorOption.Remove
-
-				}else{
-					_id = js.getNamespace().generateBestName(_id).name
-					update();
-					return id(_id)
-				}
-
-			}
-
-		}
 	}
 }
-replace(js.getAST(),vis)
-return ordering.map(r=>
-	createRequireDecl(rd[r].id ,rd[r].clean,'var')
-)
+
+export function makeAnExportStatement(prop: ModuleDotExports | Identifier, name: Identifier, exportCopy: Identifier): ExportAssignmentStatement {
+	let left: LHSExport = {computed: false, object: prop, property: name, type: "MemberExpression"}
+	let expression: ExportAssignment = {left, right: exportCopy, type: "AssignmentExpression", operator: "="}
+	let exp: ExportAssignmentStatement = {type: "ExpressionStatement", expression}
+	return exp
 }
-export function exportsDot(prop: string ): MemberExpression {
-	let _retVal:MemberExpression= {
+
+
+export function exportsDot(prop: string): MemberExpression {
+	let _retVal: MemberExpression = {
 		type: "MemberExpression",
-		object: module_dot_exports()  ,
+		object: module_dot_exports(),
 		property: id(prop),
 		computed: false,
 
@@ -186,48 +160,48 @@ export function exportsDot(prop: string ): MemberExpression {
 
 	return _retVal
 }
-function isAnExportRW(node:Node){
-	if (node.type ==="MemberExpression"){
+
+function isAnExportRW(node: Node) {
+	if (node.type === "MemberExpression") {
 		switch (node.object.type) {
 			case "MemberExpression":
 				break;
 
 			case "Identifier":
-				if (node.object.name ==="exports"
-				&& node.property.type === "Identifier"){
+				if (node.object.name === "exports"
+					&& node.property.type === "Identifier") {
 
-				} else if (node.object.name ==="module"
-					&& node.property.type==="Identifier"
-					&& node.property.name==="exports"
-					){
+				} else if (node.object.name === "module"
+					&& node.property.type === "Identifier"
+					&& node.property.name === "exports"
+				) {
 
-  				}
-				else{
+				} else {
 
 				}
 				break;
 		}
 	}
 }
-export enum ExportType    {
-	NAME_SHORTCUT='NAME_SHORTCUT',
-	NAMED='NAMED',
-	DEFAULT='DEFAULT'
+
+export enum ExportType {
+	NAME_SHORTCUT = 'NAME_SHORTCUT',
+	NAMED = 'NAMED',
+	DEFAULT = 'DEFAULT'
 
 }
 
 
- export function isModuleDotExports(node:Node): { Type:ExportType, name:string }{
-	if (node.type==="MemberExpression"&& node.property.type ==="Identifier"){
-		if (node.object.type === "MemberExpression" && isModuleDotExports(node.object).Type === ExportType.DEFAULT){
-			return  {name:node.property.name,Type:ExportType.NAMED}
-		}
-		else if (node.object.type === "Identifier"){
+export function isModuleDotExports(node: Node): { Type: ExportType, name: string } {
+	if (node.type === "MemberExpression" && node.property.type === "Identifier") {
+		if (node.object.type === "MemberExpression" && isModuleDotExports(node.object).Type === ExportType.DEFAULT) {
+			return {name: node.property.name, Type: ExportType.NAMED}
+		} else if (node.object.type === "Identifier") {
 			if (node.object.name === "module"
-				&& node.property.name === "exports"){
-				return {name:'',Type:ExportType.DEFAULT}
-			}else if(node.object.name ==="Exports"){
-				return  {name:node.property.name,Type:ExportType.NAME_SHORTCUT}
+				&& node.property.name === "exports") {
+				return {name: '', Type: ExportType.DEFAULT}
+			} else if (node.object.name === "Exports") {
+				return {name: node.property.name, Type: ExportType.NAME_SHORTCUT}
 			}
 		}
 
@@ -244,23 +218,26 @@ export function isModule_Dot_Exports(node: Node): boolean {
 }
 
 
-export function memberEx(object:Expression,property:Expression) : MemberExpression{
+export function memberEx(object: Expression, property: Expression): MemberExpression {
 	return {
 		computed: false, object, property, type: "MemberExpression"
 
-	}}
+	}
+}
 
 export type EXPORT_INFO = { hasDefault: boolean, hasNamed: boolean, exportNames: { [p: string]: string } }
 
-export function declare(ident: string, value: Expression = undefined): VariableDeclarator {
-	return {id: id(ident), init: value, type: "VariableDeclarator"}
-}
-export function assign(val:Pattern,expr:Expression):AssignmentExpression{
+// export function declare(ident: string|Identifier, value: Expression = undefined): VariableDeclarator {
+// 	let _id  = typeof ident == 'string'? id(ident):ident
+// 	return {id:_id , init: value|| null, type: "VariableDeclarator"}
+// }
+
+export function assign(val: Pattern, expr: Expression): AssignmentExpression {
 	return {
-		left:val,
-		right:expr,
-		operator:'=',
-		type:"AssignmentExpression"
+		left: val,
+		right: expr,
+		operator: '=',
+		type: "AssignmentExpression"
 
 	}
 
