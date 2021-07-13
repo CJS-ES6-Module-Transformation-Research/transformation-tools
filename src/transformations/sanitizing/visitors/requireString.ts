@@ -1,8 +1,8 @@
 import {traverse, Visitor} from "estraverse";
 import {Node, SimpleLiteral} from "estree";
-import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {RequireStringTransformer} from "../requireStringTransformer";
+import {JSFile} from "../../../filesystem/JSFile";
+import {TransformFunction} from "../../../utility/types";
+import {RequireStringTransformer} from "../../../refactoring/utility/requireStringTransformer";
 
 
 /**
@@ -28,8 +28,6 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 				&& node.arguments[0].type === "Literal") {
 				let literal: SimpleLiteral = (node.arguments[0] as SimpleLiteral)
 				report.addARequire(js)
-
-				// console.log(`import ing in ${js.getRelative()}  from m${literal.value.toString()}   which is in dir: ${_dir.getRelative()}`)
 				let requireString: string = rst.getTransformed(literal.value.toString()) //requireStringTF.getTransformed(literal.value.toString(),js.getParent())
 				dataRep[js.getRelative()].push(requireString)
 				if (requireString !== literal.value.toString()) {
@@ -40,16 +38,9 @@ export const requireStringSanitizer: TransformFunction = function (js: JSFile) {
 					requireString = js.createCJSFromIdentifier(requireString)
 					_json_req[js.getRelative()].push(requireString)
 					report.addJSONRequire(js, requireString)
-					// literal.value = requireString
-					// literal.raw = `'${requireString}'`
 				}
-				// else {
-				//         literal.value = requireString
-				//         literal.raw = `'${requireString}'`
-				//     }
+
 				node.arguments[0] = {type: "Literal", value: requireString}
-				// console.log (generate(node))
-				// console.log(node.argume nnts[0] .toString() )
 			}
 		}
 	};

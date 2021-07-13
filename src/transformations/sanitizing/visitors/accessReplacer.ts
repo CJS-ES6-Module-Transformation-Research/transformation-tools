@@ -23,12 +23,12 @@ import {
 	VariableDeclaration,
 	VariableDeclarator
 } from 'estree'
-import _ from 'lodash'
-import {createRequireDecl, id} from "../../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {Namespace} from "../../../abstract_fs_v2/Namespace";
-import {InfoTracker} from "../../../InfoTracker";
-import {add__dirname} from "./__dirname";
+import {id} from "../../../utility/factories";
+import {createRequireDecl} from "../../../utility/Require";
+import {JSFile} from "../../../filesystem/JSFile";
+import {Namespace} from "../../../filesystem/Namespace";
+import {InfoTracker} from "../../../refactoring/utility/InfoTracker";
+import {add__dirname} from "../../../refactoring/__dirname";
 
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';
@@ -88,7 +88,7 @@ export function accessReplace(js: JSFile) {
 				let require: Require = node as Require
 				let requireString: string = (require.arguments[0] as Literal).value.toString();
 				report.addAccessReplace(js)
-				let idStr: string = requireTracker.getFromDeMap(requireString, "ms")
+				let idStr: string = requireTracker.getDeMap().fromSpec[requireString]
 				// console.log(`acc   ${idStr}`
 				// )
 				if (!idStr) {
@@ -264,7 +264,7 @@ interface RequireAccessIDs {
 
 function cleanValue(requireStr: string): string {
 	let replaceDotJS: RegExp = new RegExp(`(\.json)|(\.js)`, 'g')// /[\.js|]/gi
-	let illegal: RegExp = new RegExp(`([^${alphaNumericString}_])`, "g"); ///[alphaNumericString|_]/g
+	let illegal: RegExp = new RegExp(`([^${alphaNumericString}_\$])`, "g"); ///[alphaNumericString|_]/g
 	let cleaned = requireStr.replace(replaceDotJS, '');
 	cleaned = cleaned.replace(illegal, "_");
 

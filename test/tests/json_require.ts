@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
+import {JSFile} from "../../src/filesystem/JSFile";
 import {requireStringSanitizer} from "../../src/transformations/sanitizing/visitors";
 import {createProject, FIXTURES} from "../index";
 

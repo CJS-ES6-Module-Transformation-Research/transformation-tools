@@ -1,0 +1,11 @@
+var __exports, a, b, c, d;
+__exports = {};
+module.exports = __exports;
+a = 1;
+module.exports.a = a;
+b = 2;
+module.exports.b = b;
+c = 3;
+module.exports.c = c;
+d = 4;
+module.exports.d = d;

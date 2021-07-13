@@ -1,9 +1,9 @@
 import {expect} from "chai";
 import {join} from "path";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {getDeclaredModuleImports, reqPropertyInfoGather} from "../../src/InfoGatherer";
-import {__exports} from "../../src/transformations/export_transformations/ExportPass";
-import { execute } from "../../src/executor";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {getDeclaredModuleImports, reqPropertyInfoGather} from "../../src/refactoring/utility/InfoGatherer";
+import {__exports} from "../../src/refactoring/export-phases/ExportPass";
+import { execute } from "../../src/bin/executor";
 import {createProject, FIXTURES} from "../index";
 
 function MANY(js: JSFile) {

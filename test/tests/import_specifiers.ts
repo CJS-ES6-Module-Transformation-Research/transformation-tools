@@ -1,12 +1,12 @@
 import {expect} from "chai";
 import {generate} from "escodegen";
 import {join} from "path";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {getDeclaredModuleImports, getListOfVars, reqPropertyInfoGather} from "../../src/InfoGatherer";
-import {API_TYPE} from "../../src/transformations/export_transformations/API";
-import {__exports} from "../../src/transformations/export_transformations/ExportPass";
-import {hacker_defaults} from "../../src/transformations/import_transformations/visitors/copyPassByValue";
-import {insertImports} from "../../src/transformations/import_transformations/visitors/insert_imports";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {getDeclaredModuleImports, getListOfVars, reqPropertyInfoGather} from "../../src/refactoring/utility/InfoGatherer";
+import {API_TYPE} from "../../src/refactoring/utility/API";
+import {__exports} from "../../src/refactoring/export-phases/ExportPass";
+import {hacker_defaults} from "../../src/refactoring/import-phases/copyPassByValue";
+import {insertImports} from "../../src/refactoring/import-phases/insert_imports";
 import {createProject, FIXTURES} from "../index";
 
 

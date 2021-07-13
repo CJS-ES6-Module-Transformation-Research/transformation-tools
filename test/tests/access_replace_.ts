@@ -1,6 +1,6 @@
 
 
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
+import {JSFile} from "../../src/filesystem/JSFile";
 import {accessReplace} from "../../src/transformations/sanitizing/visitors";
 import {createProject} from "../index";
 import {TEST_DIR} from "../index";

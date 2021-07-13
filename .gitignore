@@ -1,3 +1,6 @@
+run.sh
+
+
 _test 
 .idea
 node_modules
@@ -5,6 +8,13 @@ node_modules
 .DS_Store
 
 */node_modules
+fixtures/.git
+fixtures/.gitignore
+#utility file
+src/playground.ts
+
+*.report.txt
+*.report.js.txt
 
 out/*
 Data/*.out
@@ -30,6 +40,8 @@ coverage/**/*
 .project-dirs
 
 
+./index.js
+./cjs-transform.js
 *.js.map
 ./*.js
 ./*.js.map
@@ -47,5 +59,13 @@ test/tests/*.js.map
 test/test_resources
 
 /redirect/
+<<<<<<< HEAD
 
 *.report.txt
+=======
+/cjs-transform.js
+/index.js
+.project-dirs
+.nyc_output/processinfo/index.json
+ast0.js
+>>>>>>> last-working

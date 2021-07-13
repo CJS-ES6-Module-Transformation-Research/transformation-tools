@@ -1,0 +1,1 @@
+module.exports = {a:'_a',b:function(){}}
