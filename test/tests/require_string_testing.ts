@@ -2,8 +2,8 @@ import {readFileSync} from 'fs';
  import {expect} from 'chai';
 import {parseScript, Program} from "esprima";
 import {generate} from "escodegen";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {ProjectManager } from "../../src/abstract_fs_v2/ProjectManager";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {ProjectManager } from "../../src/control/ProjectManager";
 import {requireStringSanitizer} from '../../src/transformations/sanitizing/visitors';
 import {project as PROJ_DIR} from '../../index'
 import {mock_opts} from "../index";

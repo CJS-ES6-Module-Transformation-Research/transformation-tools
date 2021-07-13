@@ -1,34 +1,6 @@
-import {replace, Visitor} from "estraverse";
-import {
-	AssignmentExpression,
-	AssignmentProperty,
-	Directive,
-	Expression,
-	ExpressionStatement,
-	Identifier,
-	MemberExpression,
-	ModuleDeclaration,
-	Node,
-	Property,
-	SpreadElement,
-	Statement,
-	VariableDeclaration,
-	VariableDeclarator
-} from "estree";
-import {id} from "../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../abstract_fs_v2/JSv2";
-import {JanitorRequireData} from "../data_management/RequireStringData";
-import {moduleDotExports} from "../old/exports";
-import {
-	assign,
-	EXPORT_INFO,
-	exportsDot,
-	isARequire,
-	isModule_Dot_Exports,
-	memberEx,
-	module_dot_exports, ModuleDotExports
-} from "../utilities/helpers";
-import {asRequire} from "../utilities/Require";
+import {Node} from "estree";
+import {isModule_Dot_Exports} from "../../utility/predicates";
+import {EXPORT_INFO} from "../../utility/types";
 
 export function gatherExportInfo(node: Node, parent: Node, export_info: EXPORT_INFO) {
 	let {exportNames} = export_info

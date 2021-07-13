@@ -1,11 +1,11 @@
 import {expect} from 'chai'
 import {readdirSync} from "fs";
 import {join} from 'path';
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
-import execute, {_sanitize} from "../../src/executor";
-import {reqPropertyInfoGather} from "../../src/InfoGatherer";
-import {__exports} from "../../src/transformations/export_transformations/ExportPass";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {ProjectManager} from "../../src/control/ProjectManager";
+import execute, {_sanitize} from "../../src/bin/executor";
+import {reqPropertyInfoGather} from "../../src/refactoring/utility/InfoGatherer";
+import {__exports} from "../../src/refactoring/export-phases/ExportPass";
 import {createProject, FIXTURES} from "../index";
 
 interface TestsData {

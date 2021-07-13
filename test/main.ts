@@ -3,7 +3,7 @@ import {readdirSync} from 'fs'
 import 'mocha';
 
 import {join} from 'path'
-import {clean} from "../src/janitor/janitor";
+import {clean} from "../src/refactoring/janitor";
 import {createProject} from "./index";
 
 let test_root = `${process.env.CJS}/test_data/cleaning/equality`

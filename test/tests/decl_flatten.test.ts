@@ -2,10 +2,10 @@ import {readFileSync, readdirSync} from "fs";
 // test_resources.import {describe, it} from 'mocha'
 import {expect} from 'chai'
 import {project as PROJ_ROOT_DIR} from '../../index'
-import {write_status} from "../../src/abstract_fs_v2/interfaces";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {ProjectManager,ProjConstructionOpts} from "../../src/abstract_fs_v2/ProjectManager";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {ProjectManager,ProjConstructionOpts} from "../../src/control/ProjectManager";
  import {flattenDecls} from "../../src/transformations/sanitizing/visitors";
+import {write_status} from "../../src/utility/types";
 
 const DECL_FLATTEN = `${PROJ_ROOT_DIR}/test/test_resources/sanitize/declarator_flattener/decl_flatten`;
 const TEST_DIR: string[] = readdirSync(DECL_FLATTEN);
@@ -15,8 +15,8 @@ const FOR_TEST_DATA = TEST_DIR.filter(e => e.split('_')[0] === 'for');
 const IF_TEST_DATA = TEST_DIR.filter(e => e.split('_')[0] === 'if');
 
 
-function createOptions(dest:string='') :ProjConstructionOpts {
- return {
+function createOptions(input:string,dest:string='') :ProjConstructionOpts {
+ return {input,
      suffix: "",
      operation_type: dest? "copy":"in-place",
      copy_node_modules: false,
@@ -27,8 +27,8 @@ function createOptions(dest:string='') :ProjConstructionOpts {
 }
 
 
-function createProj(src:string , dest:string=''){
-    return new ProjectManager(src, createOptions(dest) )
+function createProj(input:string , dest:string=''){
+    return new ProjectManager(input, createOptions(input,dest) )
 }
 
 

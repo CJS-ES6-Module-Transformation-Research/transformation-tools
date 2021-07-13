@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {join} from "path";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {add__dirname} from "../../src/transformations/sanitizing/visitors/__dirname";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {add__dirname} from "../../src/refactoring/__dirname";
 import {createProject, FIXTURES} from "../index";
 
 describe('__dirname', () => {

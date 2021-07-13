@@ -10,7 +10,7 @@ import {
 	Statement,
 	VariableDeclaration
 } from 'estree'
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
+import {JSFile} from "../../../filesystem/JSFile";
 
 let script: string = `
 var {a:bc} = require('abc')

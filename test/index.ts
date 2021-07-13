@@ -1,6 +1,6 @@
 import {join} from 'path';
 import {project} from '../index'
-import {ProjConstructionOpts, ProjectManager} from "../src/abstract_fs_v2/ProjectManager";
+import {ProjConstructionOpts, ProjectManager} from "../src/control/ProjectManager";
 
 //     __dirname / test /
 export const TEST_DIR = join(project, 'test')
@@ -12,6 +12,7 @@ export const project_sanitize_resources_root = `${test_root}/project_sanitize_te
 export const FIXTURES = join(project, 'fixtures')
 
 export const mock_opts: ProjConstructionOpts = {
+	input: "",
 	operation_type: "in-place",
 	output: "",
 	suffix: "",
@@ -22,29 +23,9 @@ export const mock_opts: ProjConstructionOpts = {
 	testing: true,
 	report: false
 }
-const namedProjOps: ProjConstructionOpts = {
-	isNamed: true,
-	operation_type: "in-place",
-	output: "",
-	suffix: "",
-	ignored: [],
-	testing: true, report: false
-
-
-}
-const defaultProjOpts: ProjConstructionOpts = {
-	isNamed: false,
-	operation_type: "in-place",
-	output: "",
-	suffix: "",
-	ignored: [],
-	testing: true,
-	report: false
-
-}
-
-export function createProject(projPath: string, isNamed: boolean) {
-	return new ProjectManager(projPath, {
+export function createProject(input: string, isNamed: boolean) {
+	return new ProjectManager(input, {
+			input,
 			isNamed: isNamed,
 			operation_type: "in-place",
 			output: "",

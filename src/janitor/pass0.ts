@@ -1,39 +1,10 @@
-import {generate} from "escodegen";
-import {replace, traverse, Visitor, VisitorOption} from "estraverse";
-import {
-	CallExpression,
-	Directive,
-	Identifier,
-	Literal,
-	MemberExpression,
-	ModuleDeclaration,
-	Node,
-	Statement,
-	VariableDeclaration,
-	VariableDeclarator
-} from "estree";
-import {id} from "../abstract_fs_v2/interfaces";
-import {JSFile} from "../abstract_fs_v2/JSv2";
-import {JanitorData} from "./data_management/DataController";
-import {gatherExportInfo} from './functions'
-import {exportCopyAndDeclare} from "./subvisitors/exports/exports.main";
+import {Directive, Identifier, MemberExpression, ModuleDeclaration, Node, Statement} from "estree";
 // import {flattenDirectAssignOfObjectLiteralToModuleDotExports} from "./subvisitors/exports/FlattenExportObjectAssignment";
 // import {flattenVariableDeclarations} from "./subvisitors/general/FlattenVariableDeclarators";
 // import {
 // 	flattenRequireObjectDeconstructions,
 // 	flattenRequireObjectDeconstructions2
 // } from "./subvisitors/require/FlattenObjectDeconstructions";
-import {requireCleanAndHoist} from "./subvisitors/require/hoist";
-import {
-	cleanMS,
-	cleanRequires,
-	// declare,
-	EXPORT_INFO,
-	isARequire,
-	isModule_Dot_Exports,
-	module_dot_exports
-} from "./utilities/helpers";
-import {asRequire, RequireCall} from "./utilities/Require";
 // import {flattenObjectPattern} from "./subvisitors/ObjDeconstFlatten";
 
 // import { flattenObjectPattern, getToFlatten} from "./subvisitors/flattening";
@@ -324,7 +295,6 @@ export default function main(js: JSFile) {
 		js.getAST().body.splice(0, 0, declaredExports)
 	}
 	if (hoisted) {
-		console.log("HOISTED", JSON.stringify(hoisted, null, 3))
 		js.getAST().body.splice(0, 0, ... hoisted)
 
 	}

@@ -2,7 +2,7 @@ import {Program} from "esprima";
 import {Visitor, VisitorOption} from "estraverse";
 import {Node} from "estree";
 import {Identifier} from "estree";
-import { JSFile } from "./abstract_fs_v2/JSv2";
+import { JSFile } from "./filesystem/JSFile";
 
 type WalkerType = void | Node | VisitorOption;
 type Scope_Type = "top-level" | "function" | "block";

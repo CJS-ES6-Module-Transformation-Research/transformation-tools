@@ -23,12 +23,12 @@ import {
 	VariableDeclaration,
 	VariableDeclarator
 } from 'estree'
-import _ from 'lodash'
-import {createRequireDecl, id} from "../../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {Namespace} from "../../../abstract_fs_v2/Namespace";
-import {InfoTracker} from "../../../InfoTracker";
-import {add__dirname} from "./__dirname";
+import {id} from "../../../utility/factories";
+import {createRequireDecl} from "../../../utility/Require";
+import {JSFile} from "../../../filesystem/JSFile";
+import {Namespace} from "../../../filesystem/Namespace";
+import {InfoTracker} from "../../../refactoring/utility/InfoTracker";
+import {add__dirname} from "../../../refactoring/__dirname";
 
 
 const lower = 'qwertyuioplkjhgfdsazxcvbnm';

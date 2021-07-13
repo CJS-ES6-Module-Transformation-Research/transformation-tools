@@ -114,7 +114,7 @@ const import_statements =  `
 import {expect} from 'chai';
 import 'mocha';
 import {join} from "path";
-import {clean} from "../src/janitor/janitor";
+import {clean} from "../src/refactoring";
 import {createProject} from "../test";
 
 `

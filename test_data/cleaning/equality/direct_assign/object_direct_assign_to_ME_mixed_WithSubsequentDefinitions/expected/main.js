@@ -1,8 +1,10 @@
-var a0, b,c
+var __exports, a0, b, c;
 var a;
-a0 = a
-b = 3
-c = 4
-module.exports.a = a0
-module.exports.b = b
-module.exports.c = c
+__exports = {};
+module.exports = __exports;
+a0 = a;
+module.exports.a = a0;
+b = 3;
+module.exports.b = b;
+c = 4;
+module.exports.c = c;

@@ -1,6 +1,6 @@
 // let test, test_root, SUITE, describe, createProject, clean, it, join, expect
 
-import {clean} from "../../src/janitor/janitor";
+import {clean} from "../../src/refactoring/janitor";
 import {createProject } from "../index";
 import { join } from "path";
 import { expect } from "chai";

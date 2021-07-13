@@ -1,10 +1,10 @@
 import {assert, expect} from "chai";
 import {join} from "path";
-import {JSFile} from "../../src/abstract_fs_v2/JSv2";
-import {ProjectManager} from "../../src/abstract_fs_v2/ProjectManager";
-import {getDeclaredModuleImports, reqPropertyInfoGather, ReqPropInfo} from "../../src/InfoGatherer";
-import {InfoTracker} from "../../src/InfoTracker";
-import {API_TYPE} from "../../src/transformations/export_transformations/API";
+import {JSFile} from "../../src/filesystem/JSFile";
+import {ProjectManager} from "../../src/control/ProjectManager";
+import {getDeclaredModuleImports, reqPropertyInfoGather, ReqPropInfo} from "../../src/refactoring/utility/InfoGatherer";
+import {InfoTracker} from "../../src/refactoring/utility/InfoTracker";
+import {API_TYPE} from "../../src/refactoring/utility/API";
 import {createProject, FIXTURES} from "../index";
 
 

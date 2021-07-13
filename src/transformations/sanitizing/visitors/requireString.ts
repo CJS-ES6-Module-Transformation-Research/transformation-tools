@@ -1,8 +1,8 @@
 import {traverse, Visitor} from "estraverse";
 import {Node, SimpleLiteral} from "estree";
-import {TransformFunction} from "../../../abstract_fs_v2/interfaces";
-import {JSFile} from "../../../abstract_fs_v2/JSv2";
-import {RequireStringTransformer} from "../requireStringTransformer";
+import {JSFile} from "../../../filesystem/JSFile";
+import {TransformFunction} from "../../../utility/types";
+import {RequireStringTransformer} from "../../../refactoring/utility/requireStringTransformer";
 
 
 /**

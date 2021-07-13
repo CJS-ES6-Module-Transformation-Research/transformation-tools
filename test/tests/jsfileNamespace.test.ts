@@ -1,7 +1,7 @@
 
 import {readFileSync} from 'fs'
 import {project} from "../../index";
-import {Namespace} from "../../src/abstract_fs_v2/Namespace";
+import {Namespace} from "../../src/filesystem/Namespace";
 import {test_root} from "../index";
 import {parseScript, Program} from "esprima";
 import { join } from "path";
