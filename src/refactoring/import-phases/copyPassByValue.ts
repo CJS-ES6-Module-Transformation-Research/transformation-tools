@@ -1,7 +1,7 @@
 import {replace} from "estraverse";
 import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
-import {JSFile} from "../../filesystem/JSFile";
-import {log} from "../../control/ProjectManager";
+import {JSFile} from "../../filesystem"
+import {log} from "../../control";
 import {API_TYPE} from "../utility/API";
 
 

@@ -11,19 +11,14 @@ import {replace, traverse, Visitor, VisitorOption} from "estraverse";
 	VariableDeclarator,
 	 Node
 } from "estree";
-import {JSFile} from "../../filesystem/JSFile";
-import {Namespace} from "../../filesystem/Namespace";
-import {errHandle} from "../../control/ProjectManager";
-import {AbstractReportBuilder, Reporter} from "../../control/Reporter";
-import {getListOfVars} from "../utility/InfoGatherer";
-import {Imports, WithPropNames} from "../utility/InfoTracker";
+import {JSFile,Namespace} from '../../filesystem'
+import {AbstractReportBuilder, AbstractReporter, errHandle, Reporter} from '../../control'
 import {built_ins, builtins_funcs} from "../../utility/data";
 import {API, API_TYPE} from "../utility/API";
+import {getListOfVars} from "../utility/InfoGatherer";
+import {Imports, WithPropNames} from "../utility/InfoTracker";
 
-export function cleanMIS(moduleSpecifier: string): string {
-	let mos = moduleSpecifier.replace(/^\.{0,2}\//, '')
-	return mos
-}
+
 export function replaceModExp_with_ID(propNameReplaceMap, js:JSFile ):Visitor {
 	 let  report:AbstractReportBuilder  =js.report();
 	 let names:Namespace = js.getNamespace()
