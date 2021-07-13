@@ -1,20 +1,21 @@
 import {replace} from "estraverse";
 import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
-import {JSFile} from "../../filesystem"
+import {JSFile, Namespace} from "../../filesystem"
 import {log} from "../../control";
 import {API_TYPE} from "../utility/API";
+import {InfoTracker} from "../utility/InfoTracker";
 
 
 export let hacker_defaults = (js: JSFile) => {
 	if (js.usesNamed() && (!js.getUseDefaultCopy())) {
 		return;
 	}
-	let ns = js.getNamespace()
+	let ns:Namespace = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
 	let getRPI = (x: string) => js.getInfoTracker().getRPI(x)
 	type ID_SET = { [base: string]: { [prop: string]: Identifier } }
 	let idSet: ID_SET = {}
-	let infoTracker = js.getInfoTracker()
+	let infoTracker: InfoTracker = js.getInfoTracker()
 	infoTracker
 		.getMaybePrims()
 		.forEach(e => {
