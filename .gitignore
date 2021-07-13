@@ -27,6 +27,9 @@ coverage/**/*
 
 #root
 
+.project-dirs
+
+
 *.js.map
 ./*.js
 ./*.js.map
@@ -44,3 +47,5 @@ test/tests/*.js.map
 test/test_resources
 
 /redirect/
+
+*.report.txt
