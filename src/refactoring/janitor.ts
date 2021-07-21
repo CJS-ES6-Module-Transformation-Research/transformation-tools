@@ -5,7 +5,11 @@ import {exportAndCopyPhase, hoistRequires, phase1, phase2} from "./janitor-phase
 
 
 export const clean = (pm: ProjectManagerI) => {
-	pm.forEachSource(janitor);
+	pm.forEachSource(phase1);
+	pm.forEachSource(phase2);
+	pm.forEachSource(exportAndCopyPhase);
+	pm.forEachSource(finalPhase);
+
 };
 // export {clean as default}
 
@@ -14,18 +18,22 @@ export type JSBody = Array<Directive | Statement | ModuleDeclaration>;
 
 
 function janitor(js: JSFile) {
-	const body: JSBody = js.getBody()
+
 
 	phase1(js);
 	phase2(js);
 
 	exportAndCopyPhase(js)
 
-	let imports = hoistRequires(js)
 
 
 	//FINAL PHASE
-	if (imports) {
-		body.splice(0, 0, ... imports)
-	}
+
+}
+function finalPhase(js:JSFile) {
+		let imports = hoistRequires(js)
+
+		if (imports) {
+			js.getBody().splice(0, 0, ... imports)
+		}
 }

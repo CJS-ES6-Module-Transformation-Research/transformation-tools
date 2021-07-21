@@ -5,10 +5,11 @@ import {Directive, Identifier, ModuleDeclaration, Node, Program, Statement, Vari
 import {existsSync} from "fs";
 import {basename, join, relative} from "path";
 import {Imports} from "../refactoring/utility/Imports_Data";
-import {InfoTracker, Intermediate} from "../refactoring/utility/InfoTracker";
+import {InfoTracker} from "../refactoring/utility/InfoTracker";
 import {JSBody} from "../refactoring/janitor";
 import {API, API_TYPE} from "../refactoring/utility/API";
 import {RequireStringTransformer} from "../refactoring/utility/requireStringTransformer";
+import {Intermediate} from "../utility/Intermediate";
 import {NodeComparators} from "../utility/static-analysis/tagger";
 import {SequenceNumber} from "../utility/static-analysis/util/SequenceNumber";
 import {FileType, MetaData, SeqNumb, SerializedJSData, ShadowVariableMap} from "../utility/types";

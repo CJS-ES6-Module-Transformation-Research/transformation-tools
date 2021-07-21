@@ -1,7 +1,8 @@
 import {replace} from "estraverse";
 import {Identifier, MemberExpression, VariableDeclaration, VariableDeclarator} from "estree";
-import {JSFile, Namespace} from "../../filesystem"
 import {log} from "../../control";
+import {JSFile,} from "../../filesystem/JSFile"
+import {Namespace} from "../../filesystem/Namespace"
 import {API_TYPE} from "../utility/API";
 import {InfoTracker} from "../utility/InfoTracker";
 
@@ -10,7 +11,7 @@ export let hacker_defaults = (js: JSFile) => {
 	if (js.usesNamed() && (!js.getUseDefaultCopy())) {
 		return;
 	}
-	let ns:Namespace = js.getNamespace()
+	let ns: Namespace = js.getNamespace()
 	let replace_identifiers: Identifier[] = []
 	let getRPI = (x: string) => js.getInfoTracker().getRPI(x)
 	type ID_SET = { [base: string]: { [prop: string]: Identifier } }
