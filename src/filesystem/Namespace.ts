@@ -223,7 +223,15 @@ function walkPatternToIdentifier(node: (Identifier | ObjectPattern | ArrayPatter
 			break;
 		case "Identifier":
 			// (node.parent.type)
+		if(parent.type === "MemberExpression"){
+			if (node === parent.object){
+				ids.add(node.name);
+			}
+		}else{
 			ids.add(node.name);
+		}
+
+
 			break;
 		case "ObjectPattern":
 			node.properties.forEach((e) => {

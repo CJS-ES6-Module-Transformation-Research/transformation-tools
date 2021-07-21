@@ -1,1 +1,0 @@
-if(require('./lib/index.js')){console.log('')};

@@ -1,14 +1,17 @@
 import {generate} from "escodegen";
 import {parseModule, parseScript} from "esprima";
 import {traverse} from "estraverse";
-import {Directive, Identifier, ModuleDeclaration, Program, Statement, VariableDeclaration} from "estree";
+import {Directive, Identifier, ModuleDeclaration, Node, Program, Statement, VariableDeclaration} from "estree";
 import {existsSync} from "fs";
 import {basename, join, relative} from "path";
-import {Imports, InfoTracker} from "../refactoring/utility/InfoTracker";
+import {Imports} from "../refactoring/utility/Imports_Data";
+import {InfoTracker, Intermediate} from "../refactoring/utility/InfoTracker";
 import {JSBody} from "../refactoring/janitor";
 import {API, API_TYPE} from "../refactoring/utility/API";
 import {RequireStringTransformer} from "../refactoring/utility/requireStringTransformer";
-import {FileType, MetaData, SerializedJSData} from "../utility/types";
+import {NodeComparators} from "../utility/static-analysis/tagger";
+import {SequenceNumber} from "../utility/static-analysis/util/SequenceNumber";
+import {FileType, MetaData, SeqNumb, SerializedJSData, ShadowVariableMap} from "../utility/types";
 import {AbstractDataFile} from './AbstractFileSkeletons'
 import {Dir} from './Directory'
 import {ModuleAPIMap} from "./FS-Factory";
@@ -17,16 +20,40 @@ import {Namespace} from "./Namespace";
 type script_or_module = "script" | "module"
 
 
-export class JSFile extends AbstractDataFile  {
+export class JSFile extends AbstractDataFile {
+
+
 	report() {
 		return this.reporter.reportOn()
 	}
+	sequenceNumber:SequenceNumber
+	// seq:number = 1
+
 
 	setUseDefaultCopy(arg0: boolean = true) {
 		this.useDefaultCopy = arg0
 	}
 
+	getIdTagger( ) :(node:Node,parent?:Node)=> string{
+		let seqno = this.sequenceNumber
 
+		return function tagger(node: Node, parent: Node)  {
+			if (!(node[ NodeComparators.NODE_ID])) {
+				node[ NodeComparators.NODE_ID] =seqno.next()
+			}
+			return node[ NodeComparators.NODE_ID]
+		}
+	}
+	getScopeTagger( ) :(node:Node,parent?:Node)=> string{
+		let seqno = this.sequenceNumber
+
+		return function tagger(node: Node, parent: Node= null )  {
+			if (!(node[ NodeComparators.Scope_ID])) {
+				node[ NodeComparators.Scope_ID] =seqno.next()
+			}
+			return node[ NodeComparators.Scope_ID]
+		}
+	}
 	private useDefaultCopy: boolean = false
 
 	private readonly api: API;
@@ -61,7 +88,7 @@ export class JSFile extends AbstractDataFile  {
 
 		this.test = b.test
 		this.ast = this.parseProgram(this.data, isModule)
-
+this.sequenceNumber =  new SequenceNumber()
 		this.infoTracker = new InfoTracker(this.getRelative());
 		this.removeStrict();
 		this.namespace = Namespace.create(this.ast)
@@ -369,5 +396,12 @@ export class JSFile extends AbstractDataFile  {
 
 	getDefaultExport(): Identifier {
 		return this.namespace.getDefaultExport()
+	}
+	_intermediate:Intermediate
+	getIntermediate() {
+return this._intermediate
+	}
+	setIntermediate(_intermediate:Intermediate) {
+		this._intermediate = _intermediate
 	}
 }

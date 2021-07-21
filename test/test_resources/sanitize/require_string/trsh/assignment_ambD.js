@@ -1,1 +1,0 @@
-imported = require('./lib/');

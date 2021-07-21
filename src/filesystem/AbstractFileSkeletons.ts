@@ -1,7 +1,7 @@
 import {DirSupplier, FileType, FileVisitor, MetaData, SerializedJSData} from "../utility/types";
 import {Dir} from "./Directory";
 import {readFileSync, Stats} from "fs";
-import { AbstractReporter} from "../control/Reporter";
+import { AbstractReporter} from "../control";
 interface AbstractFileI{
     setReporter(reporter:AbstractReporter):void
 getReporter():AbstractReporter

@@ -1,1 +1,0 @@
-if(true){var  first = "1" ,requirement = require('requirement'),third = 3}

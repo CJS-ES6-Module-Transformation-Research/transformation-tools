@@ -1,1 +1,0 @@
-var  a = 32; var  {val} = require('deconstructable'); var   obj = {x: "99"}; 

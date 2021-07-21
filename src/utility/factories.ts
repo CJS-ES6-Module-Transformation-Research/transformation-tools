@@ -10,12 +10,22 @@ import {
 	VariableDeclarator
 } from "estree";
 import {JSFile} from "../filesystem/JSFile";
+
 import {RequireStringTransformer} from "../refactoring/utility/requireStringTransformer";
 import {JSON_REGEX} from "./data";
 import {isModule_Dot_Exports} from "./predicates";
 import {ExportAssignment, ExportAssignmentStatement, LHSExport, ModuleDotExports} from "./types";
+// import {
+// 	ExportAssignment,
+// 	ExportAssignmentStatement,
+// 	isModule_Dot_Exports,
+// 	JSON_REGEX,
+// 	LHSExport,
+// 	ModuleDotExports
+// } from "./";
 
-export function id(name: string): Identifier {
+export function id(name: string, index: number = 0, arr: string[] = []): Identifier {
+
 	return {type: "Identifier", name: name}
 }
 
@@ -31,7 +41,7 @@ export function cleanRequire(node: CallExpression, js: JSFile) {
 		let literal = node.arguments[0].value.toString()
 		let requireString: string = rst.getTransformed(literal)
 		if (requireString !== literal) {
-			//had to be cleaned
+			//ha d to be cleaned
 		}
 
 

@@ -1,1 +1,0 @@
-var imported = require('../index.js'), a = 35;

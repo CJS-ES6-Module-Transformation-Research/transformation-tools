@@ -10,6 +10,22 @@ export interface SerializedJSData {
 	fileData: string
 }
 
+
+
+
+
+export interface ShadowVariableMap {
+	[id: string]: string[]
+}
+
+
+
+
+
+export interface SeqNumb{
+ seq_no: number
+	next():string
+}
 export type FileVisitor = (visit: AbstractFile) => void
 
 export enum FileType {
@@ -87,4 +103,15 @@ export interface LHSExport extends MemberExpression {
 	object: ModuleDotExports | Identifier
 	property: Identifier
 	computed: false
+}
+
+export interface ReqPropInfo {
+	forceDefault: boolean;
+	allAccessedProps: string[];
+	refTypeProps: string[];
+	potentialPrimProps: string[];
+}
+
+export interface ForcedDefaultMap {
+	[id: string]: boolean
 }
