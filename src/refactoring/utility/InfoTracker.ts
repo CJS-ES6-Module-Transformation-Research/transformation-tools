@@ -1,4 +1,5 @@
 import {Identifier} from "estree";
+import {Intermediate} from "../../utility/Intermediate";
 import {RequireDeclaration, RequireExpression} from "../../utility/Require";
 import {ReqPropInfo} from "../../utility/types";
 import {API_TYPE} from "./API";
