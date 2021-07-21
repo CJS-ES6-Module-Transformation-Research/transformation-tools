@@ -1,87 +1,123 @@
-import {expect} from 'chai';
-import chalk from 'chalk'
-import {execSync} from 'child_process'
-import {copyFileSync, existsSync, mkdirSync, readdirSync, rmdirSync} from 'fs'
+import {readdirSync, writeFileSync} from 'fs'
 import {join} from 'path'
-import {ProjConstructionOpts, ProjectManager} from "../src/control/ProjectManager";
-import {clean} from "../src/refactoring/janitor";
+import {TestFileStringData} from "./TemplateTool";
 
-let green = chalk.green
-let testRoot = `${process.env.CJS}/test_data`
-let testsDir = join(testRoot, 'cleaning/runtime_states')
-// const echo = (x )=> console.log(x)
-console.log(`testRoot : ${testRoot}`)
-console.log(`testsDir : ${testsDir}`)
-let tests_roots = readdirSync(testsDir).map(e => {
-	let j: string = join(testsDir, e)
-	console.log(green(j))
-	return j
-})
+let testsDir = join(process.env.CJS, `test_data/cleaning/runtime_states`)
 
-console.log(`tests_roots : ${tests_roots}`)
+let tests_roots = readdirSync(testsDir).map(e => join(testsDir, e))
 
-function removeIfExists(to): void {
-	if (existsSync(to)) {
-		rmdirSync(to, {recursive: true})
-	}
+
+let imports = `
+ import {expect} from "chai";
+import {execSync} from "child_process";
+import {readdirSync, readFileSync} from "fs";
+import 'mocha';
+import {join} from "path";
+import {ProjectManager} from "../../src/control";
+import {clean} from "../../src/refactoring";
+import {betweenLines, copyTest} from '../TemplateTool';
+
+
+
+`
+
+let preamble = `
+let tmp
+let original
+let pm
+ 
+ 
+`
+
+let testFunction = `
+() => {
+let tmpRds = readdirSync(tmp);
+let actual =  execSync('node ' + join(tmp, 'main.js') ).toString('utf-8');
+expect(actual).to.be.eq(betweenLines(JSON.parse(readFileSync(join(original, 'expected'), 'utf-8'  ))['expected']))
+}
+`
+let suffix = `
+
+
+function getPM(tmp){
+  return  new ProjectManager(tmp,  {
+        input:tmp,
+        output: '',
+        suffix: '',
+        isNamed: true,
+        report: false,
+        operation_type: 'in-place'
+    })
 }
 
-function copy(path, to) {
-	removeIfExists(to);
-	mkdirSync(to)
+`
+let suite = ''
+suite += `describe ('runtime', ()=>{\n`
+let tests = ''
+tests_roots.forEach(test => {
+	tests += `let test = '${test}';\n`
+	tests += `it(test,(done)=>{\n`
+	tests += `original = join(test, 'original')\n`
+	tests += `tmp = join(test, 'tmp')\n`
+	tests += `copyTest(original, tmp)\n`
+	tests += `pm = \tpm = getPM(tmp);\n`
+	tests += `clean(pm)\n`
+	tests += `pm.writeOut().then(${testFunction}).then(done)\n`
 
-	copyFileSync(path, to)
-}
-
-let betweenLines = (... lines) => lines.map(e => `${e}\n`).reduce((e, r) => e + r)
-tests_roots.forEach(curr_test => {
-	// let test
-	// let json = JSON.parse(readFileSync(join(curr_test, 'package.json'), 'utf-8')) as { [key: string]: {} | [] | string | number | null | undefined }
-	// let main = json.main as string
-
-	let ls = readdirSync(curr_test)
-	let original = join(curr_test, 'original')
-	let tmp = join(curr_test, 'tmp')
-
-
-	copy(original, tmp)
-	let opts: ProjConstructionOpts = mock(tmp,)
-
-	let {input} = opts
-	let pm: ProjectManager = new ProjectManager(input, opts);
-
-	clean(pm)
-
-	console.log(green(original));
-	console.log(green(tmp))
-	// execSync(`cp -R ${original}/* ${tmp}`)
-	// process.exit()
-	pm.writeOut()
-		.then(() => {
-			// expect(readdirSync(tmp)).to.include
-			let tmpRds = readdirSync(tmp)
-			expect(tmpRds).to.include('main.js', (green(JSON.stringify(tmpRds, null, 1))))
-
-			let str = execSync(`node ${join(tmp, 'main.js')}`).toString('utf-8')
-
-			expect(str).to.be.eq(betweenLines('2', 'good', 'a:a', 'b:0', 'b:1'))
-
-		})
-
-		.catch(assertionErr => console.log(assertionErr, "didn't assert eq")).finally(() => console.log('finally'))
-		.finally(() => {
-		})
+	tests += '})\n\n'
 
 })
+suite += tests
+suite += `\n})`
+
+let total = `
+${imports}
+${preamble}
+${suite}
+
+${suffix}
+`
+export const _RTest:TestFileStringData = {imports,preamble,tests:suite, suffix,filename:`test/generated_tests/runtime.generated.ts`}
+// function getOnfulfilled(): () => void {
+// 	return () => {
+//  		let tmpRds = readdirSync(tmp)
+// 		expect(tmpRds).to.include('main.js', (green(JSON.stringify(tmpRds, null, 1))))
+//
+// 		let str = execSync(`node ${join(tmp, 'main.js')}`).toString('utf-8')
+//
+// 		expect(str).to.be.eq(betweenLines('2', 'good', 'a:a', 'b:0', 'b:1'))
+// 	};
+// }
+
+// tests_roots.forEach(curr_test => {
+
+// describe ('runtime:' + curr_test, ()=>{
+// 	it(curr_test,(done)=>{
+//
+// 		original = join(curr_test, 'original')
+// 		tmp = join(curr_test, 'tmp')
+//
+//
+// 		copyTest(original, tmp)
+//
+// 		pm = new ProjectManager(tmp, mock(tmp));
+// 		clean(pm)
+//
+// 		console.log(green(original));
+// 		console.log(green(tmp))
+//
+// 		pm.writeOut()
+// 			.then(
+// 				getOnfulfilled()
+// 			)
+// 			.then(done)
+//
+// 			// .catch(assertionErr => console.log(assertionErr, "didn't assert eq")).finally(() => console.log('finally'))
+// 			// .finally(() => {
+// 			// })
+// 	})
+// }
+//
+// })
 
 
-function mock(input: string): ProjConstructionOpts {
-	return {
-		input,
-		output: '',
-		suffix: '',
-		isNamed: true,
-		report: false,
-		operation_type: "in-place"
-	}
-}
