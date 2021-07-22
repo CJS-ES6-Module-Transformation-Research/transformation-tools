@@ -5,10 +5,10 @@ import {Body_Type} from "../../transformations/sanitizing/visitors/Object_Decons
 import {declare, exportsDot, module_dot_exports} from "../../utility/factories";
 import {isARequire} from "../../utility/predicates";
 import {asRequire, RequireCall} from "../../utility/Require";
+import { NodeComparators } from "../../utility/static-analysis/tagger";
 
 export function phase1(js: JSFile): void {
 	let seenIds: { [key: string]: () => Identifier } = {}
-
 	traverse(js.getAST(), {
 		leave
 	})

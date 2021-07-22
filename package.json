@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc &&  rollup --format=cjs --file=cjs_bundle.js -- ./src/janitor/main.js\n",
-    "test": "ts-mocha test/tests/*.ts",
+    "regenerate-tests": "export CJS=$(pwd); ts-node ./test/TemplateTool.ts",
+    "test": "export CJS=$(pwd); ts-mocha test/cleaning.generated.ts",
     "coverage": "tsc && nyc mocha test/tests",
     "refresh": "./scripts/clean-base"
   },

@@ -4,14 +4,14 @@ import {JSFile} from "../../filesystem/JSFile";
 import {declare, id} from "../../utility/factories";
 import {isARequire} from "../../utility/predicates";
 import {asRequire, RequireCall} from "../../utility/Require";
-
+import { NodeComparators } from "../../utility/static-analysis/tagger";
 
 export function hoistRequires(js: JSFile) {
 	let ids: { [key: string]: string } = {}
-	let toAdd: Statement[] = []
+	let toAdd: Statement[] = [];
+	let variableRenameMapping: Array<{ old: string, new: string, scope: string }> = [];
 	replace(js.getAST(), {
 		enter: (node: Node, parent: Node) => {
-
 
 			if (node.type === "VariableDeclaration"
 				&& node.declarations.length === 1
@@ -20,15 +20,15 @@ export function hoistRequires(js: JSFile) {
 				&& isARequire(node.declarations[0].init)
 			) {
 				if (parent.type === "Program") {
-					toAdd.push(node)
+					if(toAdd.filter((el) => JSON.stringify(el) === JSON.stringify(node)).length === 0) {
+						toAdd.push(node);
+					}
 
 					let $ = asRequire(node.declarations[0].init)
 					let rs = $.getRS()
 					ids[rs] = node.declarations[0].id.name
 					return VisitorOption.Remove
 				} else {
-
-
 					let $ = asRequire(node.declarations[0].init)
 					let id2: Identifier
 					let clean = $.getCleaned()
@@ -42,15 +42,13 @@ export function hoistRequires(js: JSFile) {
 						let id2_ = ids[rs]
 						id2 = id(id2_)
 					}
-					toAdd.push(declaration(id2, $))
-					node.declarations[0].init = id(id2.name)
-					return (<VariableDeclaration>{
-						type: "VariableDeclaration",
-						kind: node.kind,
-						declarations: [
-							{type: "VariableDeclarator", id: node.declarations[0].id, init: id2}
-						]
-					})
+					variableRenameMapping.push({old: node.declarations[0].id.name, new: id2.name, scope: node[NodeComparators.Scope_ID]});
+					const declarationNode = declaration(id2, $);
+					if(toAdd.filter((el) => JSON.stringify(el) === JSON.stringify(declarationNode)).length === 0) {
+						toAdd.push(declarationNode);
+					}
+					
+					return VisitorOption.Remove; 
 				}
 
 
@@ -66,6 +64,8 @@ export function hoistRequires(js: JSFile) {
 						ids[$.getRS()] = clean
 					}
 					id2 = js.getNamespace().generateBestName(ids[rs])
+					variableRenameMapping.push({old: ids[rs], new: id2.name, scope: node[NodeComparators.Scope_ID]});
+					console.log(`\n\n\n${ids[rs]}\n\n\n`);
 					toAdd.push(declaration(id2, $))
 					if (parent.type === "ExpressionStatement"
 						&& node == parent.expression) {
@@ -80,6 +80,15 @@ export function hoistRequires(js: JSFile) {
 		}, leave: (node: Node, parent: Node) => {
 			if (node && node.type === "ExpressionStatement" && node.expression === null) {
 				return VisitorOption.Remove
+			}
+			if(node.type === "Identifier") {
+				console.log("Scope ID: ", node[NodeComparators.Scope_ID]);
+				const match = variableRenameMapping.find((el) => el.old === node.name && node[NodeComparators.Scope_ID] >= el.scope);
+				if(match) {
+					console.log(`\n\n\n${node.name}\n\n\n`);
+					node.name = match.new;
+					return node;
+				}
 			}
 		}
 
