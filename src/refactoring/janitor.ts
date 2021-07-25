@@ -2,6 +2,7 @@ import {Directive, ModuleDeclaration, Statement} from "estree";
 import {ProjectManagerI} from "../control/ProjectManager";
 import {JSFile} from "../filesystem/JSFile";
 import {exportAndCopyPhase, hoistRequires, phase1, phase2} from "./janitor-phases";
+import { tagScopes } from "./janitor-phases/tagScopes";
 
 
 export const clean = (pm: ProjectManagerI) => {
@@ -20,6 +21,7 @@ export type JSBody = Array<Directive | Statement | ModuleDeclaration>;
 function janitor(js: JSFile) {
 
 
+	tagScopes(js);
 	phase1(js);
 	phase2(js);
 

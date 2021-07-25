@@ -5,6 +5,11 @@ import {Dir} from "../filesystem/Directory";
 import {ModuleAPIMap} from "../filesystem/FS-Factory";
 import {JSFile} from "../filesystem/JSFile";
 
+export interface SeqNumb{
+	seq_no: number
+	 next():string
+ }
+
 export interface SerializedJSData {
 	relativePath: string
 	fileData: string

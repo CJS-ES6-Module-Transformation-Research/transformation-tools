@@ -29,7 +29,7 @@ export function getScopeTagger(node: Node, seq:SeqNumb):tagger {
 
 		switch (node.type) {
 			case "Program": {
-				node[key]= seq.next()
+				node[key] = seq.next()
 				break;
 			}
 			case "BlockStatement": {
