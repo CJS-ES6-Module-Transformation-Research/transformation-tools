@@ -1,0 +1,12 @@
+{
+  "name": "prop-prop-is-read",
+  "version": "1.0.0",
+  "description": "",
+  "main": "prop-prop-is-read.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

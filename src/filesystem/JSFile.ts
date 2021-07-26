@@ -34,13 +34,17 @@ export class JSFile extends AbstractDataFile {
 	setUseDefaultCopy(arg0: boolean = true) {
 		this.useDefaultCopy = arg0
 	}
-
+	getIDMap():{[id:number]:Node}{
+		return this.idMap
+	}
+	private readonly idMap:{[id:number]:Node} = {}
 	getIdTagger( ) :(node:Node,parent?:Node)=> string{
 		let seqno = this.sequenceNumber
-
+		let idMap:{[id:number]:Node} = this.idMap
 		return function tagger(node: Node, parent: Node)  {
 			if (!(node[ NodeComparators.NODE_ID])) {
 				node[ NodeComparators.NODE_ID] =seqno.next()
+				idMap[node[ NodeComparators.NODE_ID] ] = node
 			}
 			return node[ NodeComparators.NODE_ID]
 		}

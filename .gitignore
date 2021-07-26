@@ -58,14 +58,12 @@ test/tests/*.js
 test/tests/*.js.map
 test/test_resources
 
-/redirect/
-<<<<<<< HEAD
+/redirect
 
 *.report.txt
-=======
 /cjs-transform.js
 /index.js
 .project-dirs
 .nyc_output/processinfo/index.json
-ast0.js
->>>>>>> last-working
+
+./.project-dirs/projects

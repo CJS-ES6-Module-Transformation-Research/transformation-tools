@@ -1,0 +1,26 @@
+{
+  "branching": {
+    "shadows": ["one"],
+    "props": ["x","two"]
+  },
+  "class-in-function-is-shadow": {
+    "shadows": ["x"],
+    "props": ["object"]},
+  "function-in-function-is-shadow": {
+    "shadows": ["Gamma","beta","l"],
+    "props": ["beta"]},
+  "shadow-in-constructor": {
+    "shadows": ["x"],
+    "props": ["b52"]},
+  "shadow-in-function": {
+    "shadows": ["after"],
+    "props": ["prime"]},
+  "shadow-in-method": {
+    "shadows": ["invokeFunction"],
+    "props": ["helloWorld"]},
+  "triple-shadow": {
+    "shadows": ["b","c"],
+    "props": ["a",]
+  }
+
+}

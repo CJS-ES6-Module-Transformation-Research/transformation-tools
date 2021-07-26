@@ -1,0 +1,10 @@
+{
+   "dir": "forced-defaults/direct-rhs",
+   "tests": {
+      "join-obj-with-another": {},
+      "nested-direct": {},
+      "or-direct": {},
+      "rest-obj-literal": {},
+      "tl-direct": {}
+   }
+}

@@ -1,5 +1,6 @@
-import {ExpressionStatement, VariableDeclaration} from "estree";
+import {ExpressionStatement, Identifier, VariableDeclaration,Node} from "estree";
 import {ShadowVariableMap} from "./types";
+import {generate} from "escodegen";
 
 type S2<T> = { [p: string]: T }
 
@@ -7,6 +8,8 @@ export class Intermediate implements IEData {
 	// getRPIMap(): { [id: string]: ReqPropInfo; } {
 	// 	return this.rpiMap
 	// }
+	private shadowVarMap: { [p: string]: string[] }= {};
+getShadowMap2(){return this.shadowVarMap}
 
 	constructor(id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases) {
 		this.id_aliases = id_aliases
@@ -22,7 +25,7 @@ export class Intermediate implements IEData {
 		this.forcedDefaultMap = {}
 		console.log(this.forcedDefaultMap)
 		console.log(this.propReads)
-		Object.keys(this.ms_to_id).forEach(modid => {
+		Object.keys(this.id_to_ms).forEach(modid => {
 
 			this.forcedDefaultMap[modid] = false;
 			this.propReads[modid] = []
@@ -45,19 +48,28 @@ export class Intermediate implements IEData {
 	readonly forcedDefaultMap: { [p: string]: boolean }
 	readonly propReads: { [p: string]: string[] }
 
-	getPropReads() {
+	getPropReads():{ [p: string]: string[] } {
 		return this.propReads
 	}
 
-	getForcedDefaults() {
+	getForcedDefaults( ) {
 		return this.forcedDefaultMap
 	}
 
 	getListOfIDs(): string[] {
 		return Object.keys(this.id_to_ms)
 	}
-}
 
+	setShadowVarsFromList(listOfShadowIDs: { [id:string]:number[] }, idMap: { [p: number]: Node }) {
+		let shadowVarMap: { [id:string]:string[] }= {}
+
+		 Object.keys(listOfShadowIDs)
+			 .forEach(ident=> {
+			 	shadowVarMap[ident] = listOfShadowIDs[ident]
+				 .map(e=> ( idMap[e] as Identifier).name);    })
+		this.shadowVarMap =shadowVarMap
+	}
+}
 interface IEData {
 	declCounts: { [key: string]: number }
 	load_order: string[]

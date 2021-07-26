@@ -14,7 +14,6 @@ import {naming} from "./utility/arg_parse";
 
 
 const LOGFILE = join(__dirname, './log');
-// console.log(LOGFILE)
 if (existsSync(LOGFILE)) {
 	unlinkSync(LOGFILE)
 }
@@ -173,8 +172,11 @@ export class ProjectManager implements ProjectManagerI {
 	getRootDir(): string {
 		return this.src
 	}
-
+	static init(opts:ProjConstructionOpts):ProjectManager{
+		return new ProjectManager(opts.input,opts)
+	}
 	constructor(path: string, opts: ProjConstructionOpts, _named: boolean = false) {
+
 		if (!path) {
 			throw new Error(`path value: ${path} was invalid`)
 		}

@@ -17,8 +17,7 @@ export interface TestFileStringData {
 }
 
 const gen_data: { [str: string]: TestFileStringData } = {}
-
-
+const SA_TESTS = ['forced-defaults/call-expression', 'forced-defaults/direct-rhs'    ,   'forced-defaults/prop-reassign'   , 'property-reads'    ,  'shadow-vars'    , 'export-api-and-type']
 let _test //= //`
 // const _Testing_Data_Root = `${process.env.CJS}/test_data`
 // const _Cleaning_Test_Root = join(_Testing_Data_Root, `cleaning`)
@@ -28,7 +27,7 @@ let _test //= //`
 
 let test_data = join(process.env.CJS, 'test_data')
 let clean_root = join(test_data, `cleaning/equality`)
-console.log(readdirSync(clean_root).filter(e => e != '.DS_Store'))
+console.log(readdirSync(clean_root).filter(e => e !== '.DS_Store'))
 
 
 function format(program: string, isModule = true) {
@@ -64,13 +63,30 @@ function format(program: string, isModule = true) {
 // 		// }
 // 	}
 // }
+const SA_ROOT= join(test_data,'static_analysis/data-compare')
+function buildStaticAnalysisTests(test_root: string='static_analysis/data-compare', testing_dir: string):TestFileStringData{
+// return {imports,tests,suffix,preamble,filename}
+	return null
+}
+
+let sa= join(test_data,'static_analysis/data-compare')
+readdirSync(sa).filter(e=> e !== '.DS_Store')
+	.map(e=> {return {test_type:e ,test_suites: readdirSync(join(sa,e)).filter(e=> e !== '.DS_Store') }})
+	.map(e=> e.test_suites.map (r => { return { suite:r, test_dirs:readdirSync(join(sa,r)).filter(e=> e !== '.DS_Store')}}))
+
+
+
+
+SA_TESTS.forEach(test_dir=> gen_data[test_dir]=buildStaticAnalysisTests(SA_ROOT, test_dir))
+
+
 
 function buildUnitTests(test_root: string, testing_dir: string): TestFileStringData {
 	let local_root = join(test_root, testing_dir)
 
 	function forEachSuite(suite: string) {
 		let _suite = '';
-		let tests = readdirSync(join(local_root, suite)).filter(e => e != '.DS_Store')
+		let tests = readdirSync(join(local_root, suite)).filter(e => e !== '.DS_Store')
 
 
 		_suite += `describe('${suite}', () => {`
@@ -99,6 +115,7 @@ function buildUnitTests(test_root: string, testing_dir: string): TestFileStringD
 
 	}
 
+
 	let imports = `
 import {expect} from 'chai';
 import 'mocha';
@@ -124,6 +141,9 @@ let test_root =join (test_data, '${testing_dir}')
 		filename: `test/generated_tests/cleaning.generated.ts`
 	}
 }
+
+SA_TESTS.map(test_dir=> buildStaticAnalysisTests(SA_ROOT, test_dir))
+
 
 
 let sa_testsDir = 'static_analysis/equality'
@@ -164,7 +184,7 @@ function writeTests(_data: { [str: string]: TestFileStringData }) {
 		let _path = join(`${process.env.CJS}`, o.filename)
 		console.log(`writing data to ${_path}`)
 		let file_data = printGenData(o)
-		console.log(file_data == '' || file_data == null || file_data == undefined)
+		console.log(file_data === '' || file_data == null )
 		writeFileSync(_path, file_data)
 	})
 }

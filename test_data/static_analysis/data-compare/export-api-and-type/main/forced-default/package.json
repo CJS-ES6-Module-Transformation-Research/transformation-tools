@@ -1,0 +1,12 @@
+{
+  "name": "forced-default",
+  "version": "1.0.0",
+  "description": "",
+  "main": "forced-default.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

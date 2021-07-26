@@ -1,0 +1,8 @@
+{
+   "dir": "forced-defaults/call-expression",
+   "tests": {
+      "callex-nested": {},
+      "callex-prop-noise": {},
+      "callex-simple": {}
+   }
+}

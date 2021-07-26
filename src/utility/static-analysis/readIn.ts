@@ -13,7 +13,7 @@ import {
 	VariableDeclaration
 } from "estree";
 import {JSFile} from "../../filesystem/JSFile";
-import {DataBuilder} from "../../refactoring/bridge/PreProcessData.json";
+// import {DataBuilder} from "../../refactoring/bridge/PreProcessData.json";
 import {declare, id} from "../factories";
 import {Intermediate} from "../Intermediate";
 import {isModule_Dot_Exports} from "../predicates";
@@ -21,8 +21,8 @@ import {RequireCall, RequireDeclaration} from "../Require";
 import Require = NodeJS.Require;
 
 
-export function readIn(js: JSFile ) {
-	let builder = DataBuilder()
+export function readIn(js: JSFile )  {
+	// let builder = DataBuilder()
 	let declCounts: { [key: string]: number } = {}
 	let load_order: string[] = []
 	let ms_to_id: { [str: string]: string } = {}
@@ -50,7 +50,7 @@ export function readIn(js: JSFile ) {
 					ms_to_id[rst] = _id
 					id_to_ms[_id] = rst
 					load_order.push(rst)
-					builder.addRequire(rst, _id)
+					// builder.addRequire(rst, _id)
 					import_decls.push(stmt)
 					indices.push(index)
 
@@ -74,7 +74,7 @@ export function readIn(js: JSFile ) {
 						let rs = exp.arguments[0].value.toString()
 						ms_to_id[rs] = null
 						load_order.push(rs)
-						builder.addRequire(rs)
+						// builder.addRequire(rs)
 						indices.push(index)
 
 					}
@@ -83,7 +83,7 @@ export function readIn(js: JSFile ) {
 
 		}
 	})
-	let built = builder.build()
+	// let built = builder.build()
 	let _body = js.getAST().body
 	indices.reverse().forEach(i => _body.splice(i, 1))
 
@@ -240,6 +240,7 @@ let _enter = (node: Node, parent: Node)=>{
 	   }*/ //TODO
 	let interm: Intermediate = new Intermediate(id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases);
 
+	console.log(JSON.stringify(interm,null,3))
 	let actual:any[]
 
 	actual = Object.keys(declCounts)
@@ -282,7 +283,7 @@ require('chai').assert(Object.keys(id_to_ms).length <= Object.keys(ms_to_id).len
 		if (exp.left.type === "MemberExpression") {
 			if (isModule_Dot_Exports(exp.left)) {
 				exportMap['default'] = (exp.right as Identifier).name
-				builder.addExport('default')
+				// builder.addExport('default')
 			} else if (isModule_Dot_Exports(exp.left.object)) {
 				exp.left.object = exp.left.object as MemberExpression
 				let name = (exp.left.property as Identifier).name
@@ -293,7 +294,7 @@ require('chai').assert(Object.keys(id_to_ms).length <= Object.keys(ms_to_id).len
 				console.log(`name: ${name}\t  best: ${best.name}`)
 
 				exportMap[name] = exp.left.name//(exp.right as Identifier).name
-				builder.addExport(name)
+				// builder.addExport(name)
 
 			}
 		}

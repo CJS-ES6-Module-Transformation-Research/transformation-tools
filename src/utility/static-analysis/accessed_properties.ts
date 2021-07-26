@@ -1,9 +1,10 @@
 import {traverse, Visitor} from "estraverse";
-import {JSFile} from "../../filesystem/JSFile";
+import {JSFile} from "../../filesystem";
 import {isShadowVariable} from "./shadow_variables";
 import {Node} from 'estree'
 
 function forceDefaults(node, _forcedDefault: { [p: string]: boolean }): void {
+
 	let listOfVars = Object.keys(_forcedDefault)
 	switch (node.type) {
 
@@ -53,7 +54,7 @@ function forceDefaults(node, _forcedDefault: { [p: string]: boolean }): void {
 export function getAccessedProperties(js: JSFile): void {
 	// let listOfProps = [];
 	let intermediate = js.getIntermediate()
-
+	let listOfShadowIDs : { [ID:string]:number[] } = {}
 	let listOfVars = intermediate.getListOfIDs()
 	let ast = js.getAST()
 	let shadows = intermediate.getShadowVars()
@@ -108,7 +109,11 @@ let z:{[s:string]:string[]}={}
 			if( node.object.type==="Identifier"&& node.property.type==="Identifier")	{
 				let lov=listOfVars.includes(node.object.name)
 
-				let shad=isShadowVariable(node.object.name, fctStack, shadows)
+				let shad=isShadowVariable(node.object.name, fctStack, shadows,listOfShadowIDs)
+
+				if (shad){
+
+				}
 					// console.log(`lov: ${node.object.name} is in lov?  	${listOfVars.includes(node.object.name)}`)
 					// console.log(`lov: ${node.property.name} is on ${node.object.name} 	${listOfVars.includes(node.object.name)}`)
 					// console.log(`lov: ${node.property.name} is a shadow ${node.object.name} 	${isShadowVariable(node.object.name, fctStack, shadows)}`)
@@ -122,7 +127,7 @@ let z:{[s:string]:string[]}={}
 			if (node.object.type === "Identifier"
 					&& node.property.type === "Identifier"
 					&& listOfVars.includes(node.object.name)
-					&& (!isShadowVariable(node.object.name, fctStack, shadows)//FIXME this has toe end up in it somewhere
+					&& (!isShadowVariable(node.object.name, fctStack, shadows,listOfShadowIDs)//FIXME this has toe end up in it somewhere
 					)
 
 					/*containsNode( )*/) {
@@ -178,6 +183,8 @@ let z:{[s:string]:string[]}={}
 		}, leave:_stack.leave
 	};
 	traverse(ast, propAccessVisitor);
+	intermediate.setShadowVarsFromList(listOfShadowIDs,js.getIDMap())
+
 	// console.log(JSON.stringify(z,null,3) )
 
 

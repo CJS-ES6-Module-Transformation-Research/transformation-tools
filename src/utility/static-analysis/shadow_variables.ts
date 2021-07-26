@@ -1,11 +1,11 @@
 import {traverse} from "estraverse";
-import {Program} from "estree";
+import {Program,Node} from "estree";
 import {JSFile} from "../../filesystem/JSFile";
 import {ShadowVariableMap} from "../types";
+import {NodeComparators} from "./tagger";
 
 // import {} from "../";
-
-export function getShadowVars(js:JSFile): void {
+ export function getShadowVars(js:JSFile): void {
 	let ast: Program =js.getAST()
 	let intermediate = js.getIntermediate();
 	let listOfVars = Object.keys(intermediate.id_to_ms)
@@ -17,7 +17,7 @@ export function getShadowVars(js:JSFile): void {
 		enter: (node, parent) => {
 			switch (node.type) {
 				case "VariableDeclarator":
-					if (node.id.type == "Identifier" && listOfVars.includes(node.id.name) && fctStack.length > 0) { // then, it's a shadow var declaration
+					if (node.id.type === "Identifier" && listOfVars.includes(node.id.name) && fctStack.length > 0) { // then, it's a shadow var declaration
 						if (!shadowVarMap[node.id.name]) {
 							shadowVarMap[node.id.name] = []
 						}
@@ -51,11 +51,21 @@ export function getShadowVars(js:JSFile): void {
 }
 
 
-export function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap) {
+export function isShadowVariable(varName: string, stack: string[], shadows: ShadowVariableMap,listOfShadowIds: { [id: string]:number[] }) {
 	// let retval: boolean = false;
 	if (shadows[varName]) {
 		stack.forEach(e => {
+
 			if (shadows[varName].includes(e)) {
+				console.log (varName, e)
+				console.log (listOfShadowIds[varName])
+				console.log (parseInt(e))
+				if (!listOfShadowIds[varName]){
+					console.log('setting: ',listOfShadowIds[varName])
+					listOfShadowIds[varName] = []
+				}
+				listOfShadowIds[varName].push(parseInt(e))
+				console.log(listOfShadowIds)
 				return  true;
 				// retval = true;
 			}

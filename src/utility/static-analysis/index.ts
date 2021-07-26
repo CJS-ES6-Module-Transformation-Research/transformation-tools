@@ -20,23 +20,16 @@ log. green =(...x)=>  console.log(...x.map(e=>green(e )) )
 log. blue =(...x)=>  console.log(...x.map(e=>blue(e )) )
 export function runAnalyses(pm: ProjectManager) {
 
-	let js:JSFile = pm.getJS('main.js')
 
 
 	pm.forEachSource(readIn)
-	let im= js.getIntermediate()
-	// log.red(	JSON.stringify(im.load_order,null,3)
-	// )
-	// log.red(	JSON.stringify(im.id_to_ms,null,3)
-	// )
+
 	pm.forEachSource(getShadowVars)
 	// log.green( 	JSON.stringify(im.getShadowVars(),null,3))
  	pm.forEachSource(getAccessedProperties)
-	log.green( 	JSON.stringify(im.getPropReads(),null,3))
-	// log.green( 	JSON.stringify(im ,null,3))
+ 	// log.green( 	JSON.stringify(im ,null,3))
 
 
-	process.exit()
 	pm.forEachSource(forcedDefaults)
 	pm.forEachSource(getReassignedPropsOrIDs)
 	// pm.forEachSource(e => console.log(e.getIntermediate()))
@@ -117,15 +110,15 @@ console.log(new x.h())
 
 
 // let program = parseScript(scpt)
-
-
-let opts: ProjConstructionOpts = arg.parse()
-let {input, report} = opts
-let pm: ProjectManager = new ProjectManager(input, opts);
-// clean(pm)
-runAnalyses(pm)
-pm.writeOut();
-
+//
+//
+// let opts: ProjConstructionOpts = arg.parse()
+// let {input, report} = opts
+// let pm: ProjectManager = new ProjectManager(input, opts);
+// // clean(pm)
+// runAnalyses(pm)
+// pm.writeOut();
+//
 
 
 
