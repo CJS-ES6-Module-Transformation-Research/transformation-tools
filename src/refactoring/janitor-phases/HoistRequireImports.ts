@@ -65,7 +65,6 @@ export function hoistRequires(js: JSFile) {
 					}
 					id2 = js.getNamespace().generateBestName(ids[rs])
 					variableRenameMapping.push({old: ids[rs], new: id2.name, scope: node[NodeComparators.Scope_ID]});
-					console.log(`\n\n\n${ids[rs]}\n\n\n`);
 					toAdd.push(declaration(id2, $))
 					if (parent.type === "ExpressionStatement"
 						&& node == parent.expression) {
@@ -82,10 +81,8 @@ export function hoistRequires(js: JSFile) {
 				return VisitorOption.Remove
 			}
 			if(node.type === "Identifier") {
-				console.log("Scope ID: ", node[NodeComparators.Scope_ID]);
 				const match = variableRenameMapping.find((el) => el.old === node.name && node[NodeComparators.Scope_ID] >= el.scope);
 				if(match) {
-					console.log(`\n\n\n${node.name}\n\n\n`);
 					node.name = match.new;
 					return node;
 				}

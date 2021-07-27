@@ -36,7 +36,8 @@ function createProj(input: string) {
 let pmopts: ProjConstructionOpts
 
 let opts: ProjConstructionOpts = arg.parse()
-let {input, report} = opts
+let {input, report} = opts;
+if(!input) input = '.';
 let pm: ProjectManager = new ProjectManager(input, opts);
 clean(pm)
 pm.writeOut();

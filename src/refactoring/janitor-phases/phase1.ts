@@ -32,23 +32,22 @@ export function phase1(js: JSFile): void {
 				node.type === "ExpressionStatement"
 				&& node.expression.type === "AssignmentExpression"
 				&& node.expression.left.type === "MemberExpression"
+				&& node.expression.left.object.type === "Identifier"
+				&& node.expression.left.property.type === "Identifier"
+				&& node.expression.left.object.name === "module"
+				&& node.expression.left.property.name === "exports"
 				&& (parent.type === "Program" || parent.type === "BlockStatement")
 			) {
 				let exps: Body_Type[] = []
-				if (node.expression.left.object.type === "Identifier"
-					&& node.expression.left.property.type === "Identifier"
-					&& node.expression.left.object.name === "module"
-					&& node.expression.left.property.name === "exports"
-					&& parent.type === "Program" || parent.type === "BlockStatement") {
+				if (parent.type === "Program" || parent.type === "BlockStatement") {
 
 					if (node.expression.right.type === "ObjectExpression"
 						&& node.expression.right.properties.length > 0
 					) {
 						node.expression.right.properties.forEach((e: Property | SpreadElement) => {
 							if (e.type !== "Property") {
-								throw new Error()
+								throw new Error("type is not Property");
 							}
-
 
 							exps.push({
 								type: "ExpressionStatement",

@@ -46,8 +46,7 @@ export function exportAndCopyPhase(js: JSFile): void {
 							case "name":
 								hasData = true;
 								if (!exportData[data.Export]) {
-
-									let copy = js.getNamespace().generateBestName(data.Export)
+									let copy = js.getNamespace().generateBestName(data.Export);
 									identifier = copy
 									exportData[data.Export] = copy.name
 								} else {

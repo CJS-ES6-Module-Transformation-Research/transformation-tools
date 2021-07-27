@@ -121,7 +121,6 @@ export class Namespace {
 		}
 		if (!this.names.has(name)) {
 			this.addToNamespace(name)
-			console.log(`--> ${name}`)
 
 			return {name: name, type: "Identifier"};
 		}
