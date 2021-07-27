@@ -12,7 +12,7 @@ do
   echo "${dir}"
   echo ""
   cd "${PROJECT_DIR}"
-  cd "${dir}" || exit;
+  cd "${dir}" || continue
   # npm run CJS > ${dir}.test-results.txt
   npm run CJS
   echo "${dir} -> $?" >> ../test-reports

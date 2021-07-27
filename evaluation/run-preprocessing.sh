@@ -14,7 +14,7 @@ do
   echo "${dir}"
   echo ""
   cd "${PROJECT_DIR}"
-  cd "${dir}" || exit;
+  cd "${dir}" || continue;
   git reset --hard
   ts-node -P "${PROJECT_ROOT}/tsconfig.json" "${PROJECT_ROOT}/src/bin/main.ts" .
   echo ""
