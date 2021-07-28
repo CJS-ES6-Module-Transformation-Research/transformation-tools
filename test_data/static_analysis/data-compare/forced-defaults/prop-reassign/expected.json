@@ -1,8 +1,0 @@
-{
-   "dir": "forced-defaults/prop-reassign",
-   "tests": {
-      "reassign-many-mixed": {},
-      "reassign-one-nested": {},
-      "reassign-one-tl": {}
-   }
-}

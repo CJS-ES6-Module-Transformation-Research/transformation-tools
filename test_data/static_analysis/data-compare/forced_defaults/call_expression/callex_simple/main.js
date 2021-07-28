@@ -1,4 +1,6 @@
 var express = require('express')
-console.log()
+var modx = require('mod')
+
 var app = express()
-let value = express.property
+mox.init()
+var zz = modx.z

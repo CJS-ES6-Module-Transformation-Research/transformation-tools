@@ -1,6 +1,6 @@
 var z = require('abc')
 var y = require('uvw')
-
+var x = require('def')
 if(''){
 	z.x = 3;
 

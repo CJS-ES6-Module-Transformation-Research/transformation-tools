@@ -20,7 +20,7 @@
     "props": ["helloWorld"]},
   "triple-shadow": {
     "shadows": ["b","c"],
-    "props": ["a",]
+    "props": ["a"]
   }
 
 }

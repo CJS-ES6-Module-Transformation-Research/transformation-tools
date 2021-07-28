@@ -74,7 +74,6 @@ export function parse(): ProjConstructionOpts {
 
 
 			.argv
-	console.log(parsed)
 	return {
 		output: parsed.copy || '',
 		input: parsed.input,
