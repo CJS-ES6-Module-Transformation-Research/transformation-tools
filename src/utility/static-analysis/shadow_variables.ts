@@ -57,15 +57,11 @@ export function isShadowVariable(varName: string, stack: string[], shadows: Shad
 		stack.forEach(e => {
 
 			if (shadows[varName].includes(e)) {
-				console.log (varName, e)
-				console.log (listOfShadowIds[varName])
-				console.log (parseInt(e))
+
 				if (!listOfShadowIds[varName]){
-					console.log('setting: ',listOfShadowIds[varName])
 					listOfShadowIds[varName] = []
 				}
 				listOfShadowIds[varName].push(parseInt(e))
-				console.log(listOfShadowIds)
 				return  true;
 				// retval = true;
 			}

@@ -8,13 +8,12 @@ import {ForcedDefaultMap} from "../../utility/types";
 
 export function getReassignedPropsOrIDs(js: JSFile) {
 
-	let forcedDefault: boolean = false;
-	let intermediate: Intermediate = js.getIntermediate()
+ 	let intermediate: Intermediate = js.getIntermediate()
 	let ids = intermediate.getListOfIDs()
 	let ast: Program = js.getAST()
 	let addFromID = createForcedDefaultReporter(js)
 
-	let _forcedDefault: ForcedDefaultMap = intermediate.getForcedDefaults()
+	// let _forcedDefault: ForcedDefaultMap = intermediate.getForcedDefaults()
 	let from = intermediate.id_to_ms
 	traverse(ast, {
 		enter: (node: Node, parent: Node | null) => {
@@ -39,13 +38,13 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 					let val2 = node.right.right
 					if (node.right.left.type === "Identifier"
 						&& ids.includes((val as Identifier).name)) {
-						_forcedDefault[(val as Identifier).name] = true;
+						intermediate.addForcedDefault((val as Identifier).name, 'part of a boolean expression')
 						addFromID((val as Identifier).name, 'part of a boolean expression')
 
 					}
 					if (node.right.right.type === "Identifier"
 						&& ids.includes((val2 as Identifier).name)) {
-						_forcedDefault[(val2 as Identifier).name] = true;
+ 						intermediate.addForcedDefault((val2 as Identifier).name, 'part of a boolean expression')
 						addFromID((val2 as Identifier).name, 'part of a boolean expression')
 					}
 				} else if (node.right.type === "ConditionalExpression") {
@@ -53,13 +52,14 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 					let val2 = node.right.alternate
 					if (node.right.consequent.type === "Identifier"
 						&& ids.includes((val as Identifier).name)) {
-						_forcedDefault[(val as Identifier).name] = true;
+						intermediate.addForcedDefault((val as Identifier).name, 'part of a ternary operator')
 
 						addFromID((val as Identifier).name, 'part of a ternary operator')
 					}
 					if (node.right.alternate.type === "Identifier"
 						&& ids.includes((val2 as Identifier).name)) {
-						_forcedDefault[(val2 as Identifier).name] = true;
+						intermediate.addForcedDefault((val2 as Identifier).name, 'part of a ternary operator')
+
 
 						addFromID((val2 as Identifier).name, 'part of a ternary operator')
 					}
@@ -70,30 +70,14 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 					&& node.left.property.type === "Identifier") {
 					let name = node.left.object.name;
 					let prop = node.left.property.name;
-					if ([name]
+					if (ids.includes(name)
 					) {
-						_forcedDefault[name]
-						forcedDefault = true;
+						intermediate.addForcedDefault(name, "property_assignment")
 
 					}
 				}
 			}
-			//ToDO extract method so i can read this (make sure OREQUALS)
-			if (node.type === "AssignmentExpression"
-				&& node.left.type === "MemberExpression"
-				&& node.left.object.type === "Identifier"
-				&& node.left.property.type === "Identifier") {
-				let name = node.left.object.name;
-				let prop = node.left.property.name;
-				if (_forcedDefault[name]
-				) {
-					_forcedDefault[name] = true;
-					addFromID(name, `property of ${name} reassigned`)
-					forcedDefault = true;
 
-				}
-
-			}
 			if (node.type === "AssignmentExpression"
 				&& node.right.type === "Identifier"
 				&& node.right.name
@@ -103,8 +87,7 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 					.reportOn()
 					.addForcedDefault(js, from [node.right.name], "property_assignment")
 				//copy module reference
-				assert(node.right.name, "assigned to " + node.right.name)
-				_forcedDefault[node.right.name] = true;
+				 intermediate.addForcedDefault(node.right.name, "property_assignment")
 			}
 			if (node.type === "VariableDeclarator"
 				&& node.id.type === "Identifier"
@@ -115,7 +98,7 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 			) {
 
 				js.getReporter().reportOn().addForcedDefault(js, from[node.init.name], "property_assignment")
-				_forcedDefault[node.init.name] = true;
+				 intermediate.addForcedDefault(node.init.name, "property_assignment" )
 			}
 
 			if ((node.type === "CallExpression" || node.type === "NewExpression")
@@ -126,14 +109,13 @@ export function getReassignedPropsOrIDs(js: JSFile) {
 						js.getReporter()
 							.reportOn()
 							.addForcedDefault(js, from[e.name], "property_assignment")
-						_forcedDefault[e.name] = true;
+						intermediate.addForcedDefault(e.name , "property_assignment")
 					}
 				})
 			}
 		},
 	});
-	return forcedDefault;
-}
+ }
 
 function createForcedDefaultReporter(js: JSFile) {
 

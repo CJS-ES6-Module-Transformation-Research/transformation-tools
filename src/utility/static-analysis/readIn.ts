@@ -240,25 +240,23 @@ let _enter = (node: Node, parent: Node)=>{
 	   }*/ //TODO
 	let interm: Intermediate = new Intermediate(id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases);
 
-	console.log(JSON.stringify(interm,null,3))
-	let actual:any[]
+	// let actual:any[]
+	//
+	// actual = Object.keys(declCounts)
+	// require('chai').assert(actual.length > 0,`declCountSize: ${actual.length}`)
 
-	actual = Object.keys(declCounts)
-	require('chai').assert(actual.length > 0,`declCountSize: ${actual.length}`)
-
-	actual = Object.keys(load_order)
-	require('chai').assert(actual.length > 0,`was ${actual.length}`)
+	// actual = Object.keys(load_order)
+	// require('chai').assert(actual.length > 0,`was ${actual.length}`)
 
 
-	require('chai').assert(Object.keys(load_order).length === Object.keys(ms_to_id).length ,`same-size`)
-	// console.log(require('chalk').green (JSON.stringify(interm.id_to_ms,null,3)))
-	// console.log (require('chalk').green(JSON.stringify(interm.id_aliases,null,3)))
-try {
-	require('chai').assert(Object.keys(ms_to_id).length >=  Object.keys(interm.id_aliases).length, `${'err'}`)
-}catch (e) {
-	process.exit( )
-}
-require('chai').assert(Object.keys(id_to_ms).length <= Object.keys(ms_to_id).length,`` )
+	// require('chai').assert(Object.keys(load_order).length === Object.keys(ms_to_id).length ,`same-size`)
+
+// try {
+// 	require('chai').assert(Object.keys(ms_to_id).length >=  Object.keys(interm.id_aliases).length, `${'err'}`)
+// }catch (e) {
+// 	process.exit( )
+// }
+// require('chai').assert(Object.keys(id_to_ms).length <= Object.keys(ms_to_id).length,`` )
 	let obk = Object.keys(exportMap)
 	if (body[0].type === "VariableDeclaration" && (obk.length > 1 || ((!obk['default']) && obk.length > 0))) {
 		body[0].declarations.push(... vd.declarations)
@@ -291,7 +289,6 @@ require('chai').assert(Object.keys(id_to_ms).length <= Object.keys(ms_to_id).len
 				let best = js.getNamespace().generateBestName(name)
 
 				exp.left = best;
-				console.log(`name: ${name}\t  best: ${best.name}`)
 
 				exportMap[name] = exp.left.name//(exp.right as Identifier).name
 				// builder.addExport(name)

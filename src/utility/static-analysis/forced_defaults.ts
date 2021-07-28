@@ -5,7 +5,6 @@ export function forcedDefaults(js:JSFile){
 	let intermediate = js.getIntermediate()
 	let listOfVars = intermediate.getListOfIDs()
 	let reporter = js .getReporter()
-	let forced_defaults = intermediate.getForcedDefaults()
 
 	let fromId = intermediate.id_to_ms
 	traverse(js.getAST(), {
@@ -16,13 +15,13 @@ export function forcedDefaults(js:JSFile){
 
 			) {
 				reporter.reportOn().addForcedDefault(js,  fromId[node.right.name], "property_assignment")
-				forced_defaults[node.right.name] = true;
+ 				intermediate.addForcedDefault( node.right.name, "property_assignment" )
 			} else if (node.type === "Property"
 				&& node.value.type === "Identifier"
 				&& listOfVars.includes(node.value.name)
 			) {
 				reporter.reportOn().addForcedDefault(js,  fromId[node.value.name], "property_assignment")
-				forced_defaults[node.value.name] = true;
+				intermediate.addForcedDefault( node.value.name, "property_assignment" )
 			}
 		}
 	});
