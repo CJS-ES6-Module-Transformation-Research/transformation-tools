@@ -34,7 +34,7 @@ export function phase2(js: JSFile): void {
 				// 	}
 				// )
 				indexOf = parent.body.indexOf(node);
-				parent.body.splice(indexOf, 1, ... (flattened.reverse()))
+				parent.body.splice(indexOf, 1, ...flattened)
 			} else if ("ForStatement") {
 				return;
 			} else {

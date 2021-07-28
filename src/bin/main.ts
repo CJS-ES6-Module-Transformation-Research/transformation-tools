@@ -33,12 +33,28 @@ function createProj(input: string) {
 	)
 }
 
+let _opts: ProjConstructionOpts = {
+	operation_type: 'copy',
+	suffix: '',
+	isNamed: true,
+	ignored:['dist'],
+	testing: true,
+	input: '.',            //  input from process.argv  
+	report: false,
+	output: ''
+}
+const input = ".";
+let pm: ProjectManager = new ProjectManager(input, _opts);
+clean(pm) // from janitor
+pm.writeOut();
+
 let pmopts: ProjConstructionOpts
 
-let opts: ProjConstructionOpts = arg.parse()
-let {input, report} = opts
-let pm: ProjectManager = new ProjectManager(input, opts);
-clean(pm)
-pm.writeOut();
+// let opts: ProjConstructionOpts = arg.parse()
+// let {input, report} = opts;
+// if(!input) input = '.';
+// let pm: ProjectManager = new ProjectManager(input, opts);
+// clean(pm)
+// pm.writeOut();
 
 // pm.report(report)

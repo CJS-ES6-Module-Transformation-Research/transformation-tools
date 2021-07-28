@@ -81,7 +81,6 @@ export function hoistRequires(js: JSFile) {
 				return VisitorOption.Remove
 			}
 			if(node.type === "Identifier") {
-				console.log("Scope ID: ", node[NodeComparators.Scope_ID]);
 				const match = variableRenameMapping.find((el) => el.old === node.name && node[NodeComparators.Scope_ID] >= el.scope);
 				if(match) {
 					node.name = match.new;

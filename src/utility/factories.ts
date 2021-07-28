@@ -144,6 +144,9 @@ export function asModuleDotExports(mx: MemberExpression): { Export: string, type
 		) {
 			return {Export: '', type: 'default'}
 		} else if (isModule_Dot_Exports(mx.object)) {
+			if(!mx.property.name) {
+				console.log(JSON.stringify(mx, null, 2));
+			}
 			return {Export: mx.property.name, type: 'name'}
 		}
 	}
