@@ -1,6 +1,9 @@
 import {ExpressionStatement, Identifier, VariableDeclaration, Node} from "estree";
 import {ShadowVariableMap} from "./types";
 import {generate} from "escodegen";
+import {API_TYPE} from "../refactoring/utility/API";
+import {getShadowVars} from "../refactoring/static-analysis/shadow_variables";
+import {JSFile} from "../filesystem";
 
 type S2<T> = { [p: string]: T }
 
@@ -19,7 +22,7 @@ export class Intermediate implements IEData {
     readonly forcedDefaultMap: { [p: string]: boolean }
     readonly propReads: { [p: string]: string[] }
 
-    constructor(id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases) {
+    constructor(js:JSFile , id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases) {
         this.id_aliases = id_aliases
         this.declCounts = declCounts
         this.exportMap = exportMap
@@ -31,6 +34,20 @@ export class Intermediate implements IEData {
         this.propReads = {}
         this.shadows = {}
         this.forcedDefaultMap = {}
+        let ex = Object.keys(this.exportMap);
+        let api = js.getApi();
+        if (ex.length > 0) {
+            if (this.exportMap['default']) {
+                 api.setType( API_TYPE.default_only);
+            }
+            else {
+                 api.setType(  API_TYPE.named_only);
+            }
+        }
+        else {
+             api.setType( API_TYPE.none);
+        }
+        api.setNames(ex);
 
         Object.keys(this.id_to_ms).forEach(modid => {
 

@@ -2,7 +2,7 @@ import {join} from "path";
 import {readdirSync, readFileSync} from "fs";
 import {createProject} from "./index";
 import {ProjectManager} from "../src/control";
-import {runAnalyses} from "../src/utility/static-analysis";
+import {runAnalyses} from "../src/refactoring/static-analysis";
 import {JSFile} from "../src/filesystem";
 import {expect} from 'chai'
 

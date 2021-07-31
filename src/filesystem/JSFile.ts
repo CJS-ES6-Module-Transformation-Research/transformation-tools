@@ -10,8 +10,8 @@ import {JSBody} from "../refactoring/janitor";
 import {API, API_TYPE} from "../refactoring/utility/API";
 import {RequireStringTransformer} from "../refactoring/utility/requireStringTransformer";
 import {Intermediate} from "../utility/Intermediate";
-import {NodeComparators} from "../utility/static-analysis/tagger";
-import {SequenceNumber} from "../utility/static-analysis/util/SequenceNumber";
+import {NodeComparators} from "../refactoring/static-analysis/tagger";
+import {SequenceNumber} from "../refactoring/static-analysis/util/SequenceNumber";
 import {FileType, MetaData, SeqNumb, SerializedJSData, ShadowVariableMap} from "../utility/types";
 import {AbstractDataFile} from './AbstractFileSkeletons'
 import {Dir} from './Directory'

@@ -4,7 +4,7 @@ import {existsSync, mkdirSync, readdirSync, readFileSync, rmdirSync, writeFileSy
 import {copySync} from 'fs-extra'
 import {join} from "path";
 import {JSFile} from "../src/filesystem/JSFile";
-import {runAnalyses} from "../src/utility/static-analysis";
+import {runAnalyses} from "../src/refactoring/static-analysis";
 import {_RTest} from './RuntimeTests'
 
 
