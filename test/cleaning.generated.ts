@@ -94,6 +94,16 @@ describe('direct_assign', () => {
             expect(actual.getJS(file).makeSerializable().fileData, 'test file: ${test_path} ').to.be.eq(expected.getJS(file).makeSerializable().fileData);
         });
     });
+    it('object_direct_assign_to_delete', () => {
+        let test_path = join(test_root, 'direct_assign', 'object_direct_assign_to_delete');
+        let actual = createProject(join(test_path, 'actual'), true);
+        let expected = createProject(join(test_path, 'expected'), true);
+        clean(actual);
+        let relatives = actual.getJSRelativeStrings();
+        relatives.forEach(file => {
+            expect(actual.getJS(file).makeSerializable().fileData, 'test file: ${test_path} ').to.be.eq(expected.getJS(file).makeSerializable().fileData);
+        });
+    });
     it('overWrite_default_no_props', () => {
         let test_path = join(test_root, 'direct_assign', 'overWrite_default_no_props');
         let actual = createProject(join(test_path, 'actual'), true);
