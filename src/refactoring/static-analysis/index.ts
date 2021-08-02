@@ -1,18 +1,15 @@
-import {generate} from "escodegen";
-import {parseScript} from "esprima";
-import {Program} from "estree";
-import {Namespace, JSFile,ModuleAPIMap} from '../../filesystem'
-import {ProjectManager, ProjConstructionOpts} from '../../control'
+import {JSFile, ModuleAPIMap} from '../../filesystem'
+import {ProjectManager} from '../../control'
 import {getAccessedProperties} from "./accessed_properties";
 import {forcedDefaults} from "./forced_defaults";
-import {readIn} from "./readIn";
+import {readIn, removeModuleDotExports} from "./readIn";
 import {getShadowVars} from "./shadow_variables";
 
 import chalk from 'chalk'
- import {API_TYPE} from "../utility";
+import {API_TYPE} from "../utility";
 import {assert} from "chai";
 import {getReassignedPropsOrIDs} from "../utility/getReassigned";
-import {Intermediate} from "../../utility/Intermediate";
+import {metavariables} from "./metavariables";
 
 const {red, green, blue} = chalk
 let log: { [key: string]: (...x) => void } = {}
@@ -24,7 +21,22 @@ export function runAnalyses(pm: ProjectManager) {
 
 
     pm.forEachSource(readIn)
-
+    pm.forEachSource(removeModuleDotExports, 'removing module.exports*.*')
+    pm.forEachSource((js:JSFile)=>{
+        let int = js.getIntermediate()
+        int.load_order.forEach((ms,index:number,array:string[])=>{
+            if (ms.endsWith('.json')){
+                let cjs = js.createCJSFromIdentifier(ms)
+                array[index]=  cjs
+                let _id = int.ms_to_id[ms]
+                delete int.ms_to_id[ms]
+                int.ms_to_id[cjs] = _id
+                delete int.id_to_ms[ms]
+                int.id_to_ms[cjs] = _id
+            }
+        })
+    })
+    pm.forEachSource(metavariables, 'metavariables')
     pm.forEachSource(getShadowVars)
     // log.green( 	JSON.stringify(im.getShadowVars(),null,3))
     pm.forEachSource(getAccessedProperties)

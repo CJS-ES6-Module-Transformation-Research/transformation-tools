@@ -172,15 +172,15 @@ export function assign(val: Pattern, expr: Expression): AssignmentExpression {
 }
 
 
-export function createDefaultImport(ms: string, ident: string): ImportDeclaration {
+ function createDefaultImport(ms: string, ident: string): ImportDeclaration {
     return unNamed(ms, ident, false)
 }
 
-export function createNamespaceImport(ms: string, ident: string): ImportDeclaration {
+ function createNamespaceImport(ms: string, ident: string): ImportDeclaration {
     return unNamed(ms, ident, true)
 }
 
-export function createNamedImport(ms: string, name: string, local: string = name) {
+ function createNamedImport(ms: string, name: string, local: string = name) {
     let imp = baseImport(ms)
     let _id = id(local)
     let _local = id(local)
@@ -189,20 +189,28 @@ export function createNamedImport(ms: string, name: string, local: string = name
     return imp
 }
 
-export function createDefaultExport(name: string):  ExportDefaultDeclaration {
+ function createDefaultExport(name: string): ExportDefaultDeclaration {
     return {
         type: "ExportDefaultDeclaration",
         declaration: id(name)
     }
 }
 
-export function createNamedExport(name:string, local:string): ExportNamedDeclaration {
-let specs  : ExportSpecifier[] = [{
-    type:"ExportSpecifier",
-    local:id(local),
-    exported:id(name)
-}]
-    return   {type:"ExportNamedDeclaration", specifiers:specs}
+ function createNamedExport(name: string, local: string): ExportNamedDeclaration {
+    let specs: ExportSpecifier[] = [{
+        type: "ExportSpecifier",
+        local: id(local),
+        exported: id(name)
+    }]
+    return {type: "ExportNamedDeclaration", specifiers: specs}
+}
+
+export const DECL_FACTORY = {
+    createDefaultExport,
+    createNamedExport,
+    createDefaultImport,
+    createNamespaceImport,
+    createNamedImport
 }
 
 function unNamed(ms: string, ident: string, isNamed: boolean): ImportDeclaration {

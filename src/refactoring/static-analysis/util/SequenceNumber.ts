@@ -1,4 +1,4 @@
-import { SeqNumb } from "../../types";
+import {SeqNumb} from "../../../utility";
 
 
 export class SequenceNumber implements SeqNumb{

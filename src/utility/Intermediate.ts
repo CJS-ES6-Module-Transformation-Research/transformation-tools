@@ -1,18 +1,17 @@
-import {ExpressionStatement, Identifier, VariableDeclaration, Node} from "estree";
+import {Identifier, Node, VariableDeclaration} from "estree";
 import {ShadowVariableMap} from "./types";
-import {generate} from "escodegen";
-import {API_TYPE} from "../refactoring/utility/API";
-import {getShadowVars} from "../refactoring/static-analysis/shadow_variables";
+import {API, API_TYPE} from "../refactoring/utility";
 import {JSFile} from "../filesystem";
+import {declare, id} from "./factories";
 
 type S2<T> = { [p: string]: T }
 
-export class Intermediate implements IEData {
+export class Intermediate {
 
     private shadowVarMap: { [p: string]: string[] } = {};
-    readonly declCounts: S2<number>;
-    readonly import_decls: (ExpressionStatement | VariableDeclaration)[];
-    readonly exportMap: S2<string>;
+    // readonly declCounts: S2<number>;
+    // readonly import_decls: (ExpressionStatement | VariableDeclaration)[];
+    private exportMap: S2<string>;
     readonly id_to_ms: S2<string>;
     readonly load_order: string[];
     readonly ms_to_id: S2<string>;
@@ -22,38 +21,61 @@ export class Intermediate implements IEData {
     readonly forcedDefaultMap: { [p: string]: boolean }
     readonly propReads: { [p: string]: string[] }
 
-    constructor(js:JSFile , id_to_ms, ms_to_id, import_decls, exportMap, load_order, declCounts, id_aliases) {
-        this.id_aliases = id_aliases
-        this.declCounts = declCounts
-        this.exportMap = exportMap
+    constructor(  id_to_ms: { [id: string]: string }, ms_to_id: { [ms: string]: string }, load_order: string[]) {
+        // this.id_aliases = id_aliases
+        // this.declCounts = declCounts
+        // this.exportMap = exportMap
         this.id_to_ms = id_to_ms
         this.ms_to_id = ms_to_id
-        this.import_decls = import_decls
+        // this.import_decls = import_decls
         this.load_order = load_order
         this.shadows = {}
         this.propReads = {}
         this.shadows = {}
         this.forcedDefaultMap = {}
-        let ex = Object.keys(this.exportMap);
-        let api = js.getApi();
-        if (ex.length > 0) {
-            if (this.exportMap['default']) {
-                 api.setType( API_TYPE.default_only);
-            }
-            else {
-                 api.setType(  API_TYPE.named_only);
-            }
-        }
-        else {
-             api.setType( API_TYPE.none);
-        }
-        api.setNames(ex);
+
 
         Object.keys(this.id_to_ms).forEach(modid => {
 
             this.forcedDefaultMap[modid] = false;
             this.propReads[modid] = []
         })
+
+
+    }
+
+    getExportMap() {
+return this.exportMap
+    }
+
+    buildExports(api: API, exportMap: { [ms: string]: string }): VariableDeclaration {
+        this.exportMap = exportMap
+        let exportNames: string[] = Object.keys(this.exportMap)
+
+        this.createAPI(exportNames, api);
+
+
+        return {
+            type: "VariableDeclaration", kind: "var",
+            declarations: exportNames
+                .filter (e=> e !==exportMap['default'])
+                .map(e=> exportMap[e])
+                .map(id)
+                .map(ident => declare(ident))
+        }
+    }
+
+    private createAPI(exportNames: string[], api: API) {
+        if (exportNames.length > 0) {
+            if (this.exportMap['default']) {
+                api.setType(API_TYPE.default_only);
+            } else {
+                api.setType(API_TYPE.named_only);
+            }
+        } else {
+            api.setType(API_TYPE.none);
+        }
+        api.setNames(exportNames);
     }
 
     getShadowVars(): ShadowVariableMap {
@@ -72,13 +94,6 @@ export class Intermediate implements IEData {
         this.forcedDefaultMap[id] = true
     }
 
-    isForcedDefault(id: string): boolean {
-        return this.forcedDefaultMap[id] && true
-    }
-
-    getForcedDefaults() {
-        return this.forcedDefaultMap
-    }
 
     getListOfIDs(): string[] {
         return Object.keys(this.id_to_ms)
@@ -96,18 +111,19 @@ export class Intermediate implements IEData {
     }
 }
 
-interface IEData {
-    declCounts: { [key: string]: number }
-    load_order: string[]
-    id_to_ms: { [str: string]: string }
-    ms_to_id: { [str: string]: string }
-    id_aliases: { [str: string]: string[] }
-
-    exportMap: { [str: string]: string }
-    import_decls: (ExpressionStatement | VariableDeclaration)[]
-    shadows: ShadowVariableMap
-    // rpiMap: { [id: string]: ReqPropInfo }
-    forcedDefaultMap: { [key: string]: boolean }
-    propReads: { [key: string]: string[] }
-
-}
+//
+// interface IEData {
+//     declCounts: { [key: string]: number }
+//     load_order: string[]
+//     id_to_ms: { [str: string]: string }
+//     ms_to_id: { [str: string]: string }
+//     id_aliases: { [str: string]: string[] }
+//
+//     exportMap: { [str: string]: string }
+//     import_decls: (ExpressionStatement | VariableDeclaration)[]
+//     shadows: ShadowVariableMap
+//     // rpiMap: { [id: string]: ReqPropInfo }
+//     forcedDefaultMap: { [key: string]: boolean }
+//     propReads: { [key: string]: string[] }
+//
+// }

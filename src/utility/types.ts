@@ -1,9 +1,6 @@
 import {AssignmentExpression, ExpressionStatement, Identifier, MemberExpression} from "estree";
 import {Stats} from "fs";
-import {AbstractFile} from "../filesystem/AbstractFileSkeletons";
-import {Dir} from "../filesystem/Directory";
-import {ModuleAPIMap} from "../filesystem/FS-Factory";
-import {JSFile} from "../filesystem/JSFile";
+import {Dir,ModuleAPIMap,JSFile,AbstractFile} from "../filesystem";
 
 export interface SeqNumb{
 	seq_no: number

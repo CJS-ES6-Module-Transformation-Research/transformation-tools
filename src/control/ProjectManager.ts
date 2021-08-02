@@ -2,22 +2,23 @@ import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
 import {appendFileSync, existsSync, lstatSync, mkdirSync, unlink, unlinkSync, writeFile, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
-import {AbstractDataFile, AbstractFile} from "../filesystem/AbstractFileSkeletons";
-import {Dir} from "../filesystem/Directory";
-import {FileFactory} from "../filesystem/FS-Factory";
-import {JSFile} from "../filesystem/JSFile";
-import {PackageJSON} from "../filesystem/Package_JSON";
-import {FileType, SerializedJSData, write_status} from "../utility/types";
+import {AbstractDataFile, AbstractFile} from "../filesystem";
+import {Dir} from "../filesystem";
+import {FileFactory} from "../filesystem";
+import {JSFile} from "../filesystem";
+import {PackageJSON} from "../filesystem";
+import {FileType, SerializedJSData, write_status} from "../utility";
 
   import {AbstractReporter, dummyReporter, Reporter} from "./Reporter";
 import {naming} from "./utility/arg_parse";
+import {traverse} from "estraverse";
+import {generate} from "escodegen";
 
 
 const LOGFILE = join(__dirname, './log');
 if (existsSync(LOGFILE)) {
 	unlinkSync(LOGFILE)
 }
-writeFileSync(LOGFILE, ' ')
 
 
 export const log: (msg: string, tag?: string) => void = function (msg: string, tag: string = "") {
@@ -261,13 +262,14 @@ export class ProjectManager implements ProjectManagerI {
 
 	forEachSource(func: (value: JSFile) => void, tfName: string = func.name): void {
 		let curr: string = ''
-
 		try {
 
-			this.jsFiles.forEach(jsFile => {
-				assert(jsFile, 'jsfile was negative in ' + tfName)
-				curr = jsFile.getRelative()
-				func(jsFile)
+			this.jsFiles.forEach((js:JSFile) => {
+
+				assert(js, 'jsfile was negative in ' + tfName)
+				curr = js.getRelative()
+				func(js)
+
 			})
 		} catch (e) {
 
