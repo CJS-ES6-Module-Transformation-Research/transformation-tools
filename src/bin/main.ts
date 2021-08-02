@@ -37,7 +37,7 @@ let _opts: ProjConstructionOpts = {
 	operation_type: 'copy',
 	suffix: '',
 	isNamed: true,
-	ignored:['dist'],
+	ignored:['dist', 'configs', 'rolls', 'webpack-bundles'],
 	testing: true,
 	input: '.',            //  input from process.argv  
 	report: false,
