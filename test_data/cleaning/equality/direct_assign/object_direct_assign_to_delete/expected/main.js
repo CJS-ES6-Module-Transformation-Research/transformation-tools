@@ -1,3 +1,3 @@
-var __delete;
-__delete = function () {};
-module.exports.__delete = __delete;
+var delete0;
+delete0 = function () {};
+module.exports.delete = delete0;

@@ -9,7 +9,7 @@ import {JSFile} from "./JSFile";
  * represents a namespace for a javascript file. includes potential variables (any LHS assignment even if not declared ) for safety.
  */
 export class Namespace {
-    private names: Set<string> = new Set<string>();
+    private names: Set<string> = new Set<string>(['delete']);
     private hasDirname: boolean = false
     private hasFilename: boolean = false
     private potentialShadow: { [key: string]: number } = {};
@@ -30,7 +30,7 @@ export class Namespace {
         if (defaultExport) {
             this.__export = defaultExport
         }
-        this.names = new Set<string>();
+        this.names = new Set<string>(['delete']);
         traverse(ast, {
             enter: (node: Node) => {
                 switch (node.type) {
