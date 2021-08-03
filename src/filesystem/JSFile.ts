@@ -108,21 +108,8 @@ export class JSFile extends AbstractDataFile {
         this.api = new API(API_TYPE.none)
         this.apiMap.initJS(this, this.api)
         this._intermediate = new Intermediate( {},{},[])
-        traverse(this.ast, {
-            enter: (node, parent) => {
-                /* if (node.type === "Identifier" && node.name === "delete") {
 
-
-                    let gen = this.namespace.generateBestName('__delete')
-                    node.name = gen.name
-                    this.registerReplace(gen.name, 'delete')
-                    // this.namespace.addToNamespace()
-
-                } */
-            }
-        })
-        // this.exportRegistry = new ExportRegistry(this.namespace)
-    }
+     }
 
     getBody(): JSBody {
         return this.ast.body;

@@ -1,6 +1,6 @@
 import {replace, traverse, Visitor} from "estraverse";
 import {Reporter} from "../../control";
-import {JSFile} from "../../filesystem/JSFile";
+import {JSFile} from "../../filesystem";
 import {Imports} from "../utility/Imports_Data";
 //import getMainVisitor from './insert_imports'// TODO FIGURE OUT THIS SITUATION
 import {replaceModExp_with_ID} from "./insert_imports";
