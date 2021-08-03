@@ -91,7 +91,7 @@ let test_root =join (test_data, '${testing_dir}')
 
 
 gen_data['unit_clean'] = buildUnitTests(test_data, 'cleaning/equality')
-gen_data['run_clean'] = _RTest
+// gen_data['run_clean'] = _RTest
 
 
 
