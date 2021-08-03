@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd /Users/sam/Documents/module_research/CJS_Transform || exit;
+git add . 
+DATE_FMT="$(date +"%r"| tr  ' ' ':' | cut -d':' -f1-2 -f4) @ $(date +"%m-%d-%Y")"
+git commit -m "AUTO_COMMIT: $DATE_FMT"

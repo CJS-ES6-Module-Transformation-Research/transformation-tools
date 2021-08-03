@@ -2,22 +2,23 @@ import assert, {ok as assertTrue} from "assert";
 import cpr from "cpr";
 import {appendFileSync, existsSync, lstatSync, mkdirSync, unlink, unlinkSync, writeFile, writeFileSync} from "fs";
 import {basename, dirname, extname, join, relative} from "path";
+import {AbstractDataFile, AbstractFile} from "../filesystem";
+import {Dir} from "../filesystem";
+import {FileFactory} from "../filesystem";
+import {JSFile} from "../filesystem";
+import {PackageJSON} from "../filesystem";
+import {FileType, SerializedJSData, write_status} from "../utility";
+
+  import {AbstractReporter, dummyReporter, Reporter} from "./Reporter";
 import {naming} from "./utility/arg_parse";
-import {AbstractDataFile, AbstractFile} from "../filesystem/AbstractFileSkeletons";
-import {Dir} from "../filesystem/Directory";
-import {FileFactory} from "../filesystem/FS-Factory";
-import {JSFile} from "../filesystem/JSFile";
-import {PackageJSON} from "../filesystem/Package_JSON";
-import {FileType, SerializedJSData, write_status as op_type} from "../utility/types";
-import {AbstractReporter, dummyReporter, Reporter} from "./Reporter";
+import {traverse} from "estraverse";
+import {generate} from "escodegen";
 
 
 const LOGFILE = join(__dirname, './log');
-// console.log(LOGFILE)
 if (existsSync(LOGFILE)) {
 	unlinkSync(LOGFILE)
 }
-writeFileSync(LOGFILE, ' ')
 
 
 export const log: (msg: string, tag?: string) => void = function (msg: string, tag: string = "") {
@@ -40,15 +41,14 @@ export const log: (msg: string, tag?: string) => void = function (msg: string, t
 // )
 
 
-
 export function errHandle(err: Error, msg: string = ""): void {
-	if ( err && err.message) {
+	if (err && err.message) {
 		console.log(err.message)
 	}
 	if (msg) {
 		console.log(msg)
 	}
-	if(err) {
+	if (err) {
 		throw err;
 	}
 }
@@ -84,7 +84,8 @@ export interface ProjectManagerI {
 
 	usingNamed(): any;
 }
-export class ProjectManagerMock implements ProjectManagerI{
+
+export class ProjectManagerMock implements ProjectManagerI {
 	addSource(newestMember: AbstractDataFile): void {
 	}
 
@@ -141,7 +142,7 @@ export class ProjectManagerMock implements ProjectManagerI{
 
 export class ProjectManager implements ProjectManagerI {
 
-	private readonly write_status: op_type
+	private readonly write_status:write_status
 	private readonly root: Dir
 
 	private dirs: { [key: string]: Dir } = {}
@@ -169,9 +170,15 @@ export class ProjectManager implements ProjectManagerI {
 	private readonly test: boolean;
 
 
-
+	getRootDir(): string {
+		return this.src
+	}
+	static init(opts:ProjConstructionOpts):ProjectManager{
+		return new ProjectManager(opts.input,opts)
+	}
 	constructor(path: string, opts: ProjConstructionOpts, _named: boolean = false) {
-		if (!path){
+
+		if (!path) {
 			throw new Error(`path value: ${path} was invalid`)
 		}
 
@@ -180,7 +187,7 @@ export class ProjectManager implements ProjectManagerI {
 		this.src = path
 		this.write_status = opts.operation_type
 		this.suffix = opts.suffix;
-		this.reporter =dummyReporter
+		this.reporter = dummyReporter
 		if (opts.report) {
 			this.reporter = new Reporter(process.cwd(), opts.report)
 		}
@@ -213,6 +220,9 @@ export class ProjectManager implements ProjectManagerI {
 		this.additions[newestMember.getRelative()] = newestMember;
 	}
 
+	getJSFiles():string[]{
+		return Object.keys(this.jsMap)
+	}
 
 	getAnAddition(add: string) {
 		for (let x in this.additions) {
@@ -252,13 +262,14 @@ export class ProjectManager implements ProjectManagerI {
 
 	forEachSource(func: (value: JSFile) => void, tfName: string = func.name): void {
 		let curr: string = ''
-
 		try {
 
-			this.jsFiles.forEach(jsFile => {
-				assert(jsFile, 'jsfile was negative in ' + tfName)
-				curr = jsFile.getRelative()
-				func(jsFile)
+			this.jsFiles.forEach((js:JSFile) => {
+
+				assert(js, 'jsfile was negative in ' + tfName)
+				curr = js.getRelative()
+				func(js)
+
 			})
 		} catch (e) {
 
@@ -431,15 +442,15 @@ exception : ${ex}`;
 		return this.uses_names;
 	}
 
-	static builder(input:string):ProjectBuilder{
+	static builder(input: string): ProjectBuilder {
 		return new ProjectBuilder(input)
 	}
 
 }
 
 
-export interface ProjConstructionOpts  {
-	operation_type: op_type
+export interface ProjConstructionOpts {
+	operation_type: write_status
 	suffix: string
 	isModule?: boolean
 	isNamed: boolean
@@ -454,47 +465,72 @@ export interface ProjConstructionOpts  {
 
 class ProjectBuilder {
 
-	private readonly input:string
+	private readonly input: string
 	private naming_format: naming = 'named'
 
-	private operation_type: op_type = 'in-place'
-	private report:boolean = false
+	private operation_type: write_status = 'in-place'
+	private report: boolean = false
 
 	private output: string = ''
 	private suffix: string = ''
 	private isNamed: boolean = true
 
-	private isModule:boolean = false
+	private isModule: boolean = false
 	private copy_node_modules: boolean = false;
-	private ignored:string[] = []
-	private testing: boolean =false
-	constructor(input:string){
+	private ignored: string[] = []
+	private testing: boolean = false
+
+	constructor(input: string) {
 		this.input = input;
 
 	}
-	setNaming(X:naming):ProjectBuilder{ this.naming_format =  X;return this}
-	setCopy():ProjectBuilder{ this.operation_type = "copy" ;return this}
-	setIsModule(X:boolean):ProjectBuilder{ this.isModule =  X;return this}
-	setOutDir(out:string):ProjectBuilder{ this.output =  out;return this}
-	setIgnored(X:string[]):ProjectBuilder{ this.ignored =  X;return this}
-	setTesting(X:boolean):ProjectBuilder{ this.testing =  X;return this}
 
-	build():ProjectManager{
+	setNaming(X: naming): ProjectBuilder {
+		this.naming_format = X;
+		return this
+	}
 
-		let opts:ProjConstructionOpts = {
-			input:this.input,
-			testing:this.testing,
-			isNamed:this.isNamed,
-			ignored:this.ignored,
-			isModule:this.isModule,
-			copy_node_modules : this.copy_node_modules  ,
-			suffix : this.suffix  ,
+	setCopy(): ProjectBuilder {
+		this.operation_type = "copy";
+		return this
+	}
+
+	setIsModule(X: boolean): ProjectBuilder {
+		this.isModule = X;
+		return this
+	}
+
+	setOutDir(out: string): ProjectBuilder {
+		this.output = out;
+		return this
+	}
+
+	setIgnored(X: string[]): ProjectBuilder {
+		this.ignored = X;
+		return this
+	}
+
+	setTesting(X: boolean): ProjectBuilder {
+		this.testing = X;
+		return this
+	}
+
+	build(): ProjectManager {
+
+		let opts: ProjConstructionOpts = {
+			input: this.input,
+			testing: this.testing,
+			isNamed: this.isNamed,
+			ignored: this.ignored,
+			isModule: this.isModule,
+			copy_node_modules: this.copy_node_modules,
+			suffix: this.suffix,
 			// naming_format : this.naming_format  ,
-			operation_type : this.operation_type  ,
-			output : this.output ,
-			report:this.report
+			operation_type: this.operation_type,
+			output: this.output,
+			report: this.report
 		}
-		return new ProjectManager(this.input,opts,this.isNamed)
+		return new ProjectManager(this.input, opts, this.isNamed)
 	}
 
 }

@@ -1,1 +1,0 @@
- for (var  {val} = deconstructableObject ,a = 32 ,obj = {x: "99"} ; istrue(); i++){console.log("hello world");}

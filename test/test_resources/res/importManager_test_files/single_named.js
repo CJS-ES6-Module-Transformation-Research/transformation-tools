@@ -1,1 +1,0 @@
-import {dirname} from 'path'

@@ -1,9 +1,8 @@
-import {Identifier, ImportDeclaration} from "estree";
-import {ModuleAPIMap} from "../../filesystem/FS-Factory";
+import {Identifier} from "estree";
+import {Intermediate} from "../../utility/Intermediate";
 import {RequireDeclaration, RequireExpression} from "../../utility/Require";
-import {errHandle} from '../../control/ProjectManager'
-import {ReqPropInfo} from "./InfoGatherer";
-import {API, API_TYPE} from "./API";
+import {ReqPropInfo} from "../../utility/types";
+import {API_TYPE} from "./API";
 
 interface ToDeclMap {
 	[id: string]: requireDecl
@@ -138,67 +137,6 @@ export interface DeMap {
 
 
 }
-type PropertiesOn = {
-	[mod: string]: string[]
-}
-type APITable = { [moduleSpecifier: string]: API };
-export class Imports {
-	private readonly withPropNames: WithPropNames;
-	private apiGetter: (string) => API;
-	private mapiM: ModuleAPIMap;
-	private info: InfoTracker;
-	private readonly declarations: ImportDeclaration[];
-	private readonly apis :APITable= {}
-	private readonly propertiesOn :PropertiesOn = {};
-	constructor(map: DeMap, apiGetter: (string) => API, MAM: ModuleAPIMap, info: InfoTracker) {
-		this.info = info;
-		this.declarations = []
-		this.mapiM = MAM
-		this.apiGetter = apiGetter
-		// let _api: { [moduleSpecifier: string]: API } = {};	// @ts-ignore
-
-		for (let spec in map.fromSpec) {
-			try {
-				this.apis[spec] = apiGetter(spec)
-
-				this.propertiesOn[map.fromSpec[spec]] = info.getRPI(map.fromSpec[spec]).allAccessedProps
-			} catch (e) {
-				errHandle(e, `err:  ${map.fromSpec[spec]}`)
-			}
-		}
-
-		this.withPropNames = {
-			fromId: map.fromId,
-			fromSpec: map.fromSpec,
-			aliases: map.aliases,
-			propertiesOf: this.propertiesOn
-			// ,
-			// api: _api
-
-		}
-
-	}
-
-	getAPITable():APITable{
-		return this.apis
-	}
-
-	getPropertiesOn():PropertiesOn{
-		return this.propertiesOn
-	}
-
-	add(declaration: ImportDeclaration) {
-		this.declarations.push(declaration)
-	}
-
-	getWPN() {
-		return this.withPropNames
-	}
-
-	getDeclarations() {
-		return this.declarations
-	}
-}
 
 export interface WithPropNames
 	extends DeMap {
@@ -208,3 +146,4 @@ export interface WithPropNames
 	// ,
 	// api: { [moduleSpecifier: string]: API }
 }
+

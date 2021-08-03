@@ -1,5 +1,0 @@
-{
-   "exports": 21,
-   "namedExports": 21,
-   "defaultExports": 0
-}

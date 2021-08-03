@@ -1,1 +1,0 @@
-for (let i = require('mocha').access; true;i++){let x = 3;}

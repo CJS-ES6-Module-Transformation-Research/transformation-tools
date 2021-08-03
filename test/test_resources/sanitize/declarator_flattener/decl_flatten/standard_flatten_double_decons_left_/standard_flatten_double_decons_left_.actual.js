@@ -1,1 +1,0 @@
-var {val} = deconstructableObject,a = 32

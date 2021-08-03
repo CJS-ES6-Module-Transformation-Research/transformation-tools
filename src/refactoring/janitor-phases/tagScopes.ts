@@ -2,7 +2,7 @@
 import { replace, VisitorOption } from "estraverse";
 import { Node } from "estree";
 import { JSFile } from "../../filesystem";
-import { NodeComparators } from "../../utility/static-analysis/tagger";
+import { NodeComparators } from "../static-analysis/tagger";
 
 export function tagScopes(js: JSFile) {
   let scopeID = 0;

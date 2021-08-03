@@ -1,14 +1,15 @@
 import {lstatSync, Stats} from "fs";
 import path, {basename, extname, join, normalize, relative, resolve} from "path";
+import {AbstractReporter, ProjConstructionOpts, ProjectManager} from "../control";
 import {API, API_TYPE} from "../refactoring/utility/API";
 import {built_ins, builtins_funcs} from "../utility/data";
 import {CJSBuilderData, FileType, MetaData} from "../utility/types";
+
 import {AbstractDataFile, AbstractFile} from "./AbstractFileSkeletons";
 import {Dir} from "./Directory";
 import {JSFile} from "./JSFile";
 import {CJSToJSON, PackageJSON} from "./Package_JSON";
-import {ProjConstructionOpts, ProjectManager} from "../control/ProjectManager";
-import { AbstractReporter } from "../control/Reporter";
+
 export interface API_KeyMap {
 	[moduleSpecifier: string]: API
 }
@@ -16,7 +17,8 @@ export interface API_KeyMap {
 export class ModuleAPIMap {
 	apiKey: API_KeyMap = {}
 	readonly id: number = Math.floor(Math.random() * 100)
-
+	private constructor() {
+	}
 	initJS(js: JSFile | CJSToJSON, api: API) {
 		this.apiKey[js.getRelative()] = api;
 	}
@@ -89,6 +91,17 @@ export class ModuleAPIMap {
 		}
 
 	}
+	private static instance:ModuleAPIMap
+    static getInstance() {
+        if (!this.instance ){
+			this.instance = new ModuleAPIMap()
+		}
+        return this.instance
+    }
+	static init() {
+		this.instance = new ModuleAPIMap()
+		return this.instance
+	}
 }
 
 export class FileFactory {
@@ -97,7 +110,7 @@ export class FileFactory {
 	readonly target_dir: string | null;
 	readonly isModule: boolean
 	readonly pm: ProjectManager;
-	readonly rc: ModuleAPIMap = new ModuleAPIMap();
+	readonly rc: ModuleAPIMap =   ModuleAPIMap.init();
 	private readonly uses_names: boolean;
 	private ignored: string[];
 	private reporter: AbstractReporter;

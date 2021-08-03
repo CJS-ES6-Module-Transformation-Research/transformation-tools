@@ -1,1 +1,0 @@
- for (var a = 32,{val} = require('deconstructable') ; istrue(); i++){console.log("hello world");}

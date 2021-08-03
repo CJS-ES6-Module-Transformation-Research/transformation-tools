@@ -1,1 +1,0 @@
-module.exports = require('x').x;val2 = require('x');//assert same value

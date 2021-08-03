@@ -9,6 +9,7 @@ import {
 } from "estree";
 import {cleanMS, id} from "./factories";
 
+
 export interface RequireDeclaration extends VariableDeclaration {
 	declarations: [RequireDeclarator];
 }
@@ -65,7 +66,7 @@ export interface RequireCall extends SimpleCallExpression {
 	getCleaned: () => string
 
 }
-
+export {RequireCall as Require}
 export function asRequire(node: Expression): RequireCall {
 	if (node.type === "CallExpression"
 		&& node.callee.type === "Identifier"

@@ -23,7 +23,7 @@ export const mock_opts: ProjConstructionOpts = {
 	testing: true,
 	report: false
 }
-export function createProject(input: string, isNamed: boolean) {
+export function createProject(input: string, isNamed: boolean=true) {
 	return new ProjectManager(input, {
 			input,
 			isNamed: isNamed,

@@ -1,1 +1,0 @@
-function abc(a, b){require( 'hello_world')(a,b);}

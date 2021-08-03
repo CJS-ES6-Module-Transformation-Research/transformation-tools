@@ -1,1 +1,0 @@
-var __chai = require('chai'), expect = __chai.expect;

@@ -1,22 +1,23 @@
 import {generate} from "escodegen";
 import {replace, traverse, Visitor, VisitorOption} from "estraverse";
- import {
+import {
 	Identifier,
 	ImportDeclaration,
 	ImportSpecifier,
 	Literal,
+	Node,
 	RegExpLiteral,
 	SimpleLiteral,
 	VariableDeclaration,
-	VariableDeclarator,
-	 Node
+	VariableDeclarator
 } from "estree";
-import {JSFile,Namespace} from '../../filesystem'
-import {AbstractReportBuilder, AbstractReporter, errHandle, Reporter} from '../../control'
+import {AbstractReportBuilder, errHandle, Reporter} from '../../control'
+import {JSFile   } from '../../filesystem/JSFile'
+import { Namespace} from '../../filesystem/Namespace'
 import {built_ins, builtins_funcs} from "../../utility/data";
 import {API, API_TYPE} from "../utility/API";
-import {getListOfVars} from "../utility/InfoGatherer";
-import {Imports, WithPropNames} from "../utility/InfoTracker";
+import {Imports} from "../utility/Imports_Data";
+import {WithPropNames} from "../utility/InfoTracker";
 
 
 export function replaceModExp_with_ID(propNameReplaceMap, js:JSFile ):Visitor {
@@ -156,7 +157,7 @@ export function insertImports(js: JSFile) {
 	js.setAsModule()
 	let last: number = 0;
 	let info = js.getInfoTracker();
-	let listOfVars = getListOfVars(info)
+	let listOfVars = js.getIntermediate().getListOfIDs()
 	let infoTracker = js.getInfoTracker();
 	let MAM = js.getAPIMap()
 	js.getAPIMap()

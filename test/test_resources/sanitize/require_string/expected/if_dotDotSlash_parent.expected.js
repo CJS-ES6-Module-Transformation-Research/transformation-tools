@@ -1,1 +1,0 @@
-if(require('../index.js')){console.log('')};

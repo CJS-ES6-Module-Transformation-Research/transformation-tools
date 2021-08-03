@@ -1,9 +1,6 @@
 import {AssignmentExpression, ExpressionStatement, Identifier, MemberExpression} from "estree";
 import {Stats} from "fs";
-import {AbstractFile} from "../filesystem/AbstractFileSkeletons";
-import {Dir} from "../filesystem/Directory";
-import {ModuleAPIMap} from "../filesystem/FS-Factory";
-import {JSFile} from "../filesystem/JSFile";
+import {Dir,ModuleAPIMap,JSFile,AbstractFile} from "../filesystem";
 
 export interface SeqNumb{
 	seq_no: number
@@ -15,6 +12,22 @@ export interface SerializedJSData {
 	fileData: string
 }
 
+
+
+
+
+export interface ShadowVariableMap {
+	[id: string]: string[]
+}
+
+
+
+
+
+export interface SeqNumb{
+ seq_no: number
+	next():string
+}
 export type FileVisitor = (visit: AbstractFile) => void
 
 export enum FileType {
@@ -92,4 +105,15 @@ export interface LHSExport extends MemberExpression {
 	object: ModuleDotExports | Identifier
 	property: Identifier
 	computed: false
+}
+
+export interface ReqPropInfo {
+	forceDefault: boolean;
+	allAccessedProps: string[];
+	refTypeProps: string[];
+	potentialPrimProps: string[];
+}
+
+export interface ForcedDefaultMap {
+	[id: string]: boolean
 }

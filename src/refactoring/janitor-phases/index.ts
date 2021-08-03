@@ -1,5 +1,5 @@
-
-export {phase1} from './phase1'
-export {phase2} from './phase2'
-export {hoistRequires} from './HoistRequireImports'
-export {exportAndCopyPhase} from './ExportAndCopy'
+export * from './ExportAndCopy'
+export * from './phase1'
+export * from './phase2'
+export * from './HoistRequireImports'
+export * from './tagScopes'

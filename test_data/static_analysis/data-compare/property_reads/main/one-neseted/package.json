@@ -1,0 +1,12 @@
+{
+  "name": "one-neseted",
+  "version": "1.0.0",
+  "description": "",
+  "main": "one-neseted.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
