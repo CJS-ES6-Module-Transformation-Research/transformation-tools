@@ -14,7 +14,25 @@ import {naming} from "./utility/arg_parse";
 import {traverse} from "estraverse";
 import {generate} from "escodegen";
 
+export const IGNORED_CLI:string[]=[
+	'dist',
+	'configs',
+	'rolls',
+	'webpack-bundles'
+];
 
+function projConfigDefault(dir:string):ProjConstructionOpts{
+	return  {
+		operation_type: 'copy',
+		suffix: '',
+		isNamed: true,
+		ignored: IGNORED_CLI,
+		testing: true,
+		input: dir || '.',            //  input from process.argv
+		report: false,
+		output: ''
+	}
+}
 const LOGFILE = join(__dirname, './log');
 if (existsSync(LOGFILE)) {
 	unlinkSync(LOGFILE)
@@ -139,7 +157,6 @@ export class ProjectManagerMock implements ProjectManagerI {
 	}
 
 }
-
 export class ProjectManager implements ProjectManagerI {
 
 	private readonly write_status:write_status
@@ -169,12 +186,17 @@ export class ProjectManager implements ProjectManagerI {
 	private readonly reporter: AbstractReporter;
 	private readonly test: boolean;
 
-
 	getRootDir(): string {
+
 		return this.src
 	}
-	static init(opts:ProjConstructionOpts):ProjectManager{
+	static init(opts:ProjConstructionOpts|string):ProjectManager{
+		if (typeof opts === 'string'){
+			opts =projConfigDefault(opts)
+		}
 		return new ProjectManager(opts.input,opts)
+
+
 	}
 	constructor(path: string, opts: ProjConstructionOpts, _named: boolean = false) {
 

@@ -1,5 +1,5 @@
 import * as arg from "../control/utility/arg_parse";
-import {ProjConstructionOpts, ProjectManager} from "../control/ProjectManager";
+import {IGNORED_CLI, ProjConstructionOpts, ProjectManager} from "../control/ProjectManager";
 import {clean} from "../refactoring";
 // import pt1 from './pass0'
 // function run(cwd:string , transformJS){
@@ -37,7 +37,7 @@ let _opts: ProjConstructionOpts = {
 	operation_type: 'copy',
 	suffix: '',
 	isNamed: true,
-	ignored:['dist', 'configs', 'rolls', 'webpack-bundles'],
+	ignored:IGNORED_CLI,
 	testing: true,
 	input: '.',            //  input from process.argv  
 	report: false,
