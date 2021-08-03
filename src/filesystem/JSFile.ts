@@ -110,7 +110,7 @@ export class JSFile extends AbstractDataFile {
         this._intermediate = new Intermediate( {},{},[])
         traverse(this.ast, {
             enter: (node, parent) => {
-                if (node.type === "Identifier" && node.name === "delete") {
+                /* if (node.type === "Identifier" && node.name === "delete") {
 
 
                     let gen = this.namespace.generateBestName('__delete')
@@ -118,7 +118,7 @@ export class JSFile extends AbstractDataFile {
                     this.registerReplace(gen.name, 'delete')
                     // this.namespace.addToNamespace()
 
-                }
+                } */
             }
         })
         // this.exportRegistry = new ExportRegistry(this.namespace)
