@@ -6,6 +6,7 @@ import { tagScopes } from "./janitor-phases/tagScopes";
 
 
 export const clean = (pm: ProjectManagerI) => {
+	pm.forEachSource(tagScopes);
 	pm.forEachSource(phase1);
 	pm.forEachSource(phase2);
 	pm.forEachSource(exportAndCopyPhase);
