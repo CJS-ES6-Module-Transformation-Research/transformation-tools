@@ -1,4 +1,5 @@
-var __exports, x;
+var __exports;
+var x;
 __exports = function (){}
 
 module.exports = __exports;

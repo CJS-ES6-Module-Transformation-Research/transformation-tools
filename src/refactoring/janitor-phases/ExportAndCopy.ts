@@ -72,16 +72,6 @@ export function exportAndCopyPhase(js: JSFile): void {
 													return assign(rest[0],assign(rest[1],undefined))
 
 											}
-											// while (rest.length > 1){
-											// 	let left:MemberExpression = rest.shift()
-											// 	let right:MemberExpression = rest.shift()
-											// }
-
-
-
-											//error
-
-
 										}
 
 										let initialValue: AssignmentExpression = {
@@ -98,32 +88,6 @@ export function exportAndCopyPhase(js: JSFile): void {
 												computed: false
 											} as MemberExpression
 										})
-										//.reduce((l:(MemberExpression),r:(MemberExpression))=>{
-
-										//},initialValue)
-										// 	.reduce((left, right)=>{
-										// 	let right
-										// 	return {
-										// 		type: "AssignmentExpression",
-										// 		operator: '=',
-										// 		left: left ,
-										// 		right: rifht
-										// 	}
-										// })
-										// function assigner (expr1, expr2)  {
-										// 	return {
-										// 		type: "AssignmentExpression",
-										// 		operator: '=',
-										// 		left: e2 === '' ? module_dot_exports() : {
-										// 			type: "MemberExpression",
-										// 			object: module_dot_exports(),
-										// 			property: id(e1),
-										// 			computed: false
-										// 		},
-										// 		right: id(e2 === '' ? e1 : e2)
-										// 	}
-										// }
-
 									}
 
 									overWrite()//TODO
@@ -158,23 +122,16 @@ export function exportAndCopyPhase(js: JSFile): void {
 			}
 		})
 
-		let dcls = toDefineList.map(e => declare(e, null))
-		let dcl: VariableDeclaration = {
-			kind: "var",
-			type: "VariableDeclaration",
-			declarations: dcls
-		}
-		if (dcls.length > 0) {
-			body.splice(0, 0, dcl)
-		}
+		let dcls = <VariableDeclaration[]>toDefineList.map(e => {
+			return {
+				kind: "var",
+				type: "VariableDeclaration",
+				declarations: [declare(e, null)]
+			}
+		});
 
-		/*if (hasDefautl) {
-			body.push(assignExport(js.getDefaultExport().name))
-		}
-		 body.push(... Object.keys(exportData)
-			.map(
-				e => assignExport(e, exportData[e]))
-		)*/
+		body.splice(0, 0, ...dcls);
+
 		function assign(left:Pattern, right:Expression):AssignmentExpression{
 			return {
 				type:"AssignmentExpression",

@@ -1,4 +1,7 @@
- var  x,y,z,__exports;
+ var x;
+ var y;
+ var z;
+ var __exports;
 x = 'x'
 module.exports.x = x
 y = 'y'

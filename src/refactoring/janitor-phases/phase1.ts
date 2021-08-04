@@ -68,7 +68,7 @@ export function phase1(js: JSFile): void {
 								left: module_dot_exports(),
 								right: {type: 'ObjectExpression', properties: []}
 							}
-						})
+						});
 						parent.body.splice(parent.body.indexOf(node), 1, ... exps)
 					}
 				}

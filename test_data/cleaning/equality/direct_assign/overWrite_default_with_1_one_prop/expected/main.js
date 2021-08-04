@@ -1,4 +1,5 @@
-var x, __exports;
+var x;
+var __exports;
 x = 'x'
 module.exports.x = x
 

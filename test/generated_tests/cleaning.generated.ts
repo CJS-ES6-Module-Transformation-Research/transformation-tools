@@ -155,6 +155,16 @@ describe('export_names', () => {
             expect(actual.getJS(file).makeSerializable().fileData, 'test file: ${test_path} ').to.be.eq(expected.getJS(file).makeSerializable().fileData);
         });
     });
+    it('multiple_namedExports', () => {
+        let test_path = join(test_root, 'export_names', 'multiple_namedExports');
+        let actual = createProject(join(test_path, 'actual'), true);
+        let expected = createProject(join(test_path, 'expected'), true);
+        clean(actual);
+        let relatives = actual.getJSRelativeStrings();
+        relatives.forEach(file => {
+            expect(actual.getJS(file).makeSerializable().fileData, 'test file: ${test_path} ').to.be.eq(expected.getJS(file).makeSerializable().fileData);
+        });
+    });
     it('reassignmentOf_default_export', () => {
         let test_path = join(test_root, 'export_names', 'reassignmentOf_default_export');
         let actual = createProject(join(test_path, 'actual'), true);

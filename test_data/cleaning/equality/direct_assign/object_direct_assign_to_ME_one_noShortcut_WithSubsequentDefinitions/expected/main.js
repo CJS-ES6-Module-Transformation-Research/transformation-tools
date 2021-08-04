@@ -1,4 +1,8 @@
-var __exports, a, b, c, d;
+var __exports;
+var a;
+var b;
+var c;
+var d;
 __exports = {};
 module.exports = __exports;
 a = 1;

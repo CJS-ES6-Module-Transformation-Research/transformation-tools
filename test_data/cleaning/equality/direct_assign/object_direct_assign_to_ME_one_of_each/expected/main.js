@@ -1,4 +1,6 @@
-var __exports, a0, b;
+var __exports;
+var a0;
+var b;
 var a;
 __exports = {};
 module.exports = __exports;
