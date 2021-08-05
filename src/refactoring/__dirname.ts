@@ -79,7 +79,7 @@ export const add__dirname: TransformFunction = (js: JSFile) => {
 		}
 	})
 
-	let import_meta_url = js.getNamespace().getImportMeta()
+	let import_meta_url = js.getNamespace().getImportMeta(js);
 
 	js.registerReplace(import_meta_url.name, `import.meta.url`)
 	if (js.namespaceContains('__dirname') || seenDirname) {
