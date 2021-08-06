@@ -60,16 +60,17 @@ export function phase1(js: JSFile): void {
 							})
 
 						})
-						exps.splice(0, 0, {
-							type: "ExpressionStatement",
-							expression: {
-								type: "AssignmentExpression",
-								operator: "=",
-								left: module_dot_exports(),
-								right: {type: 'ObjectExpression', properties: []}
-							}
-						});
-						parent.body.splice(parent.body.indexOf(node), 1, ... exps)
+						//FIXME reset `module.exports` in a less destructive way
+						// exps.splice(0, 0, {
+						// 	type: "ExpressionStatement",
+						// 	expression: {
+						// 		type: "AssignmentExpression",
+						// 		operator: "=",
+						// 		left: module_dot_exports(),
+						// 		right: {type: 'ObjectExpression', properties: []}
+						// 	}
+						// });
+						// parent.body.splice(parent.body.indexOf(node), 1, ... exps)
 					}
 				}
 			}
