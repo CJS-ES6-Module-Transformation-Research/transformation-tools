@@ -4,6 +4,7 @@ import relative from "relative";
 import {JSFile} from "../../filesystem/JSFile";
 import {AbstractReportBuilder, MultiLineItem} from "../../control/Reporter";
 import {built_ins, builtins_funcs} from "../../utility/data";
+import {Dir, PackageJSON} from "../../filesystem";
 
 
 const _JS = ".js";
@@ -31,12 +32,25 @@ export class RequireStringTransformer {
 	}
 
 	private computeMain(_path: string) {
-		let dir = this.js.getParent().getDir(
-			join(
-				this.js.getParent().getRelative(),
-				dirname(_path)))
+		let jsParent:Dir =  this.js.getParent()
+		if (!jsParent){
+			let path_name = `>>> error when trying to resolve ${_path } in ${this.js.getRelative()}`
+			let jsdata = `${path_name}\nshould be true: ${this.js && true}  relative: ${this.js.getRelative()}  was a falsy:${this.js.getParent()}  `
+console.log(			require('chalk').red(jsdata))
+			throw new Error(jsdata)
+		}else{
+			console.log(			require('chalk').green(`parent is ok: ${_path}`))
 
-		let potential = dir.getPackageJSON().getMain()
+		}
+		let jsParentRelative= jsParent.getRelative()
+
+		let dirnameOfPath  = dirname(_path)
+
+		let dir =jsParent.getDir(join(jsParentRelative	,dirnameOfPath))
+
+		let pkg:PackageJSON =  this.js.getParent().getPackageJSON()
+
+		let potential =pkg.getMain()
 		if (potential.startsWith('.') || potential.startsWith('/')) {
 			return './index.js'
 		} else if (!(potential.endsWith('.js'))) {
